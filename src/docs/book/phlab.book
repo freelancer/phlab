@@ -1,0 +1,17 @@
+{
+  "name": "phlab",
+  "title": "Phlab Technical Documentation",
+  "short": "Phlab Tech Docs",
+  "preface": "Technical documentation intended for Phlab developers.",
+  "root": "../../..",
+  "uri.source":
+    "https://phabricator.freelancer.com/diffusion/PHL/browse/master/%f$%l",
+  "rules": {
+    "(\\.diviner$)": "DivinerArticleAtomizer",
+    "(\\.php$)": "DivinerPHPAtomizer"
+  },
+  "exclude": [
+    "(^externals/)"
+  ],
+  "groups": {}
+}
