@@ -9,10 +9,13 @@
 phutil_register_library_map(array(
   '__library_version__' => 2,
   'class' => array(
-    'PhlabInfrastructureTestCase' => '__tests__/PhlabInfrastructureTestCase.php',
+    'Composer' => 'infrastructure/Composer.php',
+    'PhlabConfigOptions' => 'applications/config/option/PhlabConfigOptions.php',
+    'PhlabLibraryTestCase' => '__tests__/PhlabLibraryTestCase.php',
   ),
   'function' => array(),
   'xmap' => array(
-    'PhlabInfrastructureTestCase' => 'PhutilTestCase',
+    'PhlabConfigOptions' => 'PhabricatorApplicationConfigOptions',
+    'PhlabLibraryTestCase' => 'PhutilLibraryTestCase',
   ),
 ));

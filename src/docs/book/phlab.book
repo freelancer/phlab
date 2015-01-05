@@ -13,5 +13,10 @@
   "exclude": [
     "(^externals/)"
   ],
-  "groups": {}
+  "groups": {
+    "config": {
+      "name": "Config",
+      "include": "(^src/applications/config/)"
+    }
+  }
 }
