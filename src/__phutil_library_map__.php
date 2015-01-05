@@ -10,6 +10,8 @@ phutil_register_library_map(array(
   '__library_version__' => 2,
   'class' => array(
     'Composer' => 'infrastructure/Composer.php',
+    'HeraldHipChatNotificationCustomAction' => 'applications/herald/extension/HeraldHipChatNotificationCustomAction.php',
+    'HipChatConfigOptions' => 'applications/config/option/HipChatConfigOptions.php',
     'PhlabAWSFileStorageEngine' => 'applications/files/engine/PhlabAWSFileStorageEngine.php',
     'PhlabConfigOptions' => 'applications/config/option/PhlabConfigOptions.php',
     'PhlabDefaultFileStorageEngineSelector' => 'applications/files/engineselector/PhlabDefaultFileStorageEngineSelector.php',
@@ -17,6 +19,8 @@ phutil_register_library_map(array(
   ),
   'function' => array(),
   'xmap' => array(
+    'HeraldHipChatNotificationCustomAction' => 'HeraldCustomAction',
+    'HipChatConfigOptions' => 'PhabricatorApplicationConfigOptions',
     'PhlabAWSFileStorageEngine' => 'PhabricatorFileStorageEngine',
     'PhlabConfigOptions' => 'PhabricatorApplicationConfigOptions',
     'PhlabDefaultFileStorageEngineSelector' => 'PhabricatorFileStorageEngineSelector',

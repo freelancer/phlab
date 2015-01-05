@@ -21,6 +21,10 @@
     "files": {
       "name": "Files",
       "include": "(^src/applications/files/)"
+    },
+    "herald": {
+      "name": "Herald",
+      "include": "(^src/applications/herald/)"
     }
   }
 }
