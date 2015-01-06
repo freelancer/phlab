@@ -49,13 +49,6 @@ final class HeraldHipChatNotificationCustomAction extends HeraldCustomAction {
       $client = $this->getClient();
       $room = str_replace(' ', '_', $effect->getTarget());
 
-      if (!$client->room_exists($room)) {
-        return new HeraldApplyTranscript(
-          $effect,
-          false,
-          pht('Room does not exist!'));
-      }
-
       $client->message_room(
         $room,
         PhabricatorEnv::getEnvConfig('hipchat.author'),
