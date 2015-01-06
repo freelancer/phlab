@@ -17,6 +17,10 @@
     "config": {
       "name": "Config",
       "include": "(^src/applications/config/)"
+    },
+    "files": {
+      "name": "Files",
+      "include": "(^src/applications/files/)"
     }
   }
 }
