@@ -47,10 +47,9 @@ final class HeraldHipChatNotificationCustomAction extends HeraldCustomAction {
 
     try {
       $client = $this->getClient();
-      $room = str_replace(' ', '_', $effect->getTarget());
 
       $client->message_room(
-        $room,
+        $effect->getTarget(),
         PhabricatorEnv::getEnvConfig('hipchat.author'),
         (string)phutil_tag(
           'span',
