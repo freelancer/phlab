@@ -11,6 +11,15 @@ final class HipChatConfigOptions extends PhabricatorApplicationConfigOptions {
   }
 
   public function getOptions() {
+    static $colors = array(
+      'gray',
+      'green',
+      'purple',
+      'random',
+      'red',
+      'yellow',
+    );
+
     return array(
       $this->newOption('hipchat.author', 'string', 'Phabricator')
         ->setSummary(pht('HipChat Notifications Author.'))
@@ -20,7 +29,7 @@ final class HipChatConfigOptions extends PhabricatorApplicationConfigOptions {
         ->setSummary(pht('HipChat Notification Color.'))
         ->setDescription(
           pht('The color to use when publishing notifications to HipChat.'))
-        ->setEnumOptions(array('red', 'yellow', 'green', 'purple')),
+        ->setEnumOptions($colors),
       $this->newOption('hipchat.token', 'string', null)
         ->setMasked(true)
         ->setSummary(pht('HipChat API token.'))
