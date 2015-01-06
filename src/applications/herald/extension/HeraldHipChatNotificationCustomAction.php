@@ -1,13 +1,11 @@
 <?php
 
-use GorkaLaucirica\HipchatAPIv2Client;
-
 /**
  * A Herald action for sending notifications to HipChat rooms.
  *
- * This class uses [[https://github.com/gorkalaucirica/HipchatAPIv2Client/ |
- * gorkalaucirica/hipchat-v2-api-client]] to communicate with the
- * [[https://www.hipchat.com/docs/apiv2 | HipChat API]].
+ * This class uses [[https://github.com/hipchat/hipchat-php/ |
+ * hipchat/hipchat-php]] to communicate with the
+ * [[https://www.hipchat.com/docs/api | HipChat API]].
  */
 final class HeraldHipChatNotificationCustomAction extends HeraldCustomAction {
 
@@ -31,10 +29,6 @@ final class HeraldHipChatNotificationCustomAction extends HeraldCustomAction {
     return HeraldAdapter::VALUE_TEXT;
   }
 
-  /**
-   * @phutil-external-symbol class HipchatAPIv2Client\API\RoomAPI
-   * @phutil-external-symbol class HipchatAPIv2Client\Model\Message
-   */
   public function applyEffect(
     HeraldAdapter $adapter,
     $object,
@@ -53,24 +47,30 @@ final class HeraldHipChatNotificationCustomAction extends HeraldCustomAction {
 
     try {
       $client = $this->getClient();
-
-      $message = id(new HipchatAPIv2Client\Model\Message())
-        ->setColor(HipchatAPIv2Client\Model\Message::COLOR_GREEN)
-        ->setMessage(
-          (string)phutil_tag(
-            'span',
-            array(),
-            array(
-              phutil_tag('b', array(), 'A new ticket was created: '),
-              phutil_tag(
-                'a',
-                array('href' => PhabricatorEnv::getURI($handle->getURI())),
-                $task->getMonogram().': '.$task->getTitle()),
-            )));
       $room = str_replace(' ', '_', $effect->getTarget());
 
-      id(new HipchatAPIv2Client\API\RoomAPI($client))
-        ->sendRoomNotification($room, $message);
+      if (!$client->room_exists($room)) {
+        return new HeraldApplyTranscript(
+          $effect,
+          false,
+          pht('Room does not exist!'));
+      }
+
+      $client->message_room(
+        $room,
+        PhabricatorEnv::getEnvConfig('hipchat.author'),
+        (string)phutil_tag(
+          'span',
+          array(),
+          array(
+            phutil_tag('b', array(), 'A new ticket was created: '),
+            phutil_tag(
+              'a',
+              array('href' => PhabricatorEnv::getURI($handle->getURI())),
+              $task->getMonogram().': '.$task->getTitle()),
+          )),
+        false,
+        PhabricatorEnv::getEnvConfig('hipchat.color'));
 
       return new HeraldApplyTranscript(
         $effect,
@@ -84,16 +84,13 @@ final class HeraldHipChatNotificationCustomAction extends HeraldCustomAction {
   /**
    * Create a new HipChat API object.
    *
-   * @phutil-external-symbol class HipchatAPIv2Client\Client
+   * @phutil-external-symbol class HipChat\HipChat
    */
   protected function getClient() {
     Composer::registerAutoloader();
-    return new HipchatAPIv2Client\Client($this->getApiToken());
+    return new HipChat\HipChat($this->getApiToken());
   }
 
-  /**
-   * @phutil-external-symbol class HipchatAPIv2Client\Auth\OAuth2
-   */
   private function getApiToken() {
     $token = PhabricatorEnv::getEnvConfig('hipchat.token');
 
@@ -101,7 +98,7 @@ final class HeraldHipChatNotificationCustomAction extends HeraldCustomAction {
       throw new Exception('No HipChat API token specified!');
     }
 
-    return new HipchatAPIv2Client\Auth\OAuth2($token);
+    return $token;
   }
 
 }
