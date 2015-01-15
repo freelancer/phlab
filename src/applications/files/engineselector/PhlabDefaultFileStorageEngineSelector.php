@@ -20,7 +20,7 @@ final class PhlabDefaultFileStorageEngineSelector
     }
 
     if (PhabricatorEnv::getEnvConfig('storage.s3.bucket')) {
-      $engines[] = new PhlabAWSFileStorageEngine();
+      array_unshift($engines, new PhlabAWSFileStorageEngine());
     }
 
     return $engines;
