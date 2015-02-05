@@ -1,0 +1,29 @@
+@title Differential User Guide
+@group overview
+
+This article provides a basic overview of
+[[https://phabricator.freelancer.com/differential/ | Differential]].
+Comprehensive documentation can be found in the
+[[https://secure.phabricator.com/book/phabricator/article/differential/ |
+Phabricator User Documentation]].
+
+Code review in Phabricator is a lightweight, asynchronous web-based process. If
+you are familiar with GitHub, it is similar to how pull requests work:
+
+  # An author prepares a change to a codebase, then sends it for review. They
+    specify who they want to review it (additional users may be notified as
+    well, see below). The change itself is called a "Differential Revision".
+  # The reviewers receive an email asking them to review the change.
+  # The reviewers inspect the change and either discuss it, approve it, or
+    request changes (e.g., if they identify problems or bugs).
+  # In response to feedback, the author may update the change (e.g., fixing the
+    bugs or addressing the problems).
+  # Once everything is satisfied, some reviewer accepts the change and the
+    author pushes it to the upstream.
+
+= Next Steps =
+Continue by:
+
+  - Reading the official [[https://secure.phabricator.com/book/phabricator/article/arcanist_diff/ | Arcanist User Guide: arc diff]]; or
+  - Reading the official [[https://secure.phabricator.com/book/phabricator/article/differential/ | Differential User Guide]]; or
+  - Returning to the @{article:Overview}.

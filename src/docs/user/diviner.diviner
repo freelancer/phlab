@@ -1,0 +1,17 @@
+@title Diviner User Guide
+@group overview
+
+This article provides a basic overview of
+[[https://phabricator.freelancer.com/diviner/ | Diviner]]. Comprehensive
+documentation can be found in the
+[[https://secure.phabricator.com/book/phabricator/article/diviner/ |
+Phabricator User Documentation]].
+
+Diviner is a documentation generator. Diviner is new and not yet generally
+useful.
+
+= Next Steps =
+Continue by:
+
+  - Reading the official [[https://secure.phabricator.com/book/phabricator/article/diviner/ | Diviner User Guide]]; or
+  - Returning to the @{article:Overview}.

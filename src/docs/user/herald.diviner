@@ -1,0 +1,19 @@
+@title Herald User Guide
+@group overview
+
+This article provides a basic overview of
+[[https://phabricator.freelancer.com/herald/ | Herald]]. Comprehensive
+documentation can be found in the
+[[https://secure.phabricator.com/book/phabricator/article/herald/ |
+Phabricator User Documentation]].
+
+Herald allows you to write processing rules that take effect when objects (such
+as Differential revisions and commits) are created or updated. For instance, you
+might want to get notified every time someone sends out a revision that affects
+some file you're interested in, even if they didn't add you as a reviewer.
+
+= Next Steps =
+Continue by:
+
+  - Reading the official [[https://secure.phabricator.com/book/phabricator/article/herald/ | Herald User Guide]]; or
+  - Returning to the @{article:Overview}.

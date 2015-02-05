@@ -11,7 +11,8 @@
     "(\\.php$)": "DivinerPHPAtomizer"
   },
   "exclude": [
-    "(^externals/)"
+    "(^externals/)",
+    "(^src/docs/user/)"
   ],
   "groups": {
     "config": {

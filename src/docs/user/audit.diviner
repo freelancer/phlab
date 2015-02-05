@@ -1,0 +1,27 @@
+@title Audit User Guide
+@group overview
+
+This article provides a basic overview of
+[[https://phabricator.freelancer.com/audit/ | Audit]]. A more
+comprehensive source of documentation can be found in the
+[[https://secure.phabricator.com/book/phabricator/article/audit/ |
+official documentation]].
+
+Using auditing allows you to push and deploy code without waiting for code
+review, while still doing code review eventually.
+
+= Audit Triggers =
+Audit requests can be triggered in a number of ways:
+
+- If you put `Auditors: username1, username2` in your commit message, it will
+  trigger an audit request to those users when you push it to a tracked branch.
+- You can create rules in Herald that trigger audits based on properties of the
+  commit -- like the files it touches, the text of the change, the author, etc.
+- You can create an audit request for yourself by commenting on any commit.
+- You can create an Owners package and select "Enable Auditing".
+
+= Next Steps =
+Continue by:
+
+  - Reading the official [[https://secure.phabricator.com/book/phabricator/article/audit/ | Audit User Guide]]; or
+  - Returning to the @{article:Overview}.

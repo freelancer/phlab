@@ -1,0 +1,21 @@
+@title Arcanist
+@group overview
+
+This article provides a basic overview of Arcanist, a command-line interface to
+Phabricator. A more comprehensive source of documentation can be found in the
+[[https://secure.phabricator.com/book/phabricator/article/arcanist/ |
+official documentation]].
+
+Arcanists provides command-line access to many Phabricator tools (like
+Differential, Files, and Paste), integrates with static analysis ("lint") and
+unit tests, and manages common workflows like getting changes into Differential
+for review.
+
+A detailed command reference is available by running `arc help`. This document
+provides an overview of common workflows and installation.
+
+= Next Steps =
+Continue by:
+
+  - Reading the official [[https://secure.phabricator.com/book/phabricator/article/arcanist/ | Arcanist User Guide]]; or
+  - Returning to the @{article:Overview}.
