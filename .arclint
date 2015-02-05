@@ -41,7 +41,7 @@
     "text": {
       "type": "text",
       "exclude": [
-        "(^\\.arclint)"
+        "(^\\.arclint$)"
       ]
     },
     "text-without-length": {
@@ -50,7 +50,7 @@
         "3": "disabled"
       },
       "include": [
-        "(^\\.arclint)"
+        "(^\\.arclint$)"
       ]
     },
     "xhpast": {
