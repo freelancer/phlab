@@ -26,11 +26,11 @@ final class HipChatConfigOptions extends PhabricatorApplicationConfigOptions {
 
     return array(
       $this->newOption('hipchat.author', 'string', 'Phabricator')
-        ->setSummary(pht('HipChat Notifications Author.'))
+        ->setSummary(pht('HipChat notifications author.'))
         ->setDescription(
           pht('The name to use when publishing notifications to HipChat.')),
       $this->newOption('hipchat.color', 'enum', 'green')
-        ->setSummary(pht('HipChat Notification Color.'))
+        ->setSummary(pht('HipChat notification color.'))
         ->setDescription(
           pht('The color to use when publishing notifications to HipChat.'))
         ->setEnumOptions($colors),
