@@ -10,6 +10,10 @@ final class PhlabConfigOptions extends PhabricatorApplicationConfigOptions {
     return pht("Configure Freelancer's Phabricator extensions.");
   }
 
+  public function getFontIcon() {
+    return 'fa-flask';
+  }
+
   public function getOptions() {
     return array(
       $this->newOption('phlab.composer-path', 'string', '/usr/src/composer')
