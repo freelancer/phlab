@@ -55,11 +55,10 @@ final class PhlabAWSFileStorageEngine extends PhabricatorFileStorageEngine {
 
     AphrontWriteGuard::willWrite();
     $profiler = PhutilServiceProfiler::getInstance();
-    $call_id = $profiler->beginServiceCall(
-      array(
-        'type'   => 's3',
-        'method' => 'putObject',
-      ));
+    $call_id = $profiler->beginServiceCall(array(
+      'type'   => 's3',
+      'method' => 'putObject',
+    ));
 
     $s3->putObject($s3_params);
     $profiler->endServiceCall($call_id, array());
@@ -74,11 +73,10 @@ final class PhlabAWSFileStorageEngine extends PhabricatorFileStorageEngine {
     $s3 = $this->getClient();
 
     $profiler = PhutilServiceProfiler::getInstance();
-    $call_id = $profiler->beginServiceCall(
-      array(
-        'type'   => 's3',
-        'method' => 'getObject',
-      ));
+    $call_id = $profiler->beginServiceCall(array(
+      'type'   => 's3',
+      'method' => 'getObject',
+    ));
 
     $result = $s3->getObject(array(
       'Bucket' => $this->getBucketName(),
@@ -97,11 +95,10 @@ final class PhlabAWSFileStorageEngine extends PhabricatorFileStorageEngine {
 
     AphrontWriteGuard::willWrite();
     $profiler = PhutilServiceProfiler::getInstance();
-    $call_id = $profiler->beginServiceCall(
-      array(
-        'type'   => 's3',
-        'method' => 'deleteObject',
-      ));
+    $call_id = $profiler->beginServiceCall(array(
+      'type'   => 's3',
+      'method' => 'deleteObject',
+    ));
 
     $s3->deleteObject(array(
       'Bucket' => $this->getBucketName(),
