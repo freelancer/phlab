@@ -13,12 +13,24 @@
  */
 final class PhlabAWSFileStorageEngine extends PhabricatorFileStorageEngine {
 
+  /**
+   * Return a unique string which identifies this storage engine.
+   *
+   * @return string  Unique string for this engine.
+   */
   public function getEngineIdentifier() {
     return 'aws-sdk';
   }
 
   /**
    * Writes file data into Amazon S3.
+   *
+   * Write file data to the backing storage and return a handle which can later
+   * be used to read or delete it.
+   *
+   * @param  string             The file data to write.
+   * @param  map<string, wild>  File metadata.
+   * @return string             Unique string which identifies the stored file.
    */
   public function writeFile($data, array $params) {
     $s3 = $this->getClient();
@@ -68,6 +80,10 @@ final class PhlabAWSFileStorageEngine extends PhabricatorFileStorageEngine {
 
   /**
    * Load a stored blob from Amazon S3.
+   *
+   * @param  string  The handle returned from @{method:writeFile} when the file
+   *                 was written.
+   * @return string  File contents.
    */
   public function readFile($handle) {
     $s3 = $this->getClient();
@@ -89,6 +105,10 @@ final class PhlabAWSFileStorageEngine extends PhabricatorFileStorageEngine {
 
   /**
    * Delete a blob from Amazon S3.
+   *
+   * @param  string  The handle returned from @{method:writeFile} when the file
+   *                 was written.
+   * @return void
    */
   public function deleteFile($handle) {
     $s3 = $this->getClient();
@@ -109,6 +129,8 @@ final class PhlabAWSFileStorageEngine extends PhabricatorFileStorageEngine {
 
   /**
    * Retrieve the S3 bucket name.
+   *
+   * @return  string
    */
   protected function getBucketName() {
     $key    = 'storage.s3.bucket';
