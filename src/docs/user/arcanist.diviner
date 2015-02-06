@@ -10,9 +10,9 @@ This document outlines our usage of Arcanist at Freelancer. For more detailed
 instructions on Arcanist, see the
 [[https://secure.phabricator.com/book/phabricator/article/arcanist/ | Arcanist
 User Guide]]. The
-[[https://secure.phabricator.com/book/phabricator/article/arcanist_quick_start/
-| Quick Start Guide]] has most of the information that you should require in
-order to install `arc`.
+[[https://secure.phabricator.com/book/phabricator/article/arcanist_quick_start/ |
+Quick Start Guide]] has most of the information that you should require in order
+to install `arc`.
 
 It is important to note that the Phabricator codebase (including
 [[https://secure.phabricator.com/diffusion/ARC/ | arcanist]]) is very
@@ -21,7 +21,7 @@ recommended that you keep your Arcanist installation up-to-date. The recommended
 way to upgrade Arcanist is with the `arc upgrade` command.
 
 == Advantages ==
-There are many advantages to using `arc` commands (in favour of raw `git`
+There are many advantages to using `arc` commands (in favor of raw `git`
 commands) as part of our code development/deployment working:
 
   - Configuration is stored in a file in the repository. If we want to modify
@@ -59,8 +59,8 @@ command.
 == Code Review ==
 In order to submit code for review, you should use the `arc diff` command.
 Basically, `arc diff` acts as an interface to Differential and is essentially a
-thin wrapper around `git` and the [[https://phabricator.freelancer.com/conduit/
-| Phabricator API (Conduit)]]. You can read more information about the
+thin wrapper around `git` and the [[https://phabricator.freelancer.com/conduit/ |
+Phabricator API (Conduit)]]. You can read more information about the
 `arc diff` command in the
 [[https://secure.phabricator.com/book/phabricator/article/arcanist_diff/ |
 official Arcanist User Guide]].
