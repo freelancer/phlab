@@ -4,11 +4,12 @@
  * This storage engine is similar to @{class:PhabricatorS3FileStorageEngine},
  * but supports the use of
  * [[http://docs.aws.amazon.com/STS/latest/UsingSTS/Welcome.html |
- * IAM credentials]]. This class will be obsolete after
- * https://secure.phabricator.com/T5155.
+ * IAM credentials]].
  *
  * This file engine uses [[http://aws.amazon.com/sdk-for-php/ | aws-sdk-php]]
  * to interact with [[http://aws.amazon.com/ | Amazon Web Services]].
+ *
+ * @todo This class will be obsolete after https://secure.phabricator.com/T5155.
  */
 final class PhlabAWSFileStorageEngine extends PhabricatorFileStorageEngine {
 
