@@ -3,11 +3,11 @@
 final class HipChatConfigOptions extends PhabricatorApplicationConfigOptions {
 
   public function getName() {
-    return pht('HipChat');
+    return pht('Integration with HipChat');
   }
 
   public function getDescription() {
-    return pht('Configure HipChat.');
+    return pht('Configure HipChat integration.');
   }
 
   public function getOptions() {
