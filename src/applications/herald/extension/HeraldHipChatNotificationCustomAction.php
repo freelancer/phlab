@@ -83,6 +83,11 @@ final class HeraldHipChatNotificationCustomAction extends HeraldCustomAction {
     return new HipChat\HipChat($this->getApiToken());
   }
 
+  /**
+   * Retrieve the configured API token.
+   *
+   * @return string  HipChat API token.
+   */
   private function getApiToken() {
     $token = PhabricatorEnv::getEnvConfig('hipchat.token');
 
