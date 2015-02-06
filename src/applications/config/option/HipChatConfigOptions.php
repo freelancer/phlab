@@ -10,6 +10,10 @@ final class HipChatConfigOptions extends PhabricatorApplicationConfigOptions {
     return pht('Configure HipChat integration.');
   }
 
+  public function getFontIcon() {
+    return 'fa-comments';
+  }
+
   public function getOptions() {
     static $colors = array(
       'gray',
