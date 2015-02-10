@@ -10,6 +10,10 @@ final class PhlabConfigOptions extends PhabricatorApplicationConfigOptions {
     return pht("Configure Freelancer's Phabricator extensions.");
   }
 
+  public function getGroup() {
+    return 'core';
+  }
+
   public function getFontIcon() {
     return 'fa-flask';
   }
