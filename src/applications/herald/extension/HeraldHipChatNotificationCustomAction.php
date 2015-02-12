@@ -40,6 +40,11 @@ final class HeraldHipChatNotificationCustomAction extends HeraldCustomAction {
       ->withPHIDs(array($task->getPHID()))
       ->executeOne();
 
+    $author = id(new PhabricatorPeopleQuery())
+      ->setViewer(PhabricatorUser::getOmnipotentUser())
+      ->withPHIDs(array($task->getAuthorPHID()))
+      ->executeOne();
+
     try {
       $client = $this->getClient();
 
@@ -50,11 +55,38 @@ final class HeraldHipChatNotificationCustomAction extends HeraldCustomAction {
           'div',
           array(),
           array(
-            phutil_tag('b', array(), 'A new ticket was created: '),
             phutil_tag(
-              'a',
-              array('href' => PhabricatorEnv::getURI($handle->getURI())),
-              $task->getMonogram().': '.$task->getTitle()),
+              'div',
+              array(),
+              array(
+                phutil_tag('b', array(), 'A new ticket was created: '),
+                phutil_tag(
+                  'a',
+                  array('href' => PhabricatorEnv::getURI($handle->getURI())),
+                  $task->getMonogram().': '.$task->getTitle()),
+              )),
+            phutil_tag(
+              'div',
+              array(),
+              phutil_tag(
+                'dl',
+                array(),
+                array(
+                  phutil_tag(
+                    'dt',
+                    array(
+                      'style' => implode('; ', array(
+                        'float: left',
+                        'clear: left',
+                        'font-weight: bold',
+                      )),
+                    ),
+                    pht('Author:')),
+                  phutil_tag(
+                    'dl',
+                    array('style' => 'float: left'),
+                    $author->getUsername()),
+                ))),
           )),
         false,
         PhabricatorEnv::getEnvConfig('hipchat.color'));
