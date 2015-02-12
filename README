@@ -1,1 +1,3 @@
 Custom extensions for [[https://phabricator.freelancer.com | Phabricator]].
+This repository is also used for Phabricator documentation, see
+@{book:phabricator}.
