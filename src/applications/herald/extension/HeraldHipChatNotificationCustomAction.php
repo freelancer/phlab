@@ -58,9 +58,9 @@ final class HeraldHipChatNotificationCustomAction extends HeraldCustomAction {
             $adapter->getHeraldField(HeraldAdapter::FIELD_TITLE)),
           $handle,
           array(
-            pht('Author') => $author->getUsername(),
             pht('Priority') => ManiphestTaskPriority::getTaskPriorityName(
               $adapter->getHeraldField(HeraldAdapter::FIELD_TASK_PRIORITY)),
+            pht('Author') => $author->getUsername(),
           )),
         false,
         PhabricatorEnv::getEnvConfig('hipchat.color'));
