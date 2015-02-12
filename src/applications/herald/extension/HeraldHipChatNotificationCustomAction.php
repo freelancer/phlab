@@ -69,12 +69,21 @@ final class HeraldHipChatNotificationCustomAction extends HeraldCustomAction {
             $adapter->getHeraldField(HeraldAdapter::FIELD_TITLE)),
           $handle,
           array(
-            pht('Assigned') => $assignee
-              ? $assignee->getUsername()
-              : phutil_tag('em', array(), pht('None')),
-            pht('Priority') => ManiphestTaskPriority::getTaskPriorityName(
-              $adapter->getHeraldField(HeraldAdapter::FIELD_TASK_PRIORITY)),
-            pht('Author') => $author->getUsername(),
+            array(
+              pht('Assigned'),
+              $assignee
+                ? $assignee->getUsername()
+                : phutil_tag('em', array(), pht('None')),
+            ),
+            array(
+              pht('Priority'),
+              ManiphestTaskPriority::getTaskPriorityName(
+                $adapter->getHeraldField(HeraldAdapter::FIELD_TASK_PRIORITY)),
+            ),
+            array(
+              pht('Author'),
+              $author->getUsername(),
+            ),
           )),
         false,
         PhabricatorEnv::getEnvConfig('hipchat.color'));
@@ -141,7 +150,8 @@ final class HeraldHipChatNotificationCustomAction extends HeraldCustomAction {
 
     $details = array();
 
-    foreach ($attributes as $key => $value) {
+    foreach ($attributes as $attribute) {
+      list($key, $value) = $attribute;
       $details[] = phutil_tag(
         'li',
         array(),
