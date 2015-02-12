@@ -60,7 +60,7 @@ final class HeraldHipChatNotificationCustomAction extends HeraldCustomAction {
         $effect->getTarget(),
         PhabricatorEnv::getEnvConfig('hipchat.author'),
         (string) $this->getMessage(
-          pht('A new ticket was created'),
+          pht('A new task was created'),
           sprintf(
             '%s: %s',
             $object->getMonogram(),
