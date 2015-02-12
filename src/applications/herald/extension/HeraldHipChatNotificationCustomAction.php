@@ -60,7 +60,9 @@ final class HeraldHipChatNotificationCustomAction extends HeraldCustomAction {
         $effect->getTarget(),
         PhabricatorEnv::getEnvConfig('hipchat.author'),
         (string) $this->getMessage(
-          pht('A new task was created'),
+          $adapter->getHeraldField(HeraldAdapter::FIELD_IS_NEW_OBJECT)
+            ? pht('A new task was created')
+            : pht('A task was updated'),
           sprintf(
             '%s: %s',
             $object->getMonogram(),
