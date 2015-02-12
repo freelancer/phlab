@@ -41,7 +41,16 @@ final class HeraldHipChatNotificationCustomAction extends HeraldCustomAction {
 
     $author = id(new PhabricatorPeopleQuery())
       ->setViewer(PhabricatorUser::getOmnipotentUser())
-      ->withPHIDs(array($adapter->getHeraldField(HeraldAdapter::FIELD_AUTHOR)))
+      ->withPHIDs(array(
+        $adapter->getHeraldField(HeraldAdapter::FIELD_AUTHOR),
+      ))
+      ->executeOne();
+
+    $assignee = id(new PhabricatorPeopleQuery())
+      ->setViewer(PhabricatorUser::getOmnipotentUser())
+      ->withPHIDs(array(
+        $adapter->getHeraldField(HeraldAdapter::FIELD_ASSIGNEE),
+      ))
       ->executeOne();
 
     try {
@@ -58,6 +67,9 @@ final class HeraldHipChatNotificationCustomAction extends HeraldCustomAction {
             $adapter->getHeraldField(HeraldAdapter::FIELD_TITLE)),
           $handle,
           array(
+            pht('Assigned') => $assignee
+              ? $assignee->getUsername()
+              : phutil_tag('em', array(), pht('None')),
             pht('Priority') => ManiphestTaskPriority::getTaskPriorityName(
               $adapter->getHeraldField(HeraldAdapter::FIELD_TASK_PRIORITY)),
             pht('Author') => $author->getUsername(),
