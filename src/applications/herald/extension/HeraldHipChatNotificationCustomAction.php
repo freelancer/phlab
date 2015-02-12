@@ -75,7 +75,7 @@ final class HeraldHipChatNotificationCustomAction extends HeraldCustomAction {
       ),
     );
 
-    if ($adapter->getHeraldField(HeraldAdapter::FIELD_IS_NEW_OBJECT)) {
+    if (!$adapter->getHeraldField(HeraldAdapter::FIELD_IS_NEW_OBJECT)) {
       array_unshift($attributes, array(
         pht('Status'),
         ManiphestTaskStatus::getTaskStatusName(
