@@ -47,7 +47,7 @@ final class HeraldHipChatNotificationCustomAction extends HeraldCustomAction {
         $effect->getTarget(),
         PhabricatorEnv::getEnvConfig('hipchat.author'),
         (string)phutil_tag(
-          'span',
+          'div',
           array(),
           array(
             phutil_tag('b', array(), 'A new ticket was created: '),
