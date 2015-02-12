@@ -34,14 +34,9 @@ final class HeraldHipChatNotificationCustomAction extends HeraldCustomAction {
     $object,
     HeraldEffect $effect) {
 
-    $rule = id(new HeraldRule())->load($effect->getRuleID());
-    $user = id(new PhabricatorUser())->loadOneWhere(
-      'phid = %s',
-      $rule->getAuthorPHID());
-
     $task = $adapter->getTask();
     $handle = id(new PhabricatorHandleQuery())
-      ->setViewer($user)
+      ->setViewer(PhabricatorUser::getOmnipotentUser())
       ->withPHIDs(array($task->getPHID()))
       ->executeOne();
 
