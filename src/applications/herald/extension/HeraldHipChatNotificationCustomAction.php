@@ -53,6 +53,36 @@ final class HeraldHipChatNotificationCustomAction extends HeraldCustomAction {
       ))
       ->executeOne();
 
+    $action = $adapter->getHeraldField(HeraldAdapter::FIELD_IS_NEW_OBJECT)
+      ? pht('A new task was created')
+      : pht('A task was updated');
+
+    $attributes = array(
+      array(
+        pht('Assigned'),
+        $assignee
+          ? $assignee->getUsername()
+          : phutil_tag('em', array(), pht('None')),
+      ),
+      array(
+        pht('Priority'),
+        ManiphestTaskPriority::getTaskPriorityName(
+          $adapter->getHeraldField(HeraldAdapter::FIELD_TASK_PRIORITY)),
+      ),
+      array(
+        pht('Author'),
+        $author->getUsername(),
+      ),
+    );
+
+    if ($adapter->getHeraldField(HeraldAdapter::FIELD_IS_NEW_OBJECT)) {
+      array_unshift($attributes, array(
+        pht('Status'),
+        ManiphestTaskStatus::getTaskStatusName(
+          $adapter->getHeraldField(HeraldAdapter::FIELD_TASK_STATUS)),
+      ));
+    }
+
     try {
       $client = $this->getClient();
 
@@ -60,31 +90,13 @@ final class HeraldHipChatNotificationCustomAction extends HeraldCustomAction {
         $effect->getTarget(),
         PhabricatorEnv::getEnvConfig('hipchat.author'),
         (string) $this->getMessage(
-          $adapter->getHeraldField(HeraldAdapter::FIELD_IS_NEW_OBJECT)
-            ? pht('A new task was created')
-            : pht('A task was updated'),
+          $action,
           sprintf(
             '%s: %s',
             $object->getMonogram(),
             $adapter->getHeraldField(HeraldAdapter::FIELD_TITLE)),
           $handle,
-          array(
-            array(
-              pht('Assigned'),
-              $assignee
-                ? $assignee->getUsername()
-                : phutil_tag('em', array(), pht('None')),
-            ),
-            array(
-              pht('Priority'),
-              ManiphestTaskPriority::getTaskPriorityName(
-                $adapter->getHeraldField(HeraldAdapter::FIELD_TASK_PRIORITY)),
-            ),
-            array(
-              pht('Author'),
-              $author->getUsername(),
-            ),
-          )),
+          $attributes),
         false,
         PhabricatorEnv::getEnvConfig('hipchat.color'));
 
