@@ -34,15 +34,14 @@ final class HeraldHipChatNotificationCustomAction extends HeraldCustomAction {
     $object,
     HeraldEffect $effect) {
 
-    $task = $adapter->getTask();
     $handle = id(new PhabricatorHandleQuery())
       ->setViewer(PhabricatorUser::getOmnipotentUser())
-      ->withPHIDs(array($task->getPHID()))
+      ->withPHIDs(array($adapter->getPHID()))
       ->executeOne();
 
     $author = id(new PhabricatorPeopleQuery())
       ->setViewer(PhabricatorUser::getOmnipotentUser())
-      ->withPHIDs(array($task->getAuthorPHID()))
+      ->withPHIDs(array($adapter->getHeraldField(HeraldAdapter::FIELD_AUTHOR)))
       ->executeOne();
 
     try {
@@ -51,42 +50,15 @@ final class HeraldHipChatNotificationCustomAction extends HeraldCustomAction {
       $client->message_room(
         $effect->getTarget(),
         PhabricatorEnv::getEnvConfig('hipchat.author'),
-        (string)phutil_tag(
-          'div',
-          array(),
+        (string) $this->getMessage(
+          pht('A new ticket was created'),
+          sprintf(
+            '%s: %s',
+            $object->getMonogram(),
+            $adapter->getHeraldField(HeraldAdapter::FIELD_TITLE)),
+          $handle,
           array(
-            phutil_tag(
-              'div',
-              array(),
-              array(
-                phutil_tag('b', array(), 'A new ticket was created: '),
-                phutil_tag(
-                  'a',
-                  array('href' => PhabricatorEnv::getURI($handle->getURI())),
-                  $task->getMonogram().': '.$task->getTitle()),
-              )),
-            phutil_tag(
-              'div',
-              array(),
-              phutil_tag(
-                'dl',
-                array(),
-                array(
-                  phutil_tag(
-                    'dt',
-                    array(
-                      'style' => implode('; ', array(
-                        'float: left',
-                        'clear: left',
-                        'font-weight: bold',
-                      )),
-                    ),
-                    pht('Author:')),
-                  phutil_tag(
-                    'dl',
-                    array('style' => 'float: left'),
-                    $author->getUsername()),
-                ))),
+            pht('Author') => $author->getUsername(),
           )),
         false,
         PhabricatorEnv::getEnvConfig('hipchat.color'));
@@ -123,6 +95,69 @@ final class HeraldHipChatNotificationCustomAction extends HeraldCustomAction {
     }
 
     return $token;
+  }
+
+  /**
+   * Create the notification message.
+   *
+   * @param  string
+   * @param  string
+   * @param  PhabricatorObjectHandle
+   * @param  map<string, string>
+   * @return string
+   */
+  private function getMessage(
+    $action,
+    $title,
+    PhabricatorObjectHandle $handle,
+    array $attributes) {
+
+    $header = phutil_tag(
+      'div',
+      array(),
+      array(
+        phutil_tag('b', array(), $action.': '),
+        phutil_tag(
+          'a',
+          array('href' => PhabricatorEnv::getURI($handle->getURI())),
+          $title),
+      ));
+
+    $details = array();
+
+    foreach ($attributes as $key => $value) {
+      $details[] = phutil_tag(
+        'dt',
+        array(
+          'style' => implode('; ', array(
+            'float: left',
+            'clear: left',
+            'font-weight: bold',
+          )),
+        ),
+        $key.':');
+
+      $details[] = phutil_tag(
+        'dl',
+        array(
+          'style' => 'float: left',
+        ),
+        $value);
+    }
+
+    return (string) phutil_tag(
+      'div',
+      array(),
+      array(
+        $header,
+        phutil_tag(
+          'div',
+          array(),
+          phutil_tag(
+            'dl',
+            array(),
+            $details)),
+      ));
   }
 
 }
