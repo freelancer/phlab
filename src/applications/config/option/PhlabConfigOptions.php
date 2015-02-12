@@ -26,7 +26,7 @@ final class PhlabConfigOptions extends PhabricatorApplicationConfigOptions {
         ->setDescription(
           pht(
             'The root directory for packages installed with %s.',
-            '[[https://getcomposer.org/ | Composer]].')),
+            '[[https://getcomposer.org/ | Composer]]')),
     );
   }
 
