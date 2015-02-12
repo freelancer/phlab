@@ -128,7 +128,13 @@ final class HeraldHipChatNotificationCustomAction extends HeraldCustomAction {
     $details = array();
 
     foreach ($attributes as $key => $value) {
-      $details[] = phutil_tag('li', array(), sprintf('%s: %s', $key, $value));
+      $details[] = phutil_tag(
+        'li',
+        array(),
+        array(
+          phutil_tag('b', array(), $key.': '),
+          $value,
+        ));
     }
 
     return (string) phutil_tag(
