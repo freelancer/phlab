@@ -5,7 +5,7 @@
  * to write a blob of file data, it uses the configured selector to get a list
  * of suitable @{class:PhabricatorFileStorageEngine}s.
  *
- * @todo This class will be obsolete after https://secure.phabricator.com/D11224.
+ * @todo This class will be obsolete after https://secure.phabricator.com/D11224
  */
 final class PhlabDefaultFileStorageEngineSelector
   extends PhabricatorFileStorageEngineSelector {
