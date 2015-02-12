@@ -128,23 +128,8 @@ final class HeraldHipChatNotificationCustomAction extends HeraldCustomAction {
     $details = array();
 
     foreach ($attributes as $key => $value) {
-      $details[] = phutil_tag(
-        'dt',
-        array(
-          'style' => implode('; ', array(
-            'float: left',
-            'clear: left',
-            'font-weight: bold',
-          )),
-        ),
-        $key.':');
-
-      $details[] = phutil_tag(
-        'dl',
-        array(
-          'style' => 'float: left',
-        ),
-        $value);
+      $details[] = phutil_tag('dt', array(), $key.':');
+      $details[] = phutil_tag('dl', array(), $value);
     }
 
     return (string) phutil_tag(
@@ -152,13 +137,11 @@ final class HeraldHipChatNotificationCustomAction extends HeraldCustomAction {
       array(),
       array(
         $header,
+        phutil_tag('br'),
         phutil_tag(
-          'div',
+          'dl',
           array(),
-          phutil_tag(
-            'dl',
-            array(),
-            $details)),
+          $details),
       ));
   }
 
