@@ -39,7 +39,7 @@ final class HipChatConfigOptions extends PhabricatorApplicationConfigOptions {
           pht('The color to use when publishing notifications to HipChat.'))
         ->setEnumOptions($colors),
       $this->newOption('hipchat.token', 'string', null)
-        ->setMasked(true)
+        ->setHidden(true)
         ->setSummary(pht('HipChat API token.'))
         ->setDescription(
           pht('The HipChat API token to use for publishing to HipChat.')),
