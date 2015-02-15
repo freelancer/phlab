@@ -57,32 +57,6 @@ final class HeraldHipChatNotificationCustomAction extends HeraldCustomAction {
       ? pht('A new task was created')
       : pht('A task was updated');
 
-    $attributes = array(
-      array(
-        pht('Assigned'),
-        $assignee
-          ? $assignee->getUsername()
-          : phutil_tag('em', array(), pht('None')),
-      ),
-      array(
-        pht('Priority'),
-        ManiphestTaskPriority::getTaskPriorityName(
-          $adapter->getHeraldField(HeraldAdapter::FIELD_TASK_PRIORITY)),
-      ),
-      array(
-        pht('Author'),
-        $author->getUsername(),
-      ),
-    );
-
-    if (!$adapter->getHeraldField(HeraldAdapter::FIELD_IS_NEW_OBJECT)) {
-      array_unshift($attributes, array(
-        pht('Status'),
-        ManiphestTaskStatus::getTaskStatusName(
-          $adapter->getHeraldField(HeraldAdapter::FIELD_TASK_STATUS)),
-      ));
-    }
-
     try {
       $client = $this->getClient();
 
@@ -95,8 +69,7 @@ final class HeraldHipChatNotificationCustomAction extends HeraldCustomAction {
             '%s: %s',
             $object->getMonogram(),
             $adapter->getHeraldField(HeraldAdapter::FIELD_TITLE)),
-          $handle,
-          $attributes),
+          $handle),
         false,
         PhabricatorEnv::getEnvConfig('hipchat.color'));
 
@@ -146,8 +119,7 @@ final class HeraldHipChatNotificationCustomAction extends HeraldCustomAction {
   private function getMessage(
     $action,
     $title,
-    PhabricatorObjectHandle $handle,
-    array $attributes) {
+    PhabricatorObjectHandle $handle) {
 
     $header = phutil_tag(
       'div',
@@ -160,30 +132,7 @@ final class HeraldHipChatNotificationCustomAction extends HeraldCustomAction {
           $title),
       ));
 
-    $details = array();
-
-    foreach ($attributes as $attribute) {
-      list($key, $value) = $attribute;
-      $details[] = phutil_tag(
-        'li',
-        array(),
-        array(
-          phutil_tag('b', array(), $key.': '),
-          $value,
-        ));
-    }
-
-    return (string) phutil_tag(
-      'div',
-      array(),
-      array(
-        $header,
-        phutil_tag('br'),
-        phutil_tag(
-          'ul',
-          array(),
-          $details),
-      ));
+    return (string) phutil_tag('div', array(), $header);
   }
 
 }
