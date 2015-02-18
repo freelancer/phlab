@@ -56,7 +56,7 @@ final class HeraldHipChatNotificationCustomAction extends HeraldCustomAction {
     try {
       $client = $this->getClient();
 
-      $client->message_room(
+      $client->messageRoom(
         $effect->getTarget(),
         PhabricatorEnv::getEnvConfig('hipchat.author'),
         (string) $this->getMessage(
