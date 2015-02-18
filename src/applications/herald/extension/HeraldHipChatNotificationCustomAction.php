@@ -2,10 +2,6 @@
 
 /**
  * A Herald action for sending notifications to HipChat rooms.
- *
- * This class uses [[https://github.com/hipchat/hipchat-php/ |
- * hipchat/hipchat-php]] to communicate with the
- * [[https://www.hipchat.com/docs/api | HipChat API]].
  */
 final class HeraldHipChatNotificationCustomAction extends HeraldCustomAction {
 
@@ -84,27 +80,15 @@ final class HeraldHipChatNotificationCustomAction extends HeraldCustomAction {
 
   /**
    * Create a new HipChat API object.
-   *
-   * @phutil-external-symbol class HipChat\HipChat
    */
   protected function getClient() {
-    Composer::registerAutoloader();
-    return new HipChat\HipChat($this->getApiToken());
-  }
-
-  /**
-   * Retrieve the configured API token.
-   *
-   * @return string  HipChat API token.
-   */
-  private function getApiToken() {
     $token = PhabricatorEnv::getEnvConfig('hipchat.token');
 
     if (!$token) {
       throw new Exception('No HipChat API token specified!');
     }
 
-    return $token;
+    return new HipChatClient($token);
   }
 
   /**
@@ -113,7 +97,6 @@ final class HeraldHipChatNotificationCustomAction extends HeraldCustomAction {
    * @param  string
    * @param  string
    * @param  PhabricatorObjectHandle
-   * @param  map<string, string>
    * @return string
    */
   private function getMessage(

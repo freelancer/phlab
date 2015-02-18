@@ -11,6 +11,7 @@ phutil_register_library_map(array(
   'class' => array(
     'Composer' => 'infrastructure/Composer.php',
     'HeraldHipChatNotificationCustomAction' => 'applications/herald/extension/HeraldHipChatNotificationCustomAction.php',
+    'HipChatClient' => 'infrastructure/HipChatClient.php',
     'HipChatConfigOptions' => 'applications/config/option/HipChatConfigOptions.php',
     'PhlabAWSFileStorageEngine' => 'applications/files/engine/PhlabAWSFileStorageEngine.php',
     'PhlabConfigOptions' => 'applications/config/option/PhlabConfigOptions.php',
