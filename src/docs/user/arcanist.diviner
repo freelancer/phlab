@@ -212,4 +212,4 @@ To land a differential with `arc patch`, you should follow the following steps:
 Continue by:
 
   - Reading the official [[https://secure.phabricator.com/book/phabricator/article/arcanist/ | Arcanist User Guide]]; or
-  - Returning to the @{article:phabricator@Overview}.
+  - Returning to the @{article@phabricator:Overview}.
