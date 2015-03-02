@@ -24,4 +24,4 @@ Audit requests can be triggered in a number of ways:
 Continue by:
 
   - Reading the official [[https://secure.phabricator.com/book/phabricator/article/audit/ | Audit User Guide]]; or
-  - Returning to the @{article:Overview}.
+  - Returning to the @{article:phabricator@Overview}.
