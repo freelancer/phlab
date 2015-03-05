@@ -116,7 +116,7 @@ final class HipChatClient {
       'message_format' => $message_format,
     );
     $response = $this->makeRequest('rooms/message', $args, 'POST');
-    return ($response->status == 'sent');
+    return idx($response, 'status') == 'sent';
   }
 
   /**
