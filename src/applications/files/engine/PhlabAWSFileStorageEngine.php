@@ -23,6 +23,33 @@ final class PhlabAWSFileStorageEngine extends PhabricatorFileStorageEngine {
   }
 
   /**
+   * Prioritize this engine relative to other engines.
+   *
+   * @return float
+   */
+  public function getEnginePriority() {
+    return 100;
+  }
+
+  /**
+   * Return `true` if the engine is currently writable.
+   *
+   * @return bool
+   */
+  public function canWriteFiles() {
+    return true;
+  }
+
+  /**
+   * Return `true` if the engine has a filesize limit on storable files.
+   *
+   * @return bool
+   */
+  public function hasFilesizeLimit() {
+    return false;
+  }
+
+  /**
    * Writes file data into Amazon S3.
    *
    * Write file data to the backing storage and return a handle which can later
