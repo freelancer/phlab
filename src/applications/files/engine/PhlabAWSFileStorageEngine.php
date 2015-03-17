@@ -46,7 +46,7 @@ final class PhlabAWSFileStorageEngine extends PhabricatorFileStorageEngine {
    * @return bool
    */
   public function hasFilesizeLimit() {
-    return false;
+    return true;
   }
 
   /**
