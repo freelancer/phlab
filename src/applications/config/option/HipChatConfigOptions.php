@@ -27,6 +27,7 @@ final class HipChatConfigOptions extends PhabricatorApplicationConfigOptions {
       'red',
       'yellow',
     );
+    $default_server = HipChatClient::DEFAULT_TARGET;
 
     return array(
       $this->newOption('hipchat.author', 'string', 'Phabricator')
@@ -38,6 +39,9 @@ final class HipChatConfigOptions extends PhabricatorApplicationConfigOptions {
         ->setDescription(
           pht('The color to use when publishing notifications to HipChat.'))
         ->setEnumOptions($colors),
+      $this->newOption('hipchat.server', 'string', $default_server)
+        ->setSummary(pht('HipChat server URL.'))
+        ->setDescription(pht('Base URL of HipChat Server.')),
       $this->newOption('hipchat.token', 'string', null)
         ->setHidden(true)
         ->setSummary(pht('HipChat API token.'))

@@ -82,13 +82,14 @@ final class HeraldHipChatNotificationCustomAction extends HeraldCustomAction {
    * Create a new HipChat API object.
    */
   protected function getClient() {
-    $token = PhabricatorEnv::getEnvConfig('hipchat.token');
+    $server = PhabricatorEnv::getEnvConfig('hipchat.server');
+    $token  = PhabricatorEnv::getEnvConfig('hipchat.token');
 
     if (!$token) {
       throw new Exception('No HipChat API token specified!');
     }
 
-    return new HipChatClient($token);
+    return new HipChatClient($token, $server);
   }
 
   /**
