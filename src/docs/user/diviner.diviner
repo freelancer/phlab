@@ -8,10 +8,11 @@ documentation can be found in the
 Phabricator User Documentation]].
 
 Diviner is a documentation generator. Diviner is new and not yet generally
-useful.
+useful, but we use it anyway.
 
 = Next Steps =
 Continue by:
 
   - Reading the official [[https://secure.phabricator.com/book/phabricator/article/diviner/ | Diviner User Guide]]; or
+  - Reading the official [[https://secure.phabricator.com/book/phabricator/article/remarkup/ | Remarkup Reference]]; or
   - Returning to the @{article@phabricator:Overview}.
