@@ -1,0 +1,14 @@
+@title Remarkup User Guide
+@group overview
+
+Remarkup is a lightweight markup language, similar to other markup languages
+such as [[http://daringfireball.net/projects/markdown/ | Markdown]].
+Comprehensive documentation can be found in the
+[[https://secure.phabricator.com/book/phabricator/article/remarkup/ |
+Phabricator User Documentation]].
+
+= Next Steps =
+Continue by:
+
+  - Reading the official [[https://secure.phabricator.com/book/phabricator/article/remarkup/ | Remarkup Reference]]; or
+  - Returning to the @{article@phabricator@Overview}.
