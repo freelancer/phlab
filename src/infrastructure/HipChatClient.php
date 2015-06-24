@@ -7,7 +7,7 @@
  *
  * @see http://api.hipchat.com/docs/api
  */
-final class HipChatClient {
+final class HipChatClient extends Phobject {
 
   const DEFAULT_TARGET = 'https://api.hipchat.com/v1/';
 

@@ -19,7 +19,9 @@ phutil_register_library_map(array(
   ),
   'function' => array(),
   'xmap' => array(
+    'Composer' => 'Phobject',
     'HeraldHipChatNotificationCustomAction' => 'HeraldCustomAction',
+    'HipChatClient' => 'Phobject',
     'HipChatConfigOptions' => 'PhabricatorApplicationConfigOptions',
     'PhlabAWSFileStorageEngine' => 'PhabricatorFileStorageEngine',
     'PhlabConfigOptions' => 'PhabricatorApplicationConfigOptions',

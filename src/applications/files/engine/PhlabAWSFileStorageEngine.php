@@ -82,7 +82,7 @@ final class PhlabAWSFileStorageEngine extends PhabricatorFileStorageEngine {
 
       'Metadata' => array(
         'authorPHID'       => idx($params, 'authorPHID'),
-        'isExplicitUpload' => (string) idx($params, 'isExplicitUpload'),
+        'isExplicitUpload' => (string)idx($params, 'isExplicitUpload'),
         'name'             => idx($params, 'name'),
       ),
     );
@@ -127,7 +127,7 @@ final class PhlabAWSFileStorageEngine extends PhabricatorFileStorageEngine {
     ));
     $profiler->endServiceCall($call_id, array());
 
-    return (string) $result['Body'];
+    return (string)$result['Body'];
   }
 
   /**

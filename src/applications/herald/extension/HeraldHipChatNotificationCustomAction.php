@@ -59,7 +59,7 @@ final class HeraldHipChatNotificationCustomAction extends HeraldCustomAction {
       $client->messageRoom(
         $effect->getTarget(),
         PhabricatorEnv::getEnvConfig('hipchat.author'),
-        (string) $this->getMessage(
+        (string)$this->getMessage(
           $action,
           sprintf(
             '%s: %s',
@@ -116,7 +116,7 @@ final class HeraldHipChatNotificationCustomAction extends HeraldCustomAction {
           $title),
       ));
 
-    return (string) phutil_tag('div', array(), $header);
+    return (string)phutil_tag('div', array(), $header);
   }
 
 }

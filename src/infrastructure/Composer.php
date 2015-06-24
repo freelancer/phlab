@@ -3,7 +3,7 @@
 /**
  * A wrapper class for interacting with Composer.
  */
-final class Composer {
+final class Composer extends Phobject {
 
   /**
    * Register the Composer autoloader.
