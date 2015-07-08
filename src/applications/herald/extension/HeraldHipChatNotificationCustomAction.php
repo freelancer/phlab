@@ -49,7 +49,7 @@ final class HeraldHipChatNotificationCustomAction extends HeraldCustomAction {
           sprintf(
             '%s: %s',
             $object->getMonogram(),
-            $object->getTitle(),
+            $object->getTitle()),
           $handle),
         false,
         PhabricatorEnv::getEnvConfig('hipchat.color'));
