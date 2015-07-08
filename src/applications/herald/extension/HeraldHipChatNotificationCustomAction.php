@@ -6,7 +6,8 @@
 final class HeraldHipChatNotificationCustomAction extends HeraldCustomAction {
 
   public function appliesToAdapter(HeraldAdapter $adapter) {
-    return $adapter instanceof HeraldManiphestTaskAdapter;
+    return $adapter instanceof HeraldManiphestTaskAdapter
+      || $adapter instanceof HeraldDifferentialAdapter;
   }
 
   public function appliesToRuleType($rule_type) {
@@ -35,23 +36,7 @@ final class HeraldHipChatNotificationCustomAction extends HeraldCustomAction {
       ->withPHIDs(array($adapter->getPHID()))
       ->executeOne();
 
-    $author = id(new PhabricatorPeopleQuery())
-      ->setViewer(PhabricatorUser::getOmnipotentUser())
-      ->withPHIDs(array(
-        $adapter->getHeraldField(HeraldAdapter::FIELD_AUTHOR),
-      ))
-      ->executeOne();
-
-    $assignee = id(new PhabricatorPeopleQuery())
-      ->setViewer(PhabricatorUser::getOmnipotentUser())
-      ->withPHIDs(array(
-        $adapter->getHeraldField(HeraldAdapter::FIELD_ASSIGNEE),
-      ))
-      ->executeOne();
-
-    $action = $adapter->getHeraldField(HeraldAdapter::FIELD_IS_NEW_OBJECT)
-      ? pht('A new task was created')
-      : pht('A task was updated');
+    $action = $adapter->getIsNewObject() ? pht('New') : pht('Updated');
 
     try {
       $client = $this->getClient();
