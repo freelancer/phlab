@@ -23,7 +23,7 @@ final class HeraldHipChatNotificationCustomAction extends HeraldCustomAction {
   }
 
   public function getActionType() {
-    return HeraldAdapter::VALUE_TEXT;
+    return new HeraldTextFieldValue();
   }
 
   public function applyEffect(
