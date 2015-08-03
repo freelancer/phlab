@@ -54,6 +54,10 @@ final class HeraldHipChatNotificationAction extends HeraldAction {
     }
   }
 
+  public function renderActionDescription($value) {
+    return pht('Notify the "%s" room.', $value);
+  }
+
   protected function renderActionEffectDescription($type, $data) {
     switch ($type) {
       case self::DO_FAILED:
