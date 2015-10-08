@@ -14,8 +14,7 @@ final class Composer extends Phobject {
    * @return void
    */
   public static function registerAutoloader() {
-    $root = PhabricatorEnv::getEnvConfig('phlab.composer-path');
-    require_once $root.'/vendor/autoload.php';
+    require_once __DIR__.'/../../vendor/autoload.php';
   }
 
 }

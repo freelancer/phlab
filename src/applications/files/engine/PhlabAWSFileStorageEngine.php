@@ -83,7 +83,7 @@ final class PhlabAWSFileStorageEngine extends PhabricatorFileStorageEngine {
       'Metadata' => array(
         'authorPHID'       => idx($params, 'authorPHID'),
         'isExplicitUpload' => (string)idx($params, 'isExplicitUpload'),
-        'name'             => idx($params, 'name'),
+        'name'             => rawurlencode(idx($params, 'name')),
       ),
     );
 
@@ -178,7 +178,10 @@ final class PhlabAWSFileStorageEngine extends PhabricatorFileStorageEngine {
    */
   protected function getClient() {
     Composer::registerAutoloader();
-    return Aws\S3\S3Client::factory();
+    return new Aws\S3\S3Client(array(
+      'region'  => 'us-east-1',
+      'version' => 'latest',
+    ));
   }
 
 }

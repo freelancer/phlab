@@ -14,7 +14,6 @@ phutil_register_library_map(array(
     'HipChatClient' => 'infrastructure/HipChatClient.php',
     'HipChatConfigOptions' => 'applications/config/option/HipChatConfigOptions.php',
     'PhlabAWSFileStorageEngine' => 'applications/files/engine/PhlabAWSFileStorageEngine.php',
-    'PhlabConfigOptions' => 'applications/config/option/PhlabConfigOptions.php',
     'PhlabLibraryTestCase' => '__tests__/PhlabLibraryTestCase.php',
   ),
   'function' => array(),
@@ -24,7 +23,6 @@ phutil_register_library_map(array(
     'HipChatClient' => 'Phobject',
     'HipChatConfigOptions' => 'PhabricatorApplicationConfigOptions',
     'PhlabAWSFileStorageEngine' => 'PhabricatorFileStorageEngine',
-    'PhlabConfigOptions' => 'PhabricatorApplicationConfigOptions',
     'PhlabLibraryTestCase' => 'PhutilLibraryTestCase',
   ),
 ));
