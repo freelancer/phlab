@@ -1,0 +1,11 @@
+@title Drydock User Guide
+@group overview
+
+This article provides a basic overview of
+[[https://phabricator.freelancer.com/drydock/ | Drydock]].
+
+= Next Steps =
+Continue by:
+
+  - Returning to the @{article@phabricator:Overview}.
+  - Reading the official [[https://secure.phabricator.com/book/phabricator/article/drydock/ | Drydock User Guide]].

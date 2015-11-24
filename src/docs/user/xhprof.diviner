@@ -1,0 +1,11 @@
+@title XHProf User Guide
+@group overview
+
+This article provides a basic overview of
+[[https://phabricator.freelancer.com/xhprof/ | XHProf]].
+
+= Next Steps =
+Continue by:
+
+  - Returning to the @{article@phabricator:Overview}.
+  - Reading the official [[https://secure.phabricator.com/book/phabricator/article/xhprof/ | documentation]].
