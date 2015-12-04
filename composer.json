@@ -1,5 +1,12 @@
 {
   "require": {
-    "aws/aws-sdk-php": "^3.7"
-  }
+    "aws/aws-sdk-php": "^3.7",
+    "abhinavsingh/jaxl": "3.x-dev"
+  },
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/joshuaspence/JAXL.git"
+    }
+  ]
 }
