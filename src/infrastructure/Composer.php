@@ -5,8 +5,6 @@
  */
 final class Composer extends Phobject {
 
-  private static $initialized = false;
-
   /**
    * Register the Composer autoloader.
    *
@@ -17,12 +15,6 @@ final class Composer extends Phobject {
    */
   public static function registerAutoloader() {
     require_once dirname(__FILE__).'/../../vendor/autoload.php';
-
-    // Workaround for https://secure.phabricator.com/T1116. See T27208.
-    if (!self::$initialized) {
-      spl_autoload_register(function() {});
-      self::$initialized = true;
-    }
   }
 
 }
