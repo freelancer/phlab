@@ -50,4 +50,8 @@ final class HipChatConfigOptions extends PhabricatorApplicationConfigOptions {
     );
   }
 
+  public function getKey() {
+    return 'hipchat';
+  }
+
 }
