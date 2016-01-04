@@ -390,7 +390,7 @@ final class PhabricatorHipChatProtocolAdapter
       ->setCommand('MESSAGE')
       ->setSender(id(new PhabricatorBotUser())->setName($sender->resource))
       ->setTarget(id(new PhabricatorBotChannel())->setName($target))
-      ->setBody($stanza->body);
+      ->setBody(htmlspecialchars_decode($stanza->body));
   }
 
 }
