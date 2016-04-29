@@ -35,7 +35,10 @@
       "type": "spelling"
     },
     "text": {
-      "type": "text"
+      "type": "text",
+      "severity": {
+        "3": "advice"
+      }
     },
     "xhpast": {
       "type": "xhpast",
