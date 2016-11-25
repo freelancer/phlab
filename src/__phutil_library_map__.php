@@ -10,6 +10,7 @@ phutil_register_library_map(array(
   '__library_version__' => 2,
   'class' => array(
     'Composer' => 'infrastructure/Composer.php',
+    'FreelancerGoogleAuthRegistrationListener' => 'applications/auth/event/FreelancerGoogleAuthRegistrationListener.php',
     'HeraldHipChatNotificationAction' => 'applications/herald/extension/HeraldHipChatNotificationAction.php',
     'HipChatClient' => 'infrastructure/HipChatClient.php',
     'HipChatConfigOptions' => 'applications/config/option/HipChatConfigOptions.php',
@@ -20,6 +21,7 @@ phutil_register_library_map(array(
   'function' => array(),
   'xmap' => array(
     'Composer' => 'Phobject',
+    'FreelancerGoogleAuthRegistrationListener' => 'PhabricatorEventListener',
     'HeraldHipChatNotificationAction' => 'HeraldAction',
     'HipChatClient' => 'Phobject',
     'HipChatConfigOptions' => 'PhabricatorApplicationConfigOptions',
