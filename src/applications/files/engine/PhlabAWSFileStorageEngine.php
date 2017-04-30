@@ -177,7 +177,6 @@ final class PhlabAWSFileStorageEngine extends PhabricatorFileStorageEngine {
    * @phutil-external-symbol class Aws\S3\S3Client
    */
   protected function getClient() {
-    Composer::registerAutoloader();
     return new Aws\S3\S3Client(array(
       'region'  => 'us-east-1',
       'version' => 'latest',

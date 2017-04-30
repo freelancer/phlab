@@ -54,9 +54,6 @@ final class PhabricatorHipChatProtocolAdapter
    * @task impl
    */
   public function connect() {
-    // TODO: Is there a better place for this?
-    Composer::registerAutoloader();
-
     // TODO: Maybe we should add some error checking here?
     $account_id = $this->getConfig('account_id');
     $user_id    = $this->getConfig('user_id');
