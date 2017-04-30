@@ -30,8 +30,8 @@ phutil_register_library_map(array(
     'PhabricatorIRCProtocolAdapter' => 'infrastructure/daemon/bot/adapter/PhabricatorIRCProtocolAdapter.php',
     'PhabricatorProtocolAdapter' => 'infrastructure/daemon/bot/adapter/PhabricatorProtocolAdapter.php',
     'PhabricatorStreamingProtocolAdapter' => 'infrastructure/daemon/bot/adapter/PhabricatorStreamingProtocolAdapter.php',
-    'PhlabAWSFileStorageEngine' => 'applications/files/engine/PhlabAWSFileStorageEngine.php',
     'PhlabLibraryTestCase' => '__tests__/PhlabLibraryTestCase.php',
+    'PhlabS3FileStorageEngine' => 'applications/files/engine/PhlabS3FileStorageEngine.php',
   ),
   'function' => array(),
   'xmap' => array(
@@ -56,7 +56,7 @@ phutil_register_library_map(array(
     'PhabricatorIRCProtocolAdapter' => 'PhabricatorProtocolAdapter',
     'PhabricatorProtocolAdapter' => 'Phobject',
     'PhabricatorStreamingProtocolAdapter' => 'PhabricatorProtocolAdapter',
-    'PhlabAWSFileStorageEngine' => 'PhabricatorFileStorageEngine',
     'PhlabLibraryTestCase' => 'PhutilLibraryTestCase',
+    'PhlabS3FileStorageEngine' => 'PhabricatorFileStorageEngine',
   ),
 ));

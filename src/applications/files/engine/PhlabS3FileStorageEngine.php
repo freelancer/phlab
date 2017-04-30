@@ -11,7 +11,7 @@
  *
  * @todo This class will be obsolete after https://secure.phabricator.com/T5155.
  */
-final class PhlabAWSFileStorageEngine extends PhabricatorFileStorageEngine {
+final class PhlabS3FileStorageEngine extends PhabricatorFileStorageEngine {
 
   /**
    * Return a unique string which identifies this storage engine.
