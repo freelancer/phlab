@@ -82,13 +82,14 @@ final class PhabricatorHipChatProtocolAdapter
     $this->messages = array();
 
     $this->client = new JAXL(array(
-      'jid' => $this->user.'@'.$this->server,
+      'jid'  => $this->user.'@'.$this->server,
       'pass' => $this->password->openEnvelope(),
       'host' => $this->server,
       'port' => $this->port,
-      'log_color' => false,
-      'log_level' => $this->getConfig('log_level', JAXL_INFO),
-      'sock_dir' => PhabricatorEnv::getEnvConfig('phd.pid-directory'),
+
+      'log_colorize' => false,
+      'pid_dir'      => PhabricatorEnv::getEnvConfig('phd.pid-directory'),
+      'sock_dir'     => PhabricatorEnv::getEnvConfig('phd.pid-directory'),
 
       // If we don't disable strict mode, JAXL will install error and
       // exception handlers.

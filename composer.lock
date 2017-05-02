@@ -4,62 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "81bbc61a9b120440349d90fe0babf908",
-    "content-hash": "64dcabf02b45db3a3807994fa382f858",
+    "content-hash": "331639a98bd4b72f717d8ff38add0e64",
     "packages": [
-        {
-            "name": "abhinavsingh/jaxl",
-            "version": "3.x-dev",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/joshuaspence/JAXL.git",
-                "reference": "77cb3f20b94d7bc95661d24100fffaa7ac1f717c"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/joshuaspence/JAXL/zipball/77cb3f20b94d7bc95661d24100fffaa7ac1f717c",
-                "reference": "77cb3f20b94d7bc95661d24100fffaa7ac1f717c",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.2.4"
-            },
-            "bin": [
-                "jaxlctl"
-            ],
-            "type": "library",
-            "autoload": {
-                "files": [
-                    "jaxl.php"
-                ]
-            },
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Abhinavsingh",
-                    "homepage": "https://abhinavsingh.com/"
-                }
-            ],
-            "description": "Jaxl - Async, Non-Blocking, Event based Networking Library in PHP.",
-            "homepage": "http://jaxl.readthedocs.org/en/latest/index.html",
-            "keywords": [
-                "abhinavsingh",
-                "asynchronous",
-                "event loop",
-                "http",
-                "jabber",
-                "jaxl",
-                "non blocking",
-                "php",
-                "xmpp"
-            ],
-            "support": {
-                "source": "https://github.com/joshuaspence/JAXL/tree/v3.x"
-            },
-            "time": "2016-01-04 04:46:20"
-        },
         {
             "name": "aws/aws-sdk-php",
             "version": "3.12.0",
@@ -136,7 +82,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2015-12-21 22:54:08"
+            "time": "2015-12-21T22:54:08+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",
@@ -198,7 +144,7 @@
                 "rest",
                 "web service"
             ],
-            "time": "2015-11-23 00:47:50"
+            "time": "2015-11-23T00:47:50+00:00"
         },
         {
             "name": "guzzlehttp/promises",
@@ -249,7 +195,7 @@
             "keywords": [
                 "promise"
             ],
-            "time": "2015-10-15 22:28:00"
+            "time": "2015-10-15T22:28:00+00:00"
         },
         {
             "name": "guzzlehttp/psr7",
@@ -307,7 +253,84 @@
                 "stream",
                 "uri"
             ],
-            "time": "2015-11-03 01:34:55"
+            "time": "2015-11-03T01:34:55+00:00"
+        },
+        {
+            "name": "jaxl/jaxl",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/joshuaspence/JAXL.git",
+                "reference": "a821064974fb4899fe86e545d86c6d36bd68e19f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/joshuaspence/JAXL/zipball/a821064974fb4899fe86e545d86c6d36bd68e19f",
+                "reference": "a821064974fb4899fe86e545d86c6d36bd68e19f",
+                "shasum": ""
+            },
+            "require": {
+                "ext-curl": "*",
+                "ext-hash": "*",
+                "ext-json": "*",
+                "ext-libxml": "*",
+                "ext-openssl": "*",
+                "ext-pcre": "*",
+                "ext-sockets": "*",
+                "php": ">=5.2.4"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^3.7.0",
+                "squizlabs/php_codesniffer": "*"
+            },
+            "suggest": {
+                "ext-pcntl": "Interrupt JAXL with signals"
+            },
+            "bin": [
+                "jaxlctl"
+            ],
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "3.1.x-dev"
+                }
+            },
+            "autoload": {
+                "classmap": [
+                    "src/JAXL"
+                ],
+                "exclude-from-classmap": [
+                    "/tests/"
+                ]
+            },
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Abhinavsingh",
+                    "homepage": "https://abhinavsingh.com/"
+                }
+            ],
+            "description": "Jaxl - Async, Non-Blocking, Event based Networking Library in PHP.",
+            "homepage": "http://jaxl.readthedocs.org/en/latest/index.html",
+            "keywords": [
+                "abhinavsingh",
+                "asynchronous",
+                "event loop",
+                "http",
+                "jabber",
+                "jaxl",
+                "non blocking",
+                "php",
+                "xmpp"
+            ],
+            "support": {
+                "forum": "https://groups.google.com/forum/#!forum/jaxl",
+                "issues": "https://github.com/jaxl/JAXL/issues",
+                "source": "https://github.com/jaxl/JAXL"
+            },
+            "time": "2017-05-03 00:36:57"
         },
         {
             "name": "mtdowling/jmespath.php",
@@ -362,7 +385,7 @@
                 "json",
                 "jsonpath"
             ],
-            "time": "2015-05-27 17:21:31"
+            "time": "2015-05-27T17:21:31+00:00"
         },
         {
             "name": "psr/http-message",
@@ -411,14 +434,14 @@
                 "request",
                 "response"
             ],
-            "time": "2015-05-04 20:22:00"
+            "time": "2015-05-04T20:22:00+00:00"
         }
     ],
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "abhinavsingh/jaxl": 20
+        "jaxl/jaxl": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,
