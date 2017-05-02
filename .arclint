@@ -18,6 +18,7 @@
         "(^src/docs/book/.*\\.book$)",
         "(^\\.arcconfig$)",
         "(^\\.arclint$)",
+        "(^\\.arcunit$)",
         "(\\.json$)"
       ]
     },

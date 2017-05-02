@@ -1,6 +1,5 @@
 {
   "phabricator.uri": "https://phabricator.freelancer.com",
-  "unit.engine": "PhutilUnitTestEngine",
   "load": [
     "src/",
     "phabricator/src/"
