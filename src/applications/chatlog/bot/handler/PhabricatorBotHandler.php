@@ -12,7 +12,7 @@ abstract class PhabricatorBotHandler extends Phobject {
     $this->bot = $irc_bot;
   }
 
-  final protected function writeMessage(PhabricatorBotMessage $message) {
+  final protected function writeMessage(PhabricatorChatbotMessage $message) {
     $this->bot->writeMessage($message);
     return $this;
   }
@@ -39,19 +39,19 @@ abstract class PhabricatorBotHandler extends Phobject {
     return $this->bot->getAdapter()->getServiceType();
   }
 
-  abstract public function receiveMessage(PhabricatorBotMessage $message);
+  abstract public function receiveMessage(PhabricatorChatbotMessage $message);
 
   public function runBackgroundTasks() {
     return;
   }
 
-  public function replyTo(PhabricatorBotMessage $original_message, $body) {
+  public function replyTo(PhabricatorChatbotMessage $original_message, $body) {
     if ($original_message->getCommand() != 'MESSAGE') {
       throw new Exception(
         pht('Handler is trying to reply to something which is not a message!'));
     }
 
-    $reply = id(new PhabricatorBotMessage())
+    $reply = id(new PhabricatorChatbotMessage())
       ->setCommand('MESSAGE');
 
     if ($original_message->getTarget()->isPublic()) {

@@ -42,9 +42,9 @@ abstract class PhabricatorProtocolAdapter extends Phobject {
   /**
    * This is the output mechanism for the protocol.
    *
-   * @param PhabricatorBotMessage $message The message to write
+   * @param PhabricatorChatbotMessage $message The message to write
    */
-  abstract public function writeMessage(PhabricatorBotMessage $message);
+  abstract public function writeMessage(PhabricatorChatbotMessage $message);
 
   /**
    * String identifying the service type the adapter provides access to, like

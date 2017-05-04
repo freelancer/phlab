@@ -123,7 +123,7 @@ final class PhabricatorHipChatProtocolAdapter
 
   /**
    * @param  int
-   * @return list<PhabricatorBotMessage>
+   * @return list<PhabricatorChatbotMessage>
    *
    * @task impl
    */
@@ -156,12 +156,12 @@ final class PhabricatorHipChatProtocolAdapter
   }
 
   /**
-   * @param  PhabricatorBotMessage
+   * @param  PhabricatorChatbotMessage
    * @return bool
    *
    * @task impl
    */
-  public function writeMessage(PhabricatorBotMessage $message) {
+  public function writeMessage(PhabricatorChatbotMessage $message) {
     switch ($message->getCommand()) {
       case 'MESSAGE':
         $this->client->xeps['0045']->send_groupchat(
@@ -384,10 +384,10 @@ final class PhabricatorHipChatProtocolAdapter
     $sender = new XMPPJid($stanza->from);
     $target = $this->getRoomFromJid($sender);
 
-    $this->messages[] = id(new PhabricatorBotMessage())
+    $this->messages[] = id(new PhabricatorChatbotMessage())
       ->setCommand('MESSAGE')
-      ->setSender(id(new PhabricatorBotUser())->setName($sender->resource))
-      ->setTarget(id(new PhabricatorBotChannel())->setName($target))
+      ->setSender(id(new PhabricatorChatbotUser())->setName($sender->resource))
+      ->setTarget(id(new PhabricatorChatbotChannel())->setName($target))
       ->setBody(htmlspecialchars_decode($stanza->body));
   }
 

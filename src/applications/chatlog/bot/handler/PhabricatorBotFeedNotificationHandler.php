@@ -83,7 +83,7 @@ final class PhabricatorBotFeedNotificationHandler
     return false;
   }
 
-  public function receiveMessage(PhabricatorBotMessage $message) {
+  public function receiveMessage(PhabricatorChatbotMessage $message) {
     return;
   }
 
@@ -164,11 +164,11 @@ final class PhabricatorBotFeedNotificationHandler
         $channels = $this->getConfig('join');
         foreach ($channels as $channel_name) {
 
-          $channel = id(new PhabricatorBotChannel())
+          $channel = id(new PhabricatorChatbotChannel())
             ->setName($channel_name);
 
           $this->writeMessage(
-            id(new PhabricatorBotMessage())
+            id(new PhabricatorChatbotMessage())
             ->setCommand('MESSAGE')
             ->setTarget($channel)
             ->setBody($message));

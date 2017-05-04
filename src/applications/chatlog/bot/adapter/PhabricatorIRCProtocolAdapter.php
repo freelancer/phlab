@@ -96,7 +96,7 @@ final class PhabricatorIRCProtocolAdapter extends PhabricatorProtocolAdapter {
         if ($data === false) {
           throw new Exception(pht('%s failed!', 'fread()'));
         } else {
-          $messages[] = id(new PhabricatorBotMessage())
+          $messages[] = id(new PhabricatorChatbotMessage())
             ->setCommand('LOG')
             ->setBody('>>> '.$data);
           $this->readBuffer .= $data;
@@ -112,7 +112,7 @@ final class PhabricatorIRCProtocolAdapter extends PhabricatorProtocolAdapter {
         } else if ($len === 0) {
           break;
         } else {
-          $messages[] = id(new PhabricatorBotMessage())
+          $messages[] = id(new PhabricatorChatbotMessage())
             ->setCommand('LOG')
             ->setBody('>>> '.substr($this->writeBuffer, 0, $len));
           $this->writeBuffer = substr($this->writeBuffer, $len);
@@ -134,7 +134,7 @@ final class PhabricatorIRCProtocolAdapter extends PhabricatorProtocolAdapter {
     return $this;
   }
 
-  public function writeMessage(PhabricatorBotMessage $message) {
+  public function writeMessage(PhabricatorChatbotMessage $message) {
     switch ($message->getCommand()) {
       case 'MESSAGE':
       case 'PASTE':
@@ -178,11 +178,11 @@ final class PhabricatorIRCProtocolAdapter extends PhabricatorProtocolAdapter {
     if (!strlen($matches['sender'])) {
       $sender = null;
     } else {
-      $sender = id(new PhabricatorBotUser())
+      $sender = id(new PhabricatorChatbotUser())
        ->setName($matches['sender']);
     }
 
-    $bot_message = id(new PhabricatorBotMessage())
+    $bot_message = id(new PhabricatorChatbotMessage())
       ->setSender($sender)
       ->setCommand($command)
       ->setTarget($target)
@@ -239,10 +239,10 @@ final class PhabricatorIRCProtocolAdapter extends PhabricatorProtocolAdapter {
 
           $target_name = $matches[1];
           if (strncmp($target_name, '#', 1) === 0) {
-            $target = id(new PhabricatorBotChannel())
+            $target = id(new PhabricatorChatbotChannel())
               ->setName($target_name);
           } else {
-            $target = id(new PhabricatorBotUser())
+            $target = id(new PhabricatorChatbotUser())
               ->setName($target_name);
           }
 

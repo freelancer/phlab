@@ -11,7 +11,7 @@ final class PhabricatorBotObjectNameHandler extends PhabricatorBotHandler {
    */
   private $recentlyMentioned = array();
 
-  public function receiveMessage(PhabricatorBotMessage $original_message) {
+  public function receiveMessage(PhabricatorChatbotMessage $original_message) {
     switch ($original_message->getCommand()) {
       case 'MESSAGE':
         $message = $original_message->getBody();

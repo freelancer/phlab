@@ -125,11 +125,11 @@ final class PhabricatorBot extends PhabricatorDaemon {
 
   }
 
-  public function writeMessage(PhabricatorBotMessage $message) {
+  public function writeMessage(PhabricatorChatbotMessage $message) {
     return $this->protocolAdapter->writeMessage($message);
   }
 
-  private function routeMessage(PhabricatorBotMessage $message) {
+  private function routeMessage(PhabricatorChatbotMessage $message) {
     $ignore = $this->getConfig('ignore');
     if ($ignore) {
       $sender = $message->getSender();
