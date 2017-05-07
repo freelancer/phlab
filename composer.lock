@@ -261,12 +261,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/joshuaspence/JAXL.git",
-                "reference": "a821064974fb4899fe86e545d86c6d36bd68e19f"
+                "reference": "d9f4afae910a41e41aa8cd7144826a0d0e1c73b9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/joshuaspence/JAXL/zipball/a821064974fb4899fe86e545d86c6d36bd68e19f",
-                "reference": "a821064974fb4899fe86e545d86c6d36bd68e19f",
+                "url": "https://api.github.com/repos/joshuaspence/JAXL/zipball/d9f4afae910a41e41aa8cd7144826a0d0e1c73b9",
+                "reference": "d9f4afae910a41e41aa8cd7144826a0d0e1c73b9",
                 "shasum": ""
             },
             "require": {
@@ -330,7 +330,7 @@
                 "issues": "https://github.com/jaxl/JAXL/issues",
                 "source": "https://github.com/jaxl/JAXL"
             },
-            "time": "2017-05-03 00:36:57"
+            "time": "2017-05-07 22:46:40"
         },
         {
             "name": "mtdowling/jmespath.php",

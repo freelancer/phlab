@@ -88,8 +88,8 @@ final class PhabricatorHipChatProtocolAdapter
       'port' => $this->port,
 
       'log_colorize' => false,
-      'pid_dir'      => PhabricatorEnv::getEnvConfig('phd.pid-directory'),
-      'sock_dir'     => PhabricatorEnv::getEnvConfig('phd.pid-directory'),
+      'pid_dir'      => null,
+      'sock_dir'     => null,
 
       // If we don't disable strict mode, JAXL will install error and
       // exception handlers.
