@@ -162,16 +162,10 @@ final class PhabricatorHipChatProtocolAdapter
    * @task impl
    */
   public function writeMessage(PhabricatorChatbotMessage $message) {
-    switch ($message->getCommand()) {
-      case 'MESSAGE':
-        $this->client->xeps['0045']->send_groupchat(
-          idx($this->rooms, $message->getTarget()->getName()),
-          $message->getBody());
-        return true;
-
-      default:
-        return false;
-    }
+    $this->client->xeps['0045']->send_groupchat(
+      idx($this->rooms, $message->getTarget()->getName()),
+      $message->getBody());
+    return true;
   }
 
 
@@ -385,7 +379,6 @@ final class PhabricatorHipChatProtocolAdapter
     $target = $this->getRoomFromJid($sender);
 
     $this->messages[] = id(new PhabricatorChatbotMessage())
-      ->setCommand('MESSAGE')
       ->setSender(id(new PhabricatorChatbotUser())->setName($sender->resource))
       ->setTarget(id(new PhabricatorChatbotChannel())->setName($target))
       ->setBody(htmlspecialchars_decode($stanza->body));

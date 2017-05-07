@@ -169,9 +169,8 @@ final class PhabricatorBotFeedNotificationHandler
 
           $this->writeMessage(
             id(new PhabricatorChatbotMessage())
-            ->setCommand('MESSAGE')
-            ->setTarget($channel)
-            ->setBody($message));
+              ->setTarget($channel)
+              ->setBody($message));
         }
       }
     }

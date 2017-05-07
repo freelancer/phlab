@@ -46,13 +46,7 @@ abstract class PhabricatorBotHandler extends Phobject {
   }
 
   public function replyTo(PhabricatorChatbotMessage $original_message, $body) {
-    if ($original_message->getCommand() != 'MESSAGE') {
-      throw new Exception(
-        pht('Handler is trying to reply to something which is not a message!'));
-    }
-
-    $reply = id(new PhabricatorChatbotMessage())
-      ->setCommand('MESSAGE');
+    $reply = new PhabricatorChatbotMessage();
 
     if ($original_message->getTarget()->isPublic()) {
       // This is a public target, like a chatroom. Send the response to the

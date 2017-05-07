@@ -3,7 +3,6 @@
 final class PhabricatorChatbotMessage extends Phobject {
 
   private $body;
-  private $command;
   private $sender;
   private $target;
 
@@ -13,15 +12,6 @@ final class PhabricatorChatbotMessage extends Phobject {
 
   public function setBody($body) {
     $this->body = $body;
-    return $this;
-  }
-
-  public function getCommand() {
-    return $this->command;
-  }
-
-  public function setCommand($command) {
-    $this->command = $command;
     return $this;
   }
 

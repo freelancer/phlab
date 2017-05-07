@@ -15,19 +15,6 @@ final class PhabricatorChatbotMessageTestCase extends PhutilTestCase {
     $this->assertEqual($message, $message->setBody(null));
   }
 
-  public function testCommand() {
-    $command = 'MESSAGE';
-    $message = new PhabricatorChatbotMessage();
-
-    $message->setCommand($command);
-    $this->assertEqual($command, $message->getCommand());
-  }
-
-  public function testSetCommandReturnsThis() {
-    $message = new PhabricatorChatbotMessage();
-    $this->assertEqual($message, $message->setCommand(null));
-  }
-
   public function testSender() {
     $sender = new PhabricatorChatbotUser();
     $message = new PhabricatorChatbotMessage();

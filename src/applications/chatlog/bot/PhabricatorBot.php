@@ -138,10 +138,6 @@ final class PhabricatorBot extends PhabricatorDaemon {
       }
     }
 
-    if ($message->getCommand() == 'LOG') {
-      $this->log('[LOG] '.$message->getBody());
-    }
-
     foreach ($this->handlers as $handler) {
       try {
         $handler->receiveMessage($message);
