@@ -9,18 +9,18 @@ final class PhabricatorBotObjectNameHandler extends PhabricatorBotHandler {
    * Map of PHIDs to the last mention of them (as an epoch timestamp); prevents
    * us from spamming chat when a single object is discussed.
    */
-  private $recentlyMentioned = array();
+  private $recentlyMentioned = [];
 
   public function receiveMessage(PhabricatorChatbotMessage $original_message) {
     $message = $original_message->getBody();
     $matches = null;
 
-    $paste_ids = array();
-    $commit_names = array();
-    $vote_ids = array();
-    $file_ids = array();
-    $object_names = array();
-    $output = array();
+    $paste_ids = [];
+    $commit_names = [];
+    $vote_ids = [];
+    $file_ids = [];
+    $object_names = [];
+    $output = [];
 
     $pattern =
       '@'.
@@ -102,9 +102,9 @@ final class PhabricatorBotObjectNameHandler extends PhabricatorBotHandler {
     if ($object_names) {
       $objects = $this->getConduit()->callMethodSynchronous(
         'phid.lookup',
-        array(
+        [
           'names' => $object_names,
-        ));
+        ]);
       foreach ($objects as $object) {
         $output[$object['phid']] = $object['fullName'].' - '.$object['uri'];
       }
@@ -114,9 +114,9 @@ final class PhabricatorBotObjectNameHandler extends PhabricatorBotHandler {
       foreach ($vote_ids as $vote_id) {
         $vote = $this->getConduit()->callMethodSynchronous(
           'slowvote.info',
-          array(
+          [
             'poll_id' => $vote_id,
-          ));
+          ]);
         $output[$vote['phid']] = 'V'.$vote['id'].': '.$vote['question'].
           ' '.pht('Come Vote').' '.$vote['uri'];
       }
@@ -126,9 +126,9 @@ final class PhabricatorBotObjectNameHandler extends PhabricatorBotHandler {
       foreach ($file_ids as $file_id) {
         $file = $this->getConduit()->callMethodSynchronous(
           'file.info',
-          array(
+          [
             'id' => $file_id,
-          ));
+          ]);
         $output[$file['phid']] = $file['objectName'].': '.
           $file['uri'].' - '.$file['name'];
       }
@@ -138,9 +138,9 @@ final class PhabricatorBotObjectNameHandler extends PhabricatorBotHandler {
       foreach ($paste_ids as $paste_id) {
         $paste = $this->getConduit()->callMethodSynchronous(
           'paste.query',
-          array(
-            'ids' => array($paste_id),
-          ));
+          [
+            'ids' => [$paste_id],
+          ]);
         $paste = head($paste);
 
         $output[$paste['phid']] = 'P'.$paste['id'].': '.$paste['uri'].' - '.
@@ -152,9 +152,9 @@ final class PhabricatorBotObjectNameHandler extends PhabricatorBotHandler {
 
         $user = $this->getConduit()->callMethodSynchronous(
           'user.query',
-          array(
-            'phids' => array($paste['authorPHID']),
-          ));
+          [
+            'phids' => [$paste['authorPHID']],
+          ]);
         $user = head($user);
         if ($user) {
           $output[$paste['phid']] .= ' by '.$user['userName'];
@@ -165,23 +165,22 @@ final class PhabricatorBotObjectNameHandler extends PhabricatorBotHandler {
     if ($commit_names) {
       $commits = $this->getConduit()->callMethodSynchronous(
         'diffusion.querycommits',
-        array(
+        [
           'names' => $commit_names,
-        ));
+        ]);
       foreach ($commits['data'] as $commit) {
         $output[$commit['phid']] = $commit['uri'];
       }
     }
 
     foreach ($output as $phid => $description) {
-
       // Don't mention the same object more than once every 10 minutes
       // in public channels, so we avoid spamming the chat over and over
       // again for discussions of a specific revision, for example.
 
       $target_name = $original_message->getTarget()->getName();
       if (empty($this->recentlyMentioned[$target_name])) {
-        $this->recentlyMentioned[$target_name] = array();
+        $this->recentlyMentioned[$target_name] = [];
       }
 
       $quiet_until = idx(

@@ -67,11 +67,11 @@ final class PhlabS3FileStorageEngine extends PhabricatorFileStorageEngine {
     // files more browsable with web/debugging tools like the S3 administration
     // tool.
     $seed = Filesystem::readRandomCharacters(20);
-    $parts = array(
+    $parts = [
       substr($seed, 0, 2),
       substr($seed, 2, 2),
       substr($seed, 4),
-    );
+    ];
     $name = implode('/', $parts);
 
     $s3_params = array(
@@ -80,11 +80,11 @@ final class PhlabS3FileStorageEngine extends PhabricatorFileStorageEngine {
       'Body'     => $data,
       'ACL'      => 'private',
 
-      'Metadata' => array(
+      'Metadata' => [
         'authorPHID'       => idx($params, 'authorPHID'),
         'isExplicitUpload' => (string)idx($params, 'isExplicitUpload'),
         'name'             => rawurlencode(idx($params, 'name')),
-      ),
+      ],
     );
 
     $mime_type = idx($params, 'mime-type');
@@ -94,13 +94,13 @@ final class PhlabS3FileStorageEngine extends PhabricatorFileStorageEngine {
 
     AphrontWriteGuard::willWrite();
     $profiler = PhutilServiceProfiler::getInstance();
-    $call_id = $profiler->beginServiceCall(array(
+    $call_id = $profiler->beginServiceCall([
       'type'   => 's3',
       'method' => 'putObject',
-    ));
+    ]);
 
     $s3->putObject($s3_params);
-    $profiler->endServiceCall($call_id, array());
+    $profiler->endServiceCall($call_id, []);
 
     return $name;
   }
@@ -116,16 +116,16 @@ final class PhlabS3FileStorageEngine extends PhabricatorFileStorageEngine {
     $s3 = $this->getClient();
 
     $profiler = PhutilServiceProfiler::getInstance();
-    $call_id = $profiler->beginServiceCall(array(
+    $call_id = $profiler->beginServiceCall([
       'type'   => 's3',
       'method' => 'getObject',
-    ));
+    ]);
 
-    $result = $s3->getObject(array(
+    $result = $s3->getObject([
       'Bucket' => $this->getBucketName(),
       'Key'    => $handle,
-    ));
-    $profiler->endServiceCall($call_id, array());
+    ]);
+    $profiler->endServiceCall($call_id, []);
 
     return (string)$result['Body'];
   }
@@ -142,16 +142,16 @@ final class PhlabS3FileStorageEngine extends PhabricatorFileStorageEngine {
 
     AphrontWriteGuard::willWrite();
     $profiler = PhutilServiceProfiler::getInstance();
-    $call_id = $profiler->beginServiceCall(array(
+    $call_id = $profiler->beginServiceCall([
       'type'   => 's3',
       'method' => 'deleteObject',
-    ));
+    ]);
 
-    $s3->deleteObject(array(
+    $s3->deleteObject([
       'Bucket' => $this->getBucketName(),
       'Key'    => $handle,
-    ));
-    $profiler->endServiceCall($call_id, array());
+    ]);
+    $profiler->endServiceCall($call_id, []);
   }
 
   /**
@@ -177,10 +177,10 @@ final class PhlabS3FileStorageEngine extends PhabricatorFileStorageEngine {
    * @phutil-external-symbol class Aws\S3\S3Client
    */
   protected function getClient() {
-    return new Aws\S3\S3Client(array(
+    return new Aws\S3\S3Client([
       'region'  => 'us-east-1',
       'version' => 'latest',
-    ));
+    ]);
   }
 
 }

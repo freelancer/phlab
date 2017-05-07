@@ -9,7 +9,7 @@ final class PhabricatorBotFeedNotificationHandler
   private $startupDelay = 30;
   private $lastSeenChronoKey = 0;
 
-  private $typesNeedURI = array('DREV', 'TASK');
+  private $typesNeedURI = ['DREV', 'TASK'];
 
   private function shouldShowStory($story) {
     $story_objectphid = $story['objectPHID'];
@@ -26,11 +26,11 @@ final class PhabricatorBotFeedNotificationHandler
 
     $verbosity = $this->getConfig('notification.verbosity', 3);
 
-    $verbs = array();
+    $verbs = [];
 
     switch ($verbosity) {
       case 2:
-        $verbs[] = array(
+        $verbs[] = [
           'commented',
           'added',
           'changed',
@@ -42,10 +42,10 @@ final class PhabricatorBotFeedNotificationHandler
           'joined',
           'left',
           'removed',
-        );
+        ];
       // fallthrough
       case 1:
-        $verbs[] = array(
+        $verbs[] = [
           'updated',
           'accepted',
           'requested',
@@ -54,10 +54,10 @@ final class PhabricatorBotFeedNotificationHandler
           'summarized',
           'commandeered',
           'assigned',
-        );
+        ];
       // fallthrough
       case 0:
-        $verbs[] = array(
+        $verbs[] = [
           'created',
           'closed',
           'raised',
@@ -66,7 +66,7 @@ final class PhabricatorBotFeedNotificationHandler
           'reclaimed',
           'reopened',
           'deleted',
-        );
+        ];
         break;
 
       case 3:
@@ -89,20 +89,20 @@ final class PhabricatorBotFeedNotificationHandler
 
   public function runBackgroundTasks() {
     if ($this->startupDelay > 0) {
-      // the event loop runs every 1s so delay enough to fully conenct
+      // The event loop runs every one second, so delay enough to fully connect.
       $this->startupDelay--;
-
       return;
     }
+
     if ($this->lastSeenChronoKey == 0) {
       // Since we only want to post notifications about new stories, skip
       // everything that's happened in the past when we start up so we'll
       // only process real-time stories.
       $latest = $this->getConduit()->callMethodSynchronous(
         'feed.query',
-        array(
+        [
           'limit' => 1,
-        ));
+        ]);
 
       foreach ($latest as $story) {
         if ($story['chronologicalKey'] > $this->lastSeenChronoKey) {
@@ -119,15 +119,15 @@ final class PhabricatorBotFeedNotificationHandler
     $last_seen_chrono_key = $this->lastSeenChronoKey;
     $chrono_key_cursor = 0;
 
-    // Not efficient but works due to feed.query API
+    // Not efficient but works due to `feed.query` API.
     for ($max_pages = $config_max_pages; $max_pages > 0; $max_pages--) {
       $stories = $this->getConduit()->callMethodSynchronous(
         'feed.query',
-        array(
+        [
           'limit' => $config_page_size,
           'after' => $chrono_key_cursor,
           'view' => 'text',
-        ));
+        ]);
 
       foreach ($stories as $story) {
         if ($story['chronologicalKey'] == $last_seen_chrono_key) {
@@ -144,8 +144,7 @@ final class PhabricatorBotFeedNotificationHandler
           $chrono_key_cursor = $story['chronologicalKey'];
         }
 
-        if (!$story['text'] ||
-            !$this->shouldShowStory($story)) {
+        if (!$story['text'] || !$this->shouldShowStory($story)) {
           continue;
         }
 
@@ -155,20 +154,19 @@ final class PhabricatorBotFeedNotificationHandler
         if (in_array($story_object_type, $this->typesNeedURI)) {
           $objects = $this->getConduit()->callMethodSynchronous(
             'phid.lookup',
-            array(
-              'names' => array($story['objectPHID']),
-            ));
+            [
+              'names' => [$story['objectPHID']],
+            ]);
           $message .= ' '.$objects[$story['objectPHID']]['uri'];
         }
 
         $channels = $this->getConfig('join');
         foreach ($channels as $channel_name) {
-
-          $channel = id(new PhabricatorChatbotChannel())
+          $channel = (new PhabricatorChatbotChannel())
             ->setName($channel_name);
 
           $this->writeMessage(
-            id(new PhabricatorChatbotMessage())
+            (new PhabricatorChatbotMessage())
               ->setTarget($channel)
               ->setBody($message));
         }

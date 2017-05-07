@@ -19,17 +19,17 @@ final class HipChatConfigOptions extends PhabricatorApplicationConfigOptions {
   }
 
   public function getOptions() {
-    static $colors = array(
+    static $colors = [
       'gray',
       'green',
       'purple',
       'random',
       'red',
       'yellow',
-    );
+    ];
     $default_server = HipChatClient::DEFAULT_TARGET;
 
-    return array(
+    return [
       $this->newOption('hipchat.author', 'string', 'Phabricator')
         ->setSummary(pht('HipChat notifications author.'))
         ->setDescription(
@@ -47,7 +47,7 @@ final class HipChatConfigOptions extends PhabricatorApplicationConfigOptions {
         ->setSummary(pht('HipChat API token.'))
         ->setDescription(
           pht('The HipChat API token to use for publishing to HipChat.')),
-    );
+    ];
   }
 
   public function getKey() {

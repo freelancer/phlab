@@ -49,9 +49,7 @@ final class HipChatClient extends Phobject {
    * @see http://api.hipchat.com/docs/api/method/rooms/show
    */
   public function getRoom($room_id) {
-    $response = $this->makeRequest('rooms/show', array(
-      'room_id' => $room_id,
-    ));
+    $response = $this->makeRequest('rooms/show', ['room_id' => $room_id]);
     return idx($response, 'room');
   }
 
@@ -107,14 +105,14 @@ final class HipChatClient extends Phobject {
     $color = self::COLOR_YELLOW,
     $message_format = self::FORMAT_HTML) {
 
-    $args = array(
+    $args = [
       'room_id' => $room_id,
       'from' => $from,
       'message' => $message,
       'notify' => (int)$notify,
       'color' => $color,
       'message_format' => $message_format,
-    );
+    ];
     $response = $this->makeRequest('rooms/message', $args, 'POST');
     return idx($response, 'status') == 'sent';
   }
@@ -129,10 +127,10 @@ final class HipChatClient extends Phobject {
    * @see https://www.hipchat.com/docs/api/method/rooms/history
    */
    public function getRoomsHistory($room_id, $date = 'recent') {
-     $response = $this->makeRequest('rooms/history', array(
+     $response = $this->makeRequest('rooms/history', [
       'room_id' => $room_id,
       'date' => $date,
-     ));
+     ]);
      return idx($response, 'messages');
    }
 
@@ -147,10 +145,10 @@ final class HipChatClient extends Phobject {
    * @see http://api.hipchat.com/docs/api/method/rooms/topic
    */
    public function setRoomTopic($room_id, $topic, $from = null) {
-     $args = array(
+     $args = [
        'room_id' => $room_id,
        'topic' => $topic,
-     );
+     ];
 
      if ($from) {
        $args['from'] = $from;
@@ -172,9 +170,7 @@ final class HipChatClient extends Phobject {
    * @see http://api.hipchat.com/docs/api/method/users/show
    */
   public function getUser($user_id) {
-    $response = $this->makeRequest('users/show', array(
-      'user_id' => $user_id,
-    ));
+    $response = $this->makeRequest('users/show', ['user_id' => $user_id]);
     return idx($response, 'user');
   }
 
@@ -201,11 +197,7 @@ final class HipChatClient extends Phobject {
    * @param  string
    * @return wild
    */
-  private function makeRequest(
-    $api_method,
-    $args = array(),
-    $http_method = 'GET') {
-
+  private function makeRequest($api_method, $args = [], $http_method = 'GET') {
     $args['auth_token'] = $this->authToken;
     $args['format'] = 'json';
 

@@ -70,8 +70,8 @@ final class PhabricatorHipChatProtocolAdapter
     // room name. We must, however, use Jabber IDs to connect to rooms over
     // XMPP. As such, we store a mapping from human-readable room name to
     // Jabber ID in `$this->rooms`.
-    $this->rooms = array();
-    foreach ($this->getConfig('rooms', array()) as $room) {
+    $this->rooms = [];
+    foreach ($this->getConfig('rooms', []) as $room) {
       $this->rooms[$room] = sprintf(
         '%d_%s@%s',
         $account_id,
@@ -79,9 +79,9 @@ final class PhabricatorHipChatProtocolAdapter
         $this->mucServer);
     }
 
-    $this->messages = array();
+    $this->messages = [];
 
-    $this->client = new JAXL(array(
+    $this->client = new JAXL([
       'jid'  => $this->user.'@'.$this->server,
       'pass' => $this->password->openEnvelope(),
       'host' => $this->server,
@@ -94,23 +94,23 @@ final class PhabricatorHipChatProtocolAdapter
       // If we don't disable strict mode, JAXL will install error and
       // exception handlers.
       'strict' => false,
-    ));
-    $this->client->require_xep(array(
+    ]);
+    $this->client->require_xep([
       '0045', // MUC
       '0199', // XMPP Ping
-    ));
+    ]);
 
     // Register XMPP event callbacks.
-    $callbacks = array(
-      'on_auth_failure' => array($this, 'onAuthFailure'),
-      'on_auth_success' => array($this, 'onAuthSuccess'),
-      'on_chat_message' => array($this, 'onChatMessage'),
-      'on_connect' => array($this, 'onConnect'),
-      'on_connect_error' => array($this, 'onConnectError'),
-      'on_disconnect' => array($this, 'onDisconnect'),
-      'on_error_message' => array($this, 'onErrorMessage'),
-      'on_groupchat_message' => array($this, 'onGroupMessage'),
-    );
+    $callbacks = [
+      'on_auth_failure' => [$this, 'onAuthFailure'],
+      'on_auth_success' => [$this, 'onAuthSuccess'],
+      'on_chat_message' => [$this, 'onChatMessage'],
+      'on_connect' => [$this, 'onConnect'],
+      'on_connect_error' => [$this, 'onConnectError'],
+      'on_disconnect' => [$this, 'onDisconnect'],
+      'on_error_message' => [$this, 'onErrorMessage'],
+      'on_groupchat_message' => [$this, 'onGroupMessage'],
+    ];
     foreach ($callbacks as $event => $callback) {
       $this->client->add_cb($event, $callback);
     }
@@ -216,7 +216,7 @@ final class PhabricatorHipChatProtocolAdapter
   protected function joinRoom($room) {
     $this->client->xeps['0045']->join_room(
         $room.'/'.$this->nickname,
-        array('no_history' => true));
+        ['no_history' => true]);
     return $this;
   }
 

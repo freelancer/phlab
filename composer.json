@@ -1,12 +1,18 @@
 {
-  "require": {
-    "aws/aws-sdk-php": "^3.7",
-    "jaxl/jaxl": "dev-master"
+  "config": {
+    "platform": {
+      "php": "5.6.30"
+    },
+    "sort-packages": true
   },
   "repositories": [
     {
       "type": "vcs",
       "url": "https://github.com/joshuaspence/JAXL.git"
     }
-  ]
+  ],
+  "require": {
+    "aws/aws-sdk-php": "^3.7",
+    "jaxl/jaxl": "dev-master"
+  }
 }

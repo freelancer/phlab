@@ -16,8 +16,8 @@ final class PhabricatorBotLogHandler extends PhabricatorBotHandler {
 
     $target_name = $target->getName();
 
-    $logs = array(
-      array(
+    $logs = [
+      [
         'channel' => $target_name,
         'type'    => 'mesg',
         'epoch'   => time(),
@@ -25,20 +25,20 @@ final class PhabricatorBotLogHandler extends PhabricatorBotHandler {
         'message' => $message->getBody(),
         'serviceName' => $this->getServiceName(),
         'serviceType' => $this->getServiceType(),
-      ),
-    );
+      ],
+    ];
 
     $this->futures[] = $this->getConduit()->callMethod(
       'chatlog.record',
-      array(
+      [
         'logs' => $logs,
-      ));
+      ]);
 
-    $prompts = array(
+    $prompts = [
       '/where is the (chat)?log\?/i',
       '/where am i\?/i',
       '/what year is (this|it)\?/i',
-    );
+    ];
 
     $tell = false;
     foreach ($prompts as $prompt) {

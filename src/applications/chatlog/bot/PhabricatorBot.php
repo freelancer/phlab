@@ -76,14 +76,14 @@ final class PhabricatorBot extends PhabricatorDaemon {
 
         $response = $conduit->callMethodSynchronous(
           'conduit.connect',
-          array(
+          [
             'client'            => __CLASS__,
             'clientVersion'     => '1.0',
             'clientDescription' => php_uname('n').':'.$nick,
             'host'              => $conduit_host,
             'user'              => $conduit_user,
             'certificate'       => $conduit_cert,
-          ));
+          ]);
       }
 
       $this->conduit = $conduit;

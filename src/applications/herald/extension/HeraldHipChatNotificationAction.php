@@ -31,7 +31,7 @@ final class HeraldHipChatNotificationAction extends HeraldAction {
   public function applyEffect($object, HeraldEffect $effect) {
     $handle = id(new PhabricatorHandleQuery())
       ->setViewer(PhabricatorUser::getOmnipotentUser())
-      ->withPHIDs(array($this->getAdapter()->getPHID()))
+      ->withPHIDs([$this->getAdapter()->getPHID()])
       ->executeOne();
 
     $action = $this->getAdapter()->getIsNewObject()
@@ -78,16 +78,16 @@ final class HeraldHipChatNotificationAction extends HeraldAction {
 
   protected function getActionEffectMap() {
     return array(
-      self::DO_FAILED => array(
+      self::DO_FAILED => [
         'icon' => 'fa-times',
         'color' => 'red',
         'name' => pht('Notification Failed'),
-      ),
-      self::DO_NOTIFY => array(
+      ],
+      self::DO_NOTIFY => [
         'icon' => 'fa-envelope',
         'color' => 'green',
         'name' => pht('Notified'),
-      ),
+      ],
     );
   }
 
@@ -120,16 +120,16 @@ final class HeraldHipChatNotificationAction extends HeraldAction {
 
     $header = phutil_tag(
       'div',
-      array(),
-      array(
-        phutil_tag('b', array(), $action.': '),
+      [],
+      [
+        phutil_tag('b', [], $action.': '),
         phutil_tag(
           'a',
-          array('href' => PhabricatorEnv::getURI($handle->getURI())),
+          ['href' => PhabricatorEnv::getURI($handle->getURI())],
           $title),
-      ));
+      ]);
 
-    return (string)phutil_tag('div', array(), $header);
+    return (string)phutil_tag('div', [], $header);
   }
 
 }
