@@ -11,7 +11,7 @@ final class PhabricatorBotLogHandler extends PhabricatorBotHandler {
     $target = $message->getTarget();
     if (!$target->isPublic()) {
       // Don't log private messages, although maybe we should for debugging?
-      break;
+      return;
     }
 
     $target_name = $target->getName();
