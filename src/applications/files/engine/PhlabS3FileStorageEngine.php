@@ -177,8 +177,10 @@ final class PhlabS3FileStorageEngine extends PhabricatorFileStorageEngine {
    * @phutil-external-symbol class Aws\S3\S3Client
    */
   protected function getClient() {
+    $region = PhabricatorEnv::getEnvConfig('amazon-s3.region');
+
     return new Aws\S3\S3Client([
-      'region'  => 'us-east-1',
+      'region'  => $region,
       'version' => 'latest',
     ]);
   }
