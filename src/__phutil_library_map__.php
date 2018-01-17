@@ -11,6 +11,7 @@ phutil_register_library_map(array(
   'class' => array(
     'FreelancerGoogleAuthRegistrationListener' => 'applications/auth/event/FreelancerGoogleAuthRegistrationListener.php',
     'HeraldHipChatNotificationAction' => 'applications/herald/extension/HeraldHipChatNotificationAction.php',
+    'HeraldRocketChatNotificationAction' => 'applications/herald/extension/HeraldRocketChatNotificationAction.php',
     'HipChatClient' => 'infrastructure/HipChatClient.php',
     'HipChatConfigOptions' => 'applications/config/option/HipChatConfigOptions.php',
     'PhabricatorBot' => 'applications/chatlog/bot/PhabricatorBot.php',
@@ -30,11 +31,14 @@ phutil_register_library_map(array(
     'PhlabAmazonSESMailImplementationAdapter' => 'applications/metamta/adapter/PhlabAmazonSESMailImplementationAdapter.php',
     'PhlabLibraryTestCase' => '__tests__/PhlabLibraryTestCase.php',
     'PhlabS3FileStorageEngine' => 'applications/files/engine/PhlabS3FileStorageEngine.php',
+    'RocketChatClient' => 'infrastructure/RocketChatClient.php',
+    'RocketChatConfigOptions' => 'applications/config/option/RocketChatConfigOptions.php',
   ),
   'function' => array(),
   'xmap' => array(
     'FreelancerGoogleAuthRegistrationListener' => 'PhabricatorEventListener',
     'HeraldHipChatNotificationAction' => 'HeraldAction',
+    'HeraldRocketChatNotificationAction' => 'HeraldAction',
     'HipChatClient' => 'Phobject',
     'HipChatConfigOptions' => 'PhabricatorApplicationConfigOptions',
     'PhabricatorBot' => 'PhabricatorDaemon',
@@ -54,5 +58,7 @@ phutil_register_library_map(array(
     'PhlabAmazonSESMailImplementationAdapter' => 'PhabricatorMailImplementationPHPMailerLiteAdapter',
     'PhlabLibraryTestCase' => 'PhutilLibraryTestCase',
     'PhlabS3FileStorageEngine' => 'PhabricatorFileStorageEngine',
+    'RocketChatClient' => 'Phobject',
+    'RocketChatConfigOptions' => 'PhabricatorApplicationConfigOptions',
   ),
 ));
