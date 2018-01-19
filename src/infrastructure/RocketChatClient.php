@@ -29,16 +29,19 @@ final class RocketChatClient extends Phobject {
    * @param string  The channel.
    * @param string  The from name.
    * @param string  The message.
+   * @param array   An array of attachment objects.
    */
   public function messageRoom(
     $channel,
     $from,
-    $message) {
+    $message,
+    array $attachments = []) {
 
     $args = [
-      'channel' => $channel,
-      'alias'   => $from,
-      'text'    => $message,
+      'channel'     => $channel,
+      'alias'       => $from,
+      'text'        => $message,
+      'attachments' => $attachments,
     ];
     $response = $this->makeRequest('chat.postMessage', $args);
     return idx($response, 'status') == 'sent';

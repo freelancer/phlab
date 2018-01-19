@@ -39,13 +39,19 @@ final class HeraldRocketChatNotificationAction extends HeraldAction {
       : pht('Updated');
 
     try {
+      $attachment = [
+        'color' => 'green',
+        'text' => sprintf('*%s*: <%s|%s>',
+          $action,
+          $this->getURI($handle),
+          $object->getMonogram().': '.$object->getTitle()),
+      ];
+
       $this->getClient()->messageRoom(
         $effect->getTarget(),
         PhabricatorEnv::getEnvConfig('rocketchat.author'),
-        (string)$this->getMessage(
-          $action,
-          pht('%s: %s', $object->getMonogram(), $object->getTitle()),
-          $handle));
+        '',
+        [$attachment]);
       $this->logEffect(self::DO_NOTIFY, $effect->getTarget());
     } catch (Exception $ex) {
       $this->logEffect(self::DO_FAILED, $ex->getMessage());
@@ -120,14 +126,8 @@ final class HeraldRocketChatNotificationAction extends HeraldAction {
    * @param  PhabricatorObjectHandle
    * @return string
    */
-  private function getMessage(
-    $action,
-    $title,
-    PhabricatorObjectHandle $handle) {
-
-    $link = PhabricatorEnv::getURI($handle->getURI());
-    $text = "*$action* $title\n$link";
-    return $text;
+  private function getURI(PhabricatorObjectHandle $handle) {
+    return (string)PhabricatorEnv::getURI($handle->getURI());
   }
 
 }
