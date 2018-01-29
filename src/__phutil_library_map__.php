@@ -10,10 +10,7 @@ phutil_register_library_map(array(
   '__library_version__' => 2,
   'class' => array(
     'FreelancerGoogleAuthRegistrationListener' => 'applications/auth/event/FreelancerGoogleAuthRegistrationListener.php',
-    'HeraldHipChatNotificationAction' => 'applications/herald/extension/HeraldHipChatNotificationAction.php',
     'HeraldRocketChatNotificationAction' => 'applications/herald/extension/HeraldRocketChatNotificationAction.php',
-    'HipChatClient' => 'infrastructure/HipChatClient.php',
-    'HipChatConfigOptions' => 'applications/config/option/HipChatConfigOptions.php',
     'PhabricatorBot' => 'applications/chatlog/bot/PhabricatorBot.php',
     'PhabricatorBotFeedNotificationHandler' => 'applications/chatlog/bot/handler/PhabricatorBotFeedNotificationHandler.php',
     'PhabricatorBotHandler' => 'applications/chatlog/bot/handler/PhabricatorBotHandler.php',
@@ -38,10 +35,7 @@ phutil_register_library_map(array(
   'function' => array(),
   'xmap' => array(
     'FreelancerGoogleAuthRegistrationListener' => 'PhabricatorEventListener',
-    'HeraldHipChatNotificationAction' => 'HeraldAction',
     'HeraldRocketChatNotificationAction' => 'HeraldAction',
-    'HipChatClient' => 'Phobject',
-    'HipChatConfigOptions' => 'PhabricatorApplicationConfigOptions',
     'PhabricatorBot' => 'PhabricatorDaemon',
     'PhabricatorBotFeedNotificationHandler' => 'PhabricatorBotHandler',
     'PhabricatorBotHandler' => 'Phobject',
