@@ -39,19 +39,16 @@ final class HeraldRocketChatNotificationAction extends HeraldAction {
       : pht('Updated');
 
     try {
-      $attachment = [
-        'color' => 'green',
-        'text' => sprintf('*%s*: <%s|%s>',
-          $action,
-          $this->getURI($handle),
-          $object->getMonogram().': '.$object->getTitle()),
-      ];
+      $text = sprintf('*%s*: <%s|%s>',
+        $action,
+        $this->getURI($handle),
+        $object->getMonogram().': '.$object->getTitle());
 
       $this->getClient()->messageRoom(
         $effect->getTarget(),
         PhabricatorEnv::getEnvConfig('rocketchat.author'),
-        '',
-        [$attachment]);
+        $text,
+        []);
       $this->logEffect(self::DO_NOTIFY, $effect->getTarget());
     } catch (Exception $ex) {
       $this->logEffect(self::DO_FAILED, $ex->getMessage());
