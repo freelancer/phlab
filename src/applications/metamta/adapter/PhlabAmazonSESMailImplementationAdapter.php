@@ -14,6 +14,8 @@
 final class PhlabAmazonSESMailImplementationAdapter
   extends PhabricatorMailImplementationPHPMailerLiteAdapter {
 
+  const ADAPTERTYPE = 'aws-ses';
+
   // We pin the API version so our code will not be affected by a breaking
   // change made to the service
   const API_VERSION = '2010-12-01';
@@ -33,6 +35,7 @@ final class PhlabAmazonSESMailImplementationAdapter
   }
 
   protected function validateOptions(array $options) {
+    // TODO: This ignores options inherited from the parent adapter.
     PhutilTypeSpec::checkMap(
       $options,
       [
@@ -41,13 +44,13 @@ final class PhlabAmazonSESMailImplementationAdapter
   }
 
   public function newDefaultOptions() {
-    return [
+    return parent::newDefaultOptions() + [
       'endpoint' => null,
     ];
   }
 
   public function newLegacyOptions() {
-    return [
+    return parent::newLegacyOptions() + [
       'endpoint' => PhabricatorEnv::getEnvConfig('amazon-ses.endpoint'),
     ];
   }
