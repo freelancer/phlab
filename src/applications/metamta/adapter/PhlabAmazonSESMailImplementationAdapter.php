@@ -40,6 +40,10 @@ final class PhlabAmazonSESMailImplementationAdapter
       $options,
       [
         'endpoint' => 'string',
+
+        // TODO: This is copied from the parent implementation and shouldn't
+        // need to be copied here.
+        'encoding' => 'string',
       ]);
   }
 
