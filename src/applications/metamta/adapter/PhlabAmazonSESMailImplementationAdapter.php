@@ -21,8 +21,8 @@ final class PhlabAmazonSESMailImplementationAdapter
   private $message;
   private $isHTML;
 
-  public function __construct() {
-    parent::__construct();
+  public function prepareForSend() {
+    parent::prepareForSend();
     $this->mailer->Mailer = 'amazon-ses';
     $this->mailer->customMailer = $this;
   }
@@ -32,6 +32,26 @@ final class PhlabAmazonSESMailImplementationAdapter
     return false;
   }
 
+  protected function validateOptions(array $options) {
+    PhutilTypeSpec::checkMap(
+      $options,
+      [
+        'endpoint' => 'string',
+      ]);
+  }
+
+  public function newDefaultOptions() {
+    return [
+      'endpoint' => null,
+    ];
+  }
+
+  public function newLegacyOptions() {
+    return [
+      'endpoint' => PhabricatorEnv::getEnvConfig('amazon-ses.endpoint'),
+    ];
+  }
+
   /**
    * @phutil-external-symbol class Aws\Ses\SesClient
    */
@@ -39,14 +59,8 @@ final class PhlabAmazonSESMailImplementationAdapter
     // Instead of introducing new config option, we use the endpoint config for
     // @{class:PhabricatorMailImplementationAmazonSESAdapter} to get region
     // information. So it will be eaiser for us to migrate our code later.
-    $endpoint = PhabricatorEnv::getEnvConfig('amazon-ses.endpoint');
-    if (!$endpoint) {
-      throw new Exception(
-        pht(
-          "Configure '%s' to use Amazon SES for mail delivery.",
-          'amazon-ses.endpoint'));
-    }
-    $region = idx(explode('.', $endpoint), 1);
+    $endpoint = $this->getOption('endpoint');
+    $region   = idx(explode('.', $endpoint), 1);
 
     $client = new Aws\Ses\SesClient([
       'region'  => $region,
