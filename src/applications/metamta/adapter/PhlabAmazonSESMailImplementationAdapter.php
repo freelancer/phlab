@@ -35,15 +35,11 @@ final class PhlabAmazonSESMailImplementationAdapter
   }
 
   protected function validateOptions(array $options) {
-    // TODO: This ignores options inherited from the parent adapter.
     PhutilTypeSpec::checkMap(
       $options,
       [
-        'endpoint' => 'string',
-
-        // TODO: This is copied from the parent implementation and shouldn't
-        // need to be copied here.
         'encoding' => 'string',
+        'endpoint' => 'string',
       ]);
   }
 
