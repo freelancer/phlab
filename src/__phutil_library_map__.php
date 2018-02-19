@@ -9,6 +9,7 @@
 phutil_register_library_map(array(
   '__library_version__' => 2,
   'class' => array(
+    'CreatePolicyConduitAPIMethod' => 'conduit/CreatePolicyConduitAPIMethod.php',
     'FreelancerGoogleAuthRegistrationListener' => 'applications/auth/event/FreelancerGoogleAuthRegistrationListener.php',
     'HeraldRocketChatNotificationAction' => 'applications/herald/extension/HeraldRocketChatNotificationAction.php',
     'PhabricatorBot' => 'applications/chatlog/bot/PhabricatorBot.php',
@@ -34,6 +35,7 @@ phutil_register_library_map(array(
   ),
   'function' => array(),
   'xmap' => array(
+    'CreatePolicyConduitAPIMethod' => 'ConduitAPIMethod',
     'FreelancerGoogleAuthRegistrationListener' => 'PhabricatorEventListener',
     'HeraldRocketChatNotificationAction' => 'HeraldAction',
     'PhabricatorBot' => 'PhabricatorDaemon',
