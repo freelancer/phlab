@@ -53,30 +53,30 @@ if ($jira_auth === null) {
 
 $priority_map = [];
 foreach (explode(',', $args->getArg('priority-map')) as $mapping) {
-  list($from, $to) = explode('=', $mapping, 2);
+  $fields = explode('=', $mapping, 2);
 
   // Just ignore invalid mappings.
-  if ($to === null) {
+  if (count($fields) !== 2) {
     continue;
   }
 
-  $from = strtolower($from);
-  $to   = strtolower($to);
+  $from = strtolower($fields[0]);
+  $to   = strtolower($fields[1]);
 
   $priority_map[$from] = ManiphestTaskPriority::getTaskPriorityFromKeyword($to);
 }
 
 $status_map = [];
 foreach (explode(',', $args->getArg('status-map')) as $mapping) {
-  list($from, $to) = explode('=', $mapping, 2);
+  $fields = explode('=', $mapping, 2);
 
   // Just ignore invalid mappings.
-  if ($to === null) {
+  if (count($fields) !== 2) {
     continue;
   }
 
-  $from = strtolower($from);
-  $to   = strtolower($to);
+  $from = strtolower($fields[0]);
+  $to   = strtolower($fields[1]);
 
   $status_map[$from] = $to;
 }
@@ -123,6 +123,20 @@ foreach (new FutureIterator($futures) as $key => $future) {
 
     if ($description !== null) {
       $task->setDescription($description);
+    }
+
+    if ($original['assignee'] !== null) {
+      $assignee_email = $original['assignee']['emailAddress'];
+      $assignee       = PhabricatorUser::loadOneWithEmailAddress($assignee_email);
+
+      if ($assignee === null) {
+        throw new Exception(
+          pht(
+            'No Phabricator user found with email address: %s',
+            $assignee_email));
+      }
+
+      $task->setOwnerPHID($assignee->getPHID());
     }
 
     $task->setPriority(
