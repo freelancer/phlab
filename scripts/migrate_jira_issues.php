@@ -27,6 +27,11 @@ $args->parse([
     'help'  => pht('Mapping of JIRA priorities to Phabricator priorities.'),
   ],
   [
+    'name'  => 'status-map',
+    'param' => 'from=to,from=to,...',
+    'help'  => pht('Mapping of JIRA statuses to Phabricator statuses.'),
+  ],
+  [
     'name'     => 'issues',
     'wildcard' => true,
   ],
@@ -61,6 +66,21 @@ foreach (explode(',', $args->getArg('priority-map')) as $mapping) {
   $priority_map[$from] = ManiphestTaskPriority::getTaskPriorityFromKeyword($to);
 }
 
+$status_map = [];
+foreach (explode(',', $args->getArg('status-map')) as $mapping) {
+  list($from, $to) = explode('=', $mapping, 2);
+
+  // Just ignore invalid mappings.
+  if ($to === null) {
+    continue;
+  }
+
+  $from = strtolower($from);
+  $to   = strtolower($to);
+
+  $status_map[$from] = $to;
+}
+
 $jira_issues = $args->getArg('issues');
 if (count($jira_issues) === 0) {
   $args->printHelpAndExit();
@@ -88,6 +108,8 @@ foreach (new FutureIterator($futures) as $key => $future) {
     $creator       = PhabricatorUser::loadOneWithEmailAddress($creator_email);
     $title         = $original['summary'];
     $description   = $original['description'];
+    $priority      = $original['priority'];
+    $status        = $original['resolution'];
 
     if ($creator === null) {
       throw new Exception(
@@ -106,8 +128,16 @@ foreach (new FutureIterator($futures) as $key => $future) {
     $task->setPriority(
       idx(
         $priority_map,
-        strtolower($original['priority']['name']),
+        strtolower($priority['name']),
         ManiphestTaskPriority::getDefaultPriority()));
+
+    if ($status !== null) {
+      $task->setStatus(
+        idx(
+          $status_map,
+          strtolower($status['name']),
+          ManiphestTaskStatus::getDefaultStatus()));
+    }
 
     $task->save();
     $console->writeOut(
