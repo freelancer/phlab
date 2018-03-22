@@ -38,6 +38,11 @@ $args->parse([
     'help'  => pht('Mapping of JIRA statuses to Phabricator statuses.'),
   ],
   [
+    'name'  => 'project',
+    'param' => 'slug',
+    'help'  => pht('Project to tag migrated Phabricator tasks with.'),
+  ],
+  [
     'name'     => 'issues',
     'wildcard' => true,
   ],
@@ -97,6 +102,21 @@ foreach (explode(',', $args->getArg('status-map')) as $mapping) {
   $to   = strtolower($fields[1]);
 
   $status_map[$from] = $to;
+}
+
+$project = null;
+$slug    = $args->getArg('project');
+
+if ($slug !== null) {
+  $project = id(new PhabricatorProjectQuery())
+    ->setViewer($actor)
+    ->withSlugs([$slug])
+    ->executeOne();
+
+  if ($project === null) {
+    throw new PhutilArgumentUsageException(
+      pht('No project found with slug: #%s', $slug));
+  }
 }
 
 $jira_issues = $args->getArg('issues');
@@ -171,7 +191,7 @@ foreach (new FutureIterator($futures) as $key => $future) {
           ManiphestTaskStatus::getDefaultStatus()));
     }
 
-    $content_source = PhabricatorContentSource::newForSource('console');
+    $content_source = new PhabricatorConsoleContentSource();
     $transactions   = [];
 
     // Add a comment explaining that the task has been migrated from JIRA.
@@ -184,12 +204,21 @@ foreach (new FutureIterator($futures) as $key => $future) {
             "${jira_url}/browse/${key}",
             $key)));
 
+    // Tag the imported task with the specified project.
+    if ($project !== null) {
+      $transactions[] = (new ManiphestTransaction())
+        ->setTransactionType(PhabricatorTransactions::TYPE_EDGE)
+        ->setMetadataValue(
+          'edge:type',
+          PhabricatorProjectObjectHasProjectEdgeType::EDGECONST)
+        ->setNewValue(['=' => array_fuse([$project->getPHID()])]);
+    }
+
     $editor = id(new ManiphestTransactionEditor())
       ->setActor($actor)
       ->setContentSource($content_source)
       ->applyTransactions($task, $transactions);
 
-    $task->save();
     $console->writeOut(
       "%s\n",
       pht('Migrated %s to %s.', $key, $task->getMonogram()));
