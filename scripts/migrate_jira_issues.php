@@ -22,6 +22,11 @@ $args->parse([
       'JSESSIONID'),
   ],
   [
+    'name'  => 'priority-map',
+    'param' => 'from=to,from=to,...',
+    'help'  => pht('Mapping of JIRA priorities to Phabricator priorities.'),
+  ],
+  [
     'name'     => 'issues',
     'wildcard' => true,
   ],
@@ -39,6 +44,21 @@ $jira_auth = $args->getArg('jira-auth-cookie');
 if ($jira_auth === null) {
   throw new PhutilArgumentUsageException(
     pht('You must provide a JIRA authentication cookie.'));
+}
+
+$priority_map = [];
+foreach (explode(',', $args->getArg('priority-map')) as $mapping) {
+  list($from, $to) = explode('=', $mapping, 2);
+
+  // Just ignore invalid mappings.
+  if ($to === null) {
+    continue;
+  }
+
+  $from = strtolower($from);
+  $to   = strtolower($to);
+
+  $priority_map[$from] = ManiphestTaskPriority::getTaskPriorityFromKeyword($to);
 }
 
 $jira_issues = $args->getArg('issues');
@@ -82,6 +102,12 @@ foreach (new FutureIterator($futures) as $key => $future) {
     if ($description !== null) {
       $task->setDescription($description);
     }
+
+    $task->setPriority(
+      idx(
+        $priority_map,
+        strtolower($original['priority']['name']),
+        ManiphestTaskPriority::getDefaultPriority()));
 
     $task->save();
     $console->writeOut(
