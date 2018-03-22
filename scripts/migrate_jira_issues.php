@@ -9,6 +9,12 @@ $args->setTagline('Migrate tasks from JIRA to Phabricator.');
 $args->parseStandardArguments();
 $args->parse([
   [
+    'name'  => 'actor',
+    'param' => 'username',
+    'help'  => pht(
+      'The Phabricator user to act as when not impersonating another user.'),
+  ],
+  [
     'name'  => 'jira-url',
     'param' => 'url',
     'help'  => pht('JIRA base URL.'),
@@ -38,6 +44,18 @@ $args->parse([
 ]);
 
 $console = PhutilConsole::getConsole();
+
+$actor_name = $args->getArg('actor');
+if ($actor_name === null) {
+  throw new PhutilArgumentUsageException(
+    pht('You must specify the acting Phabricator user.'));
+}
+
+$actor = (new PhabricatorUser())->loadOneWhere('username = %s', $actor_name);
+if ($actor === null) {
+  throw new PhutilArgumentUsageException(
+    pht('Phabricator user does not exist: %s', $actor_name));
+}
 
 $jira_url = $args->getArg('jira-url');
 if ($jira_url === null) {
@@ -152,6 +170,24 @@ foreach (new FutureIterator($futures) as $key => $future) {
           strtolower($status['name']),
           ManiphestTaskStatus::getDefaultStatus()));
     }
+
+    $content_source = PhabricatorContentSource::newForSource('console');
+    $transactions   = [];
+
+    // Add a comment explaining that the task has been migrated from JIRA.
+    $transactions[] = (new ManiphestTransaction())
+      ->setTransactionType(PhabricatorTransactions::TYPE_COMMENT)
+      ->attachComment(
+        (new ManiphestTransactionComment())
+          ->setContent(sprintf(
+            'This task has been migrated from JIRA: [[%s | %s]]',
+            "${jira_url}/browse/${key}",
+            $key)));
+
+    $editor = id(new ManiphestTransactionEditor())
+      ->setActor($actor)
+      ->setContentSource($content_source)
+      ->applyTransactions($task, $transactions);
 
     $task->save();
     $console->writeOut(
