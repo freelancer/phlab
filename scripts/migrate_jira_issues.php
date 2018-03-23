@@ -261,10 +261,32 @@ foreach (new FutureIterator($futures) as $key => $future) {
     if ($project !== null) {
       $transactions[] = (new ManiphestTransaction())
         ->setTransactionType(PhabricatorTransactions::TYPE_EDGE)
-        ->setMetadataValue(
-          'edge:type',
-          PhabricatorProjectObjectHasProjectEdgeType::EDGECONST)
+        ->setMetadataValue('edge:type', PhabricatorProjectObjectHasProjectEdgeType::EDGECONST)
         ->setNewValue(['=' => array_fuse([$project->getPHID()])]);
+    }
+
+    // Add subscribers.
+    $subscribers_uri = (new PhutilURI($future->getURI()))
+      ->appendPath('watchers');
+    $subscribers_future = (new HTTPSFuture($subscribers_uri))
+      ->addHeader('Cookie', "JSESSIONID=${jira_auth}")
+      ->addHeader('Content-Type', 'application/json');
+    list($subscribers_body) = $subscribers_future->resolvex();
+
+    $subscribers = array_map(
+      function (array $subscriber): ?PhabricatorUser {
+        return PhabricatorUser::loadOneWithEmailAddress($subscriber['emailAddress']);
+      },
+      phutil_json_decode($subscribers_body)['watchers']);
+
+    // Just ignore any JIRA watchers that don't exist as Phabricator users.
+    $subscribers = array_filter($subscribers);
+
+    if (count($subscribers) > 0) {
+      $transactions[] = (new ManiphestTransaction())
+        ->setTransactionType(PhabricatorTransactions::TYPE_EDGE)
+        ->setMetadataValue('edge:type', PhabricatorObjectHasSubscriberEdgeType::EDGECONST)
+        ->setNewValue(['=' => array_fuse(mpull($subscribers, 'getPHID'))]);
     }
 
     $editor = id(new ManiphestTransactionEditor())
