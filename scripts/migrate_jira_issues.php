@@ -193,9 +193,6 @@ foreach (new FutureIterator($futures) as $key => $future) {
     $content_source = new PhabricatorConsoleContentSource();
     $transactions   = [];
 
-    // TODO: We should preserve the original author of the comment, but this is
-    // going to be a bit tricky because comment authorship is inherited from
-    // the transaction editor which applies the comments.
     foreach ($comments as $comment) {
       $body = $comment['body'];
 
@@ -233,10 +230,20 @@ foreach (new FutureIterator($futures) as $key => $future) {
         continue;
       }
 
+      $author_email = $comment['author']['emailAddress'];
+      $author = PhabricatorUser::loadOneWithEmailAddress($author_email);
+
+      if ($author === null) {
+        throw new Exception(
+          pht('No Phabricator user found with email address: %s', $author_email));
+      }
+
       $transactions[] = (new ManiphestTransaction())
+        ->setAuthorPHID($author->getPHID())
         ->setTransactionType(PhabricatorTransactions::TYPE_COMMENT)
         ->attachComment(
           (new ManiphestTransactionComment())
+            ->setAuthorPHID($author->getPHID())
             ->setContent($comment['body']));
     }
 
