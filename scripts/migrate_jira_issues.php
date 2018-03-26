@@ -124,6 +124,26 @@ if (count($jira_issues) === 0) {
   $args->printHelpAndExit();
 }
 
+/**
+ * Apply some basic transformations to (partially) translate
+ * [[https://jira.atlassian.com/secure/WikiRendererHelpAction.jspa | JIRA text
+ * formating]] to [[https://secure.phabricator.com/book/phabricator/article/remarkup/ |
+ * Remarkup]].
+ */
+function transform_text(string $text): string {
+  $base_uri = PhabricatorEnv::getEnvConfig('phabricator.base-uri');
+
+  $transformations = [
+    // Translate Phabricator URLs to object mentions.
+    pregsprintf('\b%s/([DT][1-9]\d*(?:#([-\w\d]+))?)', '', $base_uri) => '$1',
+  ];
+
+  return preg_replace(
+    array_keys($transformations),
+    array_values($transformations),
+    $text);
+}
+
 $futures = array_map(
   function (string $issue) use ($jira_url, $jira_auth): HTTPSFuture {
     $uri = (new PhutilURI($jira_url))
@@ -159,7 +179,7 @@ foreach (new FutureIterator($futures) as $key => $future) {
       ->setTitle($title);
 
     if ($description !== null) {
-      $task->setDescription($description);
+      $task->setDescription(transform_text($description));
     }
 
     if ($original['assignee'] !== null) {
@@ -245,7 +265,7 @@ foreach (new FutureIterator($futures) as $key => $future) {
         ->attachComment(
           (new ManiphestTransactionComment())
             ->setAuthorPHID($author->getPHID())
-            ->setContent($comment['body']));
+            ->setContent(transform_text($comment['body'])));
     }
 
     // Add a comment explaining that the task has been migrated from JIRA.
