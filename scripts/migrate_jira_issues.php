@@ -208,6 +208,7 @@ foreach (new FutureIterator($futures) as $key => $future) {
             'added a comment to',
             'added a project to',
             'added a reviewer for',
+            'added a task to',
             'added inline comments to',
             'added projects to',
             'added reviewers for',
@@ -327,6 +328,37 @@ foreach (new FutureIterator($futures) as $key => $future) {
                     return sprintf('{%s, layout=link}', $file->getMonogram());
                   },
                   $attachments))));
+    }
+
+    // Link associated Differential revisions and Diffusion commits to the
+    // migrated Maniphest task.
+    $doorkeeper_object = (new DoorkeeperExternalObject())->loadOneWhere(
+      'applicationType = %s AND objectType = %s AND objectID = %s',
+      DoorkeeperBridgeJIRA::APPTYPE_JIRA,
+      DoorkeeperBridgeJIRA::OBJTYPE_ISSUE,
+      $key);
+
+    if ($doorkeeper_object !== null) {
+      $revisions = (new DifferentialRevisionQuery())
+        ->setViewer($actor)
+        ->needCommitPHIDs(true)
+        ->withEdgeLogicPHIDs(
+          PhabricatorJiraIssueHasObjectEdgeType::EDGECONST,
+          PhabricatorQueryConstraint::OPERATOR_OR,
+          [$doorkeeper_object->getPHID()])
+        ->execute();
+
+      $revision_phids = mpull($revisions, 'getPHID');
+      $transactions[] = (new ManiphestTransaction())
+        ->setTransactionType(PhabricatorTransactions::TYPE_EDGE)
+        ->setMetadataValue('edge:type', ManiphestTaskHasRevisionEdgeType::EDGECONST)
+        ->setNewValue(['=' => array_fuse($revision_phids)]);
+
+      $commit_phids = array_mergev(mpull($revisions, 'getCommitPHIDs'));
+      $transactions[] = (new ManiphestTransaction())
+        ->setTransactionType(PhabricatorTransactions::TYPE_EDGE)
+        ->setMetadataValue('edge:type', ManiphestTaskHasCommitEdgeType::EDGECONST)
+        ->setNewValue(['=' => array_fuse($commit_phids)]);
     }
 
     $editor = id(new ManiphestTransactionEditor())
