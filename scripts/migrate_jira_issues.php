@@ -331,14 +331,44 @@ foreach (new FutureIterator($futures) as $key => $future) {
     }
 
     // Add a comment explaining that the task has been migrated from JIRA.
+    $comment_body = sprintf(
+      'This task has been migrated from JIRA: [[%s | %s]]',
+      "${jira_url}/browse/${key}",
+      $key);
+
+    // Add issue links to the main comment body.
+    $issuelinks = $original['issuelinks'];
+    if ($issuelinks !== null) {
+      $comment_body .= "\n\n= Original issue links =";
+
+      foreach ($issuelinks as $issuelink) {
+        if ($issue = idx($issuelink, 'inwardIssue')) {
+          $comment_body .= sprintf(
+            "\n- %s [[%s/browse/%s | %s: %s]]",
+            ucfirst($issuelink['type']['inward']),
+            $jira_url,
+            $issue['key'],
+            $issue['key'],
+            $issue['fields']['summary']);
+        }
+
+        if ($issue = idx($issuelink, 'outwardIssue')) {
+          $comment_body .= sprintf(
+            "\n- %s [[%s/browse/%s | %s: %s]]",
+            ucfirst($issuelink['type']['outward']),
+            $jira_url,
+            $issue['key'],
+            $issue['key'],
+            $issue['fields']['summary']);
+        }
+      }
+    }
+
     $transactions[] = (new ManiphestTransaction())
       ->setTransactionType(PhabricatorTransactions::TYPE_COMMENT)
       ->attachComment(
         (new ManiphestTransactionComment())
-          ->setContent(sprintf(
-            'This task has been migrated from JIRA: [[%s | %s]]',
-            "${jira_url}/browse/${key}",
-            $key)));
+          ->setContent($comment_body));
 
     // Tag the imported task with the specified project.
     if ($project !== null) {
