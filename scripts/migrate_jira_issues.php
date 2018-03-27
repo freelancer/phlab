@@ -136,6 +136,10 @@ function transform_text(string $text): string {
   $transformations = [
     // Translate Phabricator URLs to object mentions.
     pregsprintf('\b%s/([DT][1-9]\d*(?:#([-\w\d]+))?)', '', $base_uri) => '$1',
+
+    // Translate username mentions.
+    pregsprintf('\B\[~(%R)\]\B', '', '[a-zA-Z0-9._-]*[a-zA-Z0-9_-]') => '@$1',
+
   ];
 
   return preg_replace(
