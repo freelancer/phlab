@@ -244,6 +244,7 @@ foreach (new FutureIterator($futures) as $key => $future) {
             'closed',
             'created',
             'edited reviewers for',
+            'failed to build B[1-9]\d*: Diff [1-9]\d* for',
             'removed reviewers',
             'requested changes to',
             'requested review of',
@@ -253,6 +254,7 @@ foreach (new FutureIterator($futures) as $key => $future) {
             'updated subscribers of',
             'updated the diff for',
             'updated the summary for',
+            'updated the summary of',
             'updated the test plan for',
           ]));
 
