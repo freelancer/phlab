@@ -140,6 +140,11 @@ function transform_text(string $text): string {
     // Translate username mentions.
     pregsprintf('\B\[~(%R)\]\B', '', '[a-zA-Z0-9._-]*[a-zA-Z0-9_-]') => '@$1',
 
+    // Single-lined code blocks. Use backticks unless the code block itself
+    // contains backticks, in which case `##` is used as a delimiter instead.
+    '/{{([^{`\n]+)}}/' => '`$1`',
+    '/{{([^{\n]+)}}/'  => '##$1##',
+
   ];
 
   return preg_replace(
