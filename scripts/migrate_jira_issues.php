@@ -219,7 +219,8 @@ foreach (new FutureIterator($futures) as $key => $future) {
           ManiphestTaskStatus::getDefaultStatus()));
     }
 
-    $content_source = new PhabricatorConsoleContentSource();
+    $content_source = PhabricatorContentSource::newForSource(
+      PhabricatorConsoleContentSource::SOURCECONST);
     $transactions   = [];
 
     foreach ($comments as $comment) {
