@@ -155,6 +155,9 @@ function transform_text(string $text): string {
     '/^h4\. *(.*)$/m' => '==== $1 ====',
     '/^h5\. *(.*)$/m' => '===== $1 =====',
     '/^h6\. *(.*)$/m' => '====== $1 ======',
+
+    // Unsupported formatting
+    '/{color(?::(?:[a-zA-Z]+|#?[0-9a-fA-F]+))?}/' => '',
   ];
 
   return preg_replace(
