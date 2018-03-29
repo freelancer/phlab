@@ -336,10 +336,10 @@ foreach (new FutureIterator($futures) as $key => $future) {
       "${jira_url}/browse/${key}",
       $key);
 
-    // Add issue links to the main comment body.
+    // Add issue links as a comment.
     $issuelinks = $original['issuelinks'];
     if ($issuelinks !== null) {
-      $comment_body .= "\n\n= Original issue links =";
+      $comment_body .= "\n\n= Issue Links =";
 
       foreach ($issuelinks as $issuelink) {
         if ($issue = idx($issuelink, 'inwardIssue')) {
@@ -361,6 +361,36 @@ foreach (new FutureIterator($futures) as $key => $future) {
             $issue['key'],
             $issue['fields']['summary']);
         }
+      }
+    }
+
+    // Migrate attachments.
+    //
+    // Maniphest doesn't support attachments, so instead we just comment on the
+    // Maniphest task with a list of attachments.
+    if (count($original_attachments = $original['attachment']) > 0) {
+      $comment_body .= "\n\n= Attachments =";
+
+      foreach ($original_attachments as $attachment) {
+        $attachment_future = (new HTTPSFuture($attachment['content']))
+          ->addHeader('Cookie', "JSESSIONID=${jira_auth}");
+
+        $params = [
+          'isExplicitUpload' => true,
+          'name'             => $attachment['filename'],
+          'mime-type'        => $attachment['mimeType'],
+        ];
+
+        $attachment_author = PhabricatorUser::loadOneWithEmailAddress($attachment['author']['emailAddress']);
+        if ($attachment_author !== null) {
+          $params['authorPHID'] = $attachment_author->getPHID();
+        }
+
+        list($attachment_body) = $attachment_future->resolvex();
+        $attachment_file = PhabricatorFile::newFromFileData($attachment_body, $params);
+        $comment_body .= sprintf(
+          "\n{%s, layout=link}",
+          $attachment_file->getMonogram());
       }
     }
 
@@ -400,46 +430,6 @@ foreach (new FutureIterator($futures) as $key => $future) {
         ->setTransactionType(PhabricatorTransactions::TYPE_EDGE)
         ->setMetadataValue('edge:type', PhabricatorObjectHasSubscriberEdgeType::EDGECONST)
         ->setNewValue(['=' => array_fuse(mpull($subscribers, 'getPHID'))]);
-    }
-
-    // Migrate attachments.
-    if (count($original_attachments = $original['attachment']) > 0) {
-      $attachments = [];
-
-      foreach ($original_attachments as $attachment) {
-        $attachment_future = (new HTTPSFuture($attachment['content']))
-          ->addHeader('Cookie', "JSESSIONID=${jira_auth}");
-
-        $params = [
-          'isExplicitUpload' => true,
-          'name'             => $attachment['filename'],
-          'mime-type'        => $attachment['mimeType'],
-        ];
-
-        $attachment_author = PhabricatorUser::loadOneWithEmailAddress($attachment['author']['emailAddress']);
-        if ($attachment_author !== null) {
-          $params['authorPHID'] = $attachment_author->getPHID();
-        }
-
-        list($attachment_body) = $attachment_future->resolvex();
-        $attachments[] = PhabricatorFile::newFromFileData($attachment_body, $params);
-      }
-
-      // Maniphest doesn't support attachments, so instead we just comment on
-      // the Maniphest task with a list of attachments.
-      $transactions[] = (new ManiphestTransaction())
-        ->setTransactionType(PhabricatorTransactions::TYPE_COMMENT)
-        ->attachComment(
-          (new ManiphestTransactionComment())
-            ->setContent(
-              "The following attachments were migrated from JIRA:\n\n".
-              implode(
-                "\n",
-                array_map(
-                  function (PhabricatorFile $file): string {
-                    return sprintf('{%s, layout=link}', $file->getMonogram());
-                  },
-                  $attachments))));
     }
 
     // Link associated Differential revisions and Diffusion commits to the
