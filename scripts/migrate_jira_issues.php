@@ -52,26 +52,40 @@ $console = PhutilConsole::getConsole();
 
 $actor_name = $args->getArg('actor');
 if ($actor_name === null) {
-  throw new PhutilArgumentUsageException(
-    pht('You must specify the acting Phabricator user.'));
+  $args->printUsageException(
+    new PhutilArgumentUsageException(
+      pht(
+        'You must specify the acting Phabricator user with `%s`.',
+        '--actor')));
+  exit(PhutilArgumentParser::PARSE_ERROR_CODE);
 }
 
 $actor = (new PhabricatorUser())->loadOneWhere('username = %s', $actor_name);
 if ($actor === null) {
-  throw new PhutilArgumentUsageException(
-    pht('Phabricator user does not exist: %s', $actor_name));
+  $args->printUsageException(
+    new PhutilArgumentUsageException(
+      pht('Phabricator user does not exist: %s', $actor_name)));
+  exit(PhutilArgumentParser::PARSE_ERROR_CODE);
 }
 
 $jira_url = $args->getArg('jira-url');
 if ($jira_url === null) {
-  throw new PhutilArgumentUsageException(
-    pht('You must specify the JIRA base URL.'));
+  $args->printUsageException(
+    new PhutilArgumentUsageException(
+      pht(
+        'You must specify the JIRA base URL with `%s`.',
+        '--jira-url')));
+  exit(PhutilArgumentParser::PARSE_ERROR_CODE);
 }
 
 $jira_auth = $args->getArg('jira-auth-cookie');
 if ($jira_auth === null) {
-  throw new PhutilArgumentUsageException(
-    pht('You must provide a JIRA authentication cookie.'));
+  $args->printUsageException(
+    new PhutilArgumentUsageException(
+      pht(
+        'You must provide a JIRA authentication cookie with `%s`.',
+        '--jira-auth-cookie')));
+  exit(PhutilArgumentParser::PARSE_ERROR_CODE);
 }
 
 $priority_map = [];
@@ -114,8 +128,10 @@ if ($slug !== null) {
     ->executeOne();
 
   if ($project === null) {
-    throw new PhutilArgumentUsageException(
-      pht('No project found with slug: #%s', $slug));
+    $args->printUsageException(
+      new PhutilArgumentUsageException(
+        pht('No project found with slug: #%s', $slug)));
+    exit(PhutilArgumentParser::PARSE_ERROR_CODE);
   }
 }
 
