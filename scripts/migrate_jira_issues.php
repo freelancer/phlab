@@ -143,6 +143,9 @@ function transform_text(string $text): string {
     '(?::\d+)?(?:[^\s]*)?';
 
   $transformations = [
+    // Convert CRLF to LF.
+    "/\r\n/" => "\n",
+
     // Translate Phabricator URLs to object mentions.
     pregsprintf('\b%s/([DT][1-9]\d*(?:#([-\w\d]+))?)', '', $base_uri) => '$1',
 
@@ -156,6 +159,11 @@ function transform_text(string $text): string {
 
     // Block quotes
     '/^bq\. */m' => '> ',
+
+    // Code blocks
+    '/^ *{code:(?:language=)?(\w+)} *$/m' => '```lang=$1',
+    '/^ *{code(?::[^{}]*)?} *$/m' => '```',
+    '/^ *{noformat} *$/m' => '```',
 
     // Headings
     '/^h1\. *(.*)$/m' => '= $1 =',
