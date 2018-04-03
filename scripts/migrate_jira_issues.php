@@ -151,10 +151,7 @@ if (count($jira_issues) === 0) {
  * Remarkup]].
  */
 function transform_text(string $text): string {
-  $base_uri = PhabricatorEnv::getEnvConfig('phabricator.base-uri');
-
-  // According to http://urlregex.com/, this is the "perfect URL
-  // regular expression".
+  // According to http://urlregex.com/, this is the "perfect URL regular expression".
   $url_regex = '(?:(?:https?|ftp)://)'.
     '(?:\S+(?::\S*)?@|\d{1,3}(?:\.\d{1,3}){3}|'.
     '(?:(?:[a-z\d\x{00a1}-\x{ffff}]+-?)*[a-z\d\x{00a1}-\x{ffff}]+)'.
@@ -162,12 +159,19 @@ function transform_text(string $text): string {
     '(?:\.[a-z\x{00a1}-\x{ffff}]{2,6}))'.
     '(?::\d+)?(?:[^\s]*)?';
 
+  $object_mention_regex = pregsprintf(
+    '\b%s/((%R|%R)(?:#([-\w\d]+))?)',
+    '',
+    PhabricatorEnv::getEnvConfig('phabricator.base-uri'),
+    '[B-FHIK-MPQS-WZ][1-9]\d*',
+    '(?:r[A-Z]+:?|R[1-9]\d*:)[0-9a-f]{5,40}');
+
   $transformations = [
     // Convert CRLF to LF.
     "/\r\n/" => "\n",
 
     // Translate Phabricator URLs to object mentions.
-    pregsprintf('\b%s/([DT][1-9]\d*(?:#([-\w\d]+))?)', '', $base_uri) => '$1',
+    $object_mention_regex => '$1',
 
     // Translate username mentions.
     pregsprintf('\B\[~(%R)\]\B', '', '[a-zA-Z0-9._-]*[a-zA-Z0-9_-]') => '@$1',
