@@ -64,7 +64,9 @@ $actor = (new PhabricatorUser())->loadOneWhere('username = %s', $actor_name);
 if ($actor === null) {
   $args->printUsageException(
     new PhutilArgumentUsageException(
-      pht('Phabricator user does not exist: %s', $actor_name)));
+      pht(
+        'Phabricator user does not exist: %s',
+        $actor_name)));
   exit(PhutilArgumentParser::PARSE_ERROR_CODE);
 }
 
@@ -130,7 +132,9 @@ if ($slug !== null) {
   if ($project === null) {
     $args->printUsageException(
       new PhutilArgumentUsageException(
-        pht('No project found with slug: #%s', $slug)));
+        pht(
+          'No project found with slug: #%s',
+          $slug)));
     exit(PhutilArgumentParser::PARSE_ERROR_CODE);
   }
 }
