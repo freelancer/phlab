@@ -239,7 +239,9 @@ foreach (new FutureIterator($futures) as $key => $future) {
     $creator = PhabricatorUser::loadOneWithEmailAddress($creator_email);
     if ($creator === null) {
       throw new Exception(
-        pht('No Phabricator user found with email address: %s', $creator_email));
+        pht(
+          'No Phabricator user found with email address: %s',
+          $creator_email));
     }
 
     $task = ManiphestTask::initializeNewTask($creator)
@@ -277,9 +279,8 @@ foreach (new FutureIterator($futures) as $key => $future) {
           ManiphestTaskStatus::getDefaultStatus()));
     }
 
-    $content_source = PhabricatorContentSource::newForSource(
-      PhabricatorConsoleContentSource::SOURCECONST);
-    $transactions   = [];
+    $content_source = PhabricatorContentSource::newForSource(PhabricatorConsoleContentSource::SOURCECONST);
+    $transactions = [];
 
     foreach ($comments as $comment) {
       $body = $comment['body'];
@@ -342,7 +343,9 @@ foreach (new FutureIterator($futures) as $key => $future) {
 
       if ($author === null) {
         throw new Exception(
-          pht('No Phabricator user found with email address: %s', $author_email));
+          pht(
+            'No Phabricator user found with email address: %s',
+            $author_email));
       }
 
       $transactions[] = (new ManiphestTransaction())
@@ -355,19 +358,18 @@ foreach (new FutureIterator($futures) as $key => $future) {
     }
 
     // Add a comment explaining that the task has been migrated from JIRA.
-    $comment_body = sprintf(
+    $migration_comment = sprintf(
       'This task has been migrated from JIRA: [[%s | %s]]',
       "${jira_url}/browse/${key}",
       $key);
 
     // Add issue links as a comment.
-    $issuelinks = $original['issuelinks'];
-    if ($issuelinks !== null) {
-      $comment_body .= "\n\n= Issue Links =";
+    if (count($issuelinks = $original['issuelinks']) > 0) {
+      $migration_comment .= "\n\n= Issue Links =";
 
       foreach ($issuelinks as $issuelink) {
         if ($issue = idx($issuelink, 'inwardIssue')) {
-          $comment_body .= sprintf(
+          $migration_comment .= sprintf(
             "\n- %s [[%s/browse/%s | %s: %s]]",
             ucfirst($issuelink['type']['inward']),
             $jira_url,
@@ -377,7 +379,7 @@ foreach (new FutureIterator($futures) as $key => $future) {
         }
 
         if ($issue = idx($issuelink, 'outwardIssue')) {
-          $comment_body .= sprintf(
+          $migration_comment .= sprintf(
             "\n- %s [[%s/browse/%s | %s: %s]]",
             ucfirst($issuelink['type']['outward']),
             $jira_url,
@@ -393,7 +395,7 @@ foreach (new FutureIterator($futures) as $key => $future) {
     // Maniphest doesn't support attachments, so instead we just comment on the
     // Maniphest task with a list of attachments.
     if (count($original_attachments = $original['attachment']) > 0) {
-      $comment_body .= "\n\n= Attachments =";
+      $migration_comment .= "\n\n= Attachments =";
 
       foreach ($original_attachments as $attachment) {
         $attachment_future = (new HTTPSFuture($attachment['content']))
@@ -412,7 +414,7 @@ foreach (new FutureIterator($futures) as $key => $future) {
 
         list($attachment_body) = $attachment_future->resolvex();
         $attachment_file = PhabricatorFile::newFromFileData($attachment_body, $params);
-        $comment_body .= sprintf(
+        $migration_comment .= sprintf(
           "\n{%s, layout=link}",
           $attachment_file->getMonogram());
       }
@@ -420,9 +422,7 @@ foreach (new FutureIterator($futures) as $key => $future) {
 
     $transactions[] = (new ManiphestTransaction())
       ->setTransactionType(PhabricatorTransactions::TYPE_COMMENT)
-      ->attachComment(
-        (new ManiphestTransactionComment())
-          ->setContent($comment_body));
+      ->attachComment((new ManiphestTransactionComment())->setContent($migration_comment));
 
     // Tag the imported task with the specified project.
     if ($project !== null) {
