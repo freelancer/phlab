@@ -247,6 +247,31 @@ foreach (new FutureIterator($futures) as $key => $future) {
     $task = ManiphestTask::initializeNewTask($creator)
       ->setTitle($title);
 
+    // Migrate attachments.
+    //
+    // NOTE: We need to import JIRA attachments before we can process comments
+    // so that we can support the embedding of attachments in comment text.
+    $attachments = array_map(
+      function (array $attachment) use ($jira_auth): PhabricatorFile {
+        $attachment_future = (new HTTPSFuture($attachment['content']))
+          ->addHeader('Cookie', "JSESSIONID=${jira_auth}");
+
+        $params = [
+          'isExplicitUpload' => true,
+          'name'             => $attachment['filename'],
+          'mime-type'        => $attachment['mimeType'],
+        ];
+
+        $attachment_author = PhabricatorUser::loadOneWithEmailAddress($attachment['author']['emailAddress']);
+        if ($attachment_author !== null) {
+          $params['authorPHID'] = $attachment_author->getPHID();
+        }
+
+        list($attachment_body) = $attachment_future->resolvex();
+        return PhabricatorFile::newFromFileData($attachment_body, $params);
+      },
+      ipull($original['attachment'], null, 'filename'));
+
     if ($description !== null) {
       $task->setDescription(transform_text($description));
     }
@@ -394,30 +419,13 @@ foreach (new FutureIterator($futures) as $key => $future) {
     //
     // Maniphest doesn't support attachments, so instead we just comment on the
     // Maniphest task with a list of attachments.
-    if (count($original_attachments = $original['attachment']) > 0) {
-      $migration_comment .= "\n\n= Attachments =";
-
-      foreach ($original_attachments as $attachment) {
-        $attachment_future = (new HTTPSFuture($attachment['content']))
-          ->addHeader('Cookie', "JSESSIONID=${jira_auth}");
-
-        $params = [
-          'isExplicitUpload' => true,
-          'name'             => $attachment['filename'],
-          'mime-type'        => $attachment['mimeType'],
-        ];
-
-        $attachment_author = PhabricatorUser::loadOneWithEmailAddress($attachment['author']['emailAddress']);
-        if ($attachment_author !== null) {
-          $params['authorPHID'] = $attachment_author->getPHID();
-        }
-
-        list($attachment_body) = $attachment_future->resolvex();
-        $attachment_file = PhabricatorFile::newFromFileData($attachment_body, $params);
-        $migration_comment .= sprintf(
-          "\n{%s, layout=link}",
-          $attachment_file->getMonogram());
-      }
+    if (count($attachments) > 0) {
+      $migration_comment .= "\n\n= Attachments =\n";
+      $migration_comment .= implode("\n", array_map(
+        function (PhabricatorFile $attachment): string {
+          return sprintf('{%s, layout=link}', $attachment->getMonogram());
+        },
+        $attachments));
     }
 
     $transactions[] = (new ManiphestTransaction())
