@@ -150,7 +150,9 @@ if (count($jira_issues) === 0) {
  * formating]] to [[https://secure.phabricator.com/book/phabricator/article/remarkup/ |
  * Remarkup]].
  */
-function transform_text(string $text): string {
+function transform_text(string $text, array $attachments): string {
+  assert_instances_of($attachments, 'PhabricatorFile');
+
   $object_mention_regex = pregsprintf(
     '\b%s/((%R|%R)(?:#([-\w\d]+))?)',
     '',
@@ -200,15 +202,36 @@ function transform_text(string $text): string {
 
     // Unsupported formatting
     '/{color(?::(?:[a-zA-Z]+|#?[0-9a-fA-F]+))?}/' => '',
+
+    // Inline attachments
+    '/\B!([^!|]*)(?:\|([^!|]*))?!\B/' => function (array $matches) use ($attachments): string {
+      $name = $matches[1];
+
+      if (isset($attachments[$name])) {
+        return sprintf('{%s}', $attachments[$name]->getMonogram());
+      } else {
+        return $matches[0];
+      }
+    },
   ];
 
   // Convert CRLF to LF.
   $text = str_replace("\r\n", "\n", $text);
 
-  return preg_replace(
-    array_keys($transformations),
-    array_values($transformations),
+  // The `preg_replace` function cannot be used with callbacks and the
+  // `preg_replace_callback` function cannot be used with string replacements.
+  $callback_transformations = array_filter($transformations, 'is_callable');
+  $text_transformations     = array_filter($transformations, 'is_string');
+
+  $text = preg_replace(
+    array_keys($text_transformations),
+    array_values($text_transformations),
     $text);
+  $text = preg_replace_callback_array(
+    $callback_transformations,
+    $text);
+
+  return $text;
 }
 
 $futures = array_map(
@@ -273,7 +296,7 @@ foreach (new FutureIterator($futures) as $key => $future) {
       ipull($original['attachment'], null, 'filename'));
 
     if ($description !== null) {
-      $task->setDescription(transform_text($description));
+      $task->setDescription(transform_text($description, $attachments));
     }
 
     if ($original['assignee'] !== null) {
@@ -379,7 +402,7 @@ foreach (new FutureIterator($futures) as $key => $future) {
         ->attachComment(
           (new ManiphestTransactionComment())
             ->setAuthorPHID($author->getPHID())
-            ->setContent(transform_text($comment['body'])));
+            ->setContent(transform_text($comment['body'], $attachments)));
     }
 
     // Add a comment explaining that the task has been migrated from JIRA.
