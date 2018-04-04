@@ -490,6 +490,7 @@ foreach (new FutureIterator($futures) as $key => $future) {
     $editor = id(new ManiphestTransactionEditor())
       ->setActor($actor)
       ->setContentSource($content_source)
+      ->setIsSilent(true)
       ->applyTransactions($task, $transactions);
 
     $console->writeOut(
