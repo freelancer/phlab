@@ -151,6 +151,13 @@ if (count($jira_issues) === 0) {
  * Remarkup]].
  */
 function transform_text(string $text): string {
+  $object_mention_regex = pregsprintf(
+    '\b%s/((%R|%R)(?:#([-\w\d]+))?)',
+    '',
+    PhabricatorEnv::getEnvConfig('phabricator.base-uri'),
+    '[B-FHIK-MPQS-WZ][1-9]\d*',
+    '(?:r[A-Z]+:?|R[1-9]\d*:)[0-9a-f]{5,40}');
+
   // According to http://urlregex.com/, this is the "perfect URL regular expression".
   $url_regex = '(?:(?:https?|ftp)://)'.
     '(?:\S+(?::\S*)?@|\d{1,3}(?:\.\d{1,3}){3}|'.
@@ -159,17 +166,7 @@ function transform_text(string $text): string {
     '(?:\.[a-z\x{00a1}-\x{ffff}]{2,6}))'.
     '(?::\d+)?(?:[^\s]*)?';
 
-  $object_mention_regex = pregsprintf(
-    '\b%s/((%R|%R)(?:#([-\w\d]+))?)',
-    '',
-    PhabricatorEnv::getEnvConfig('phabricator.base-uri'),
-    '[B-FHIK-MPQS-WZ][1-9]\d*',
-    '(?:r[A-Z]+:?|R[1-9]\d*:)[0-9a-f]{5,40}');
-
   $transformations = [
-    // Convert CRLF to LF.
-    "/\r\n/" => "\n",
-
     // Translate Phabricator URLs to object mentions.
     $object_mention_regex => '$1',
 
@@ -204,6 +201,9 @@ function transform_text(string $text): string {
     // Unsupported formatting
     '/{color(?::(?:[a-zA-Z]+|#?[0-9a-fA-F]+))?}/' => '',
   ];
+
+  // Convert CRLF to LF.
+  $text = str_replace("\r\n", "\n", $text);
 
   return preg_replace(
     array_keys($transformations),
