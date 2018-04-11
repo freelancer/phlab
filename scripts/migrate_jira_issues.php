@@ -328,6 +328,10 @@ foreach (new FutureIterator($futures) as $key => $future) {
     }
 
     $content_source = PhabricatorContentSource::newForSource(PhabricatorConsoleContentSource::SOURCECONST);
+    $editor = id(new ManiphestTransactionEditor())
+      ->setActor($actor)
+      ->setContentSource($content_source)
+      ->setIsSilent(true);
     $transactions = [];
 
     foreach ($comments as $comment) {
@@ -478,13 +482,14 @@ foreach (new FutureIterator($futures) as $key => $future) {
       phutil_json_decode($subscribers_body)['watchers']);
 
     // Just ignore any JIRA watchers that don't exist as Phabricator users.
-    $subscribers = array_filter($subscribers);
+    $subscribers      = array_filter($subscribers);
+    $subscriber_phids = mpull($subscribers, 'getPHID');
 
-    if (count($subscribers) > 0) {
+    if (count($subscriber_phids) > 0) {
       $transactions[] = (new ManiphestTransaction())
         ->setTransactionType(PhabricatorTransactions::TYPE_EDGE)
         ->setMetadataValue('edge:type', PhabricatorObjectHasSubscriberEdgeType::EDGECONST)
-        ->setNewValue(['=' => array_fuse(mpull($subscribers, 'getPHID'))]);
+        ->setNewValue(['=' => array_fuse($subscriber_phids)]);
     }
 
     // Link associated Differential revisions and Diffusion commits to the
@@ -518,11 +523,22 @@ foreach (new FutureIterator($futures) as $key => $future) {
         ->setNewValue(['=' => array_fuse($commit_phids)]);
     }
 
-    $editor = id(new ManiphestTransactionEditor())
-      ->setActor($actor)
-      ->setContentSource($content_source)
-      ->setIsSilent(true)
-      ->applyTransactions($task, $transactions);
+    $editor->applyTransactions($task, $transactions);
+    $transactions = [];
+
+    // Unsubscribe the actor from the migrated task if they weren't watching
+    // the original JIRA issue. This transaction needs to be applied separately,
+    // because commenting on a task implicitly subscribes the comment author.
+    if (!in_array($actor->getPHID(), $subscriber_phids)) {
+      $transactions[] = (new ManiphestTransaction())
+        ->setTransactionType(PhabricatorTransactions::TYPE_EDGE)
+        ->setMetadatavalue('edge:type', PhabricatorObjectHasSubscriberEdgeType::EDGECONST)
+        ->setNewValue(['-' => array_fuse([$actor->getPHID()])]);
+    }
+
+    if (count($transactions) > 0) {
+      $editor->applyTransactions($task, $transactions);
+    }
 
     $console->writeOut(
       "%s\n",
