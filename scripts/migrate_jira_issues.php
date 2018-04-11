@@ -527,6 +527,31 @@ foreach (new FutureIterator($futures) as $key => $future) {
     $console->writeOut(
       "%s\n",
       pht('Migrated %s to %s.', $key, $task->getMonogram()));
+
+    // Comment on the JIRA issue, explaining that it has been migrated to Phabricator.
+    //
+    // TODO: Should we also delete the upstream JIRA issue?
+    try {
+      $jira_comment_uri = (new PhutilURI($jira_url))
+        ->setPath("/rest/api/2/issue/${key}/comment");
+
+      (new HTTPSFuture($jira_comment_uri))
+        ->addHeader('Cookie', "JSESSIONID=${jira_auth}")
+        ->addHeader('Content-Type', 'application/json')
+        ->setData(phutil_json_encode([
+          'body' => sprintf(
+            'This issue has been migrated to [%s|%s/%s]',
+            $task->getMonogram(),
+            PhabricatorEnv::getEnvConfig('phabricator.base-uri'),
+            $task->getMonogram()),
+        ]))
+        ->setMethod('POST')
+        ->resolvex();
+    } catch (Exception $ex) {
+      $console->writeErr(
+        "%s\n",
+        pht('Failed to comment on JIRA issue %s: %s', $key, $ex->getMessage()));
+    }
   } catch (Exception $ex) {
     $console->writeErr(
       "%s\n",
