@@ -550,8 +550,34 @@ foreach (new FutureIterator($futures) as $key => $future) {
       "%s\n",
       pht('Migrated %s to %s.', $key, $task->getMonogram()));
 
-    // Add a remote link to the JIRA issue, pointing to the migrated
-    // Maniphest task.
+    // Comment on the JIRA issue, explaining that it has been migrated to Phabricator.
+    try {
+      $jira_comment_uri = (new PhutilURI($jira_url))
+        ->setPath("/rest/api/2/issue/${key}/comment");
+
+      (new HTTPSFuture($jira_comment_uri))
+        ->addHeader('Cookie', "JSESSIONID=${jira_auth}")
+        ->addHeader('Content-Type', 'application/json')
+        ->setData(phutil_json_encode([
+          'body' => sprintf(
+            '{panel:title=IMPORTANT|borderColor=%s|titleBGColor=%s|bgColor=%s}%s{panel}',
+            '#CCCCCC',
+            '#F7D6C1',
+            '#FFFFCE',
+            sprintf(
+              'This issue has been migrated to [%s|%s].',
+              $task->getMonogram(),
+              PhabricatorEnv::getProductionURI($task->getURI()))),
+        ]))
+        ->setMethod('POST')
+        ->resolvex();
+    } catch (Exception $ex) {
+      $console->writeErr(
+        "%s\n",
+        pht('Failed to comment on JIRA issue %s: %s', $key, $ex->getMessage()));
+    }
+
+    // Add a remote link to the JIRA issue, pointing to the migrated Maniphest task.
     try {
       $jira_remote_link_uri = (new PhutilURI($jira_url))
         ->setPath("/rest/api/2/issue/${key}/remotelink");
