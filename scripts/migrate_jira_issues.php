@@ -43,6 +43,12 @@ $args->parse([
     'help'  => pht('Project to tag migrated Phabricator tasks with.'),
   ],
   [
+    'name'  => 'transition',
+    'param' => 'name',
+    'help'  => pht(
+      'Transition to be performed after the issue has been migrated.'),
+  ],
+  [
     'name'     => 'issues',
     'wildcard' => true,
   ],
@@ -544,9 +550,8 @@ foreach (new FutureIterator($futures) as $key => $future) {
       "%s\n",
       pht('Migrated %s to %s.', $key, $task->getMonogram()));
 
-    // Add a remote link to the JIRA issue, pointing to the migrated Maniphest task.
-    //
-    // TODO: Should we also delete the upstream JIRA issue?
+    // Add a remote link to the JIRA issue, pointing to the migrated
+    // Maniphest task.
     try {
       $jira_remote_link_uri = (new PhutilURI($jira_url))
         ->setPath("/rest/api/2/issue/${key}/remotelink");
@@ -577,7 +582,52 @@ foreach (new FutureIterator($futures) as $key => $future) {
     } catch (Exception $ex) {
       $console->writeErr(
         "%s\n",
-        pht('Failed to comment on JIRA issue %s: %s', $key, $ex->getMessage()));
+        pht('Failed to add remote link to JIRA issue %s: %s', $key, $ex->getMessage()));
+    }
+
+    // Transition the JIRA issue into the requested state.
+    if (($transition_name = $args->getArg('transition')) !== null) {
+      try {
+        $jira_transition_uri = (new PhutilURI($jira_url))
+          ->setPath("/rest/api/2/issue/${key}/transitions");
+
+        // Find the ID of the transition matching the specified name.
+        list($transitions_body) = (new HTTPSFuture($jira_transition_uri))
+          ->addHeader('Cookie', "JSESSIONID=${jira_auth}")
+          ->addHeader('Content-Type', 'application/json')
+          ->resolvex();
+        $transitions = phutil_json_decode($transitions_body)['transitions'];
+
+        $transition_id = array_reduce(
+          $transitions,
+          function (?int $result, array $transition) use ($transition_name): ?int {
+            if ($transition['name'] === $transition_name) {
+              return $transition['id'];
+            } else {
+              return $result;
+            }
+          });
+
+        if ($transition_id === null) {
+          throw new Exception(
+            pht('Could not find "%s" transition.', $transition_name));
+        }
+
+        (new HTTPSFuture($jira_transition_uri))
+          ->addHeader('Cookie', "JSESSIONID=${jira_auth}")
+          ->addHeader('Content-Type', 'application/json')
+          ->setData(phutil_json_encode([
+            'transition' => [
+              'id' => $transition_id,
+            ],
+          ]))
+          ->setMethod('POST')
+          ->resolvex();
+      } catch (Exception $ex) {
+        $console->writeErr(
+          "%s\n",
+          pht('Failed to perform transition on JIRA issue %s: %s', $key, $ex->getMessage()));
+      }
     }
   } catch (Exception $ex) {
     $console->writeErr(
