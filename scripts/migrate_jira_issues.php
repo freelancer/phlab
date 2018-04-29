@@ -151,6 +151,59 @@ if (count($jira_issues) === 0) {
 }
 
 /**
+ * Get the Phabricator user associated with the specified email address.
+ *
+ * If no Phabricator user is found then prompt for a username.
+ */
+function get_user(string $email_address): PhabricatorUser {
+  // Cache the user mapping so that we don't continuously prompt when JIRA
+  // email address don't match Phabricator users.
+  static $cache = [];
+
+  if (isset($cache[$email_address])) {
+    return $cache[$email_address];
+  }
+
+  $user = null;
+  $username = null;
+
+  do {
+    // Lookup the user by email address if we haven't yet prompted for a username.
+    if ($username === null) {
+      $user = PhabricatorUser::loadOneWithEmailAddress($email_address);
+    } else {
+      $user = (new PhabricatorUser())->loadOneWhere('username = %s', $username);
+    }
+
+    // If no user is found, prompt for a username.
+    if ($user === null) {
+      if ($username === null) {
+        $prompt = pht(
+          "No Phabricator user was found with email address: %s\n\n".
+          "Specify the corresponding Phabricator username:",
+          $email_address);
+      } else {
+        $prompt = pht(
+          "No Phabricator user was found with username: %s\n\n".
+          "Specify an existing Phabricator username:",
+          $username);
+      }
+      $username = phutil_console_prompt($prompt);
+
+      // If no text was entered at the prompt, bail out.
+      if (!strlen(trim($username))) {
+        throw new Exception(
+          pht(
+            'No Phabricator user found with email address: %s',
+            $email_address));
+      }
+    }
+  } while ($user === null);
+
+  return $cache[$email_address] = $user;
+}
+
+/**
  * Apply some basic transformations to (partially) translate
  * [[https://jira.atlassian.com/secure/WikiRendererHelpAction.jspa | JIRA text
  * formating]] to [[https://secure.phabricator.com/book/phabricator/article/remarkup/ |
@@ -258,20 +311,12 @@ foreach (new FutureIterator($futures) as $key => $future) {
     list($body) = $future->resolvex();
     $original   = phutil_json_decode($body)['fields'];
 
-    $creator_email = $original['creator']['emailAddress'];
-    $title         = $original['summary'];
-    $description   = $original['description'];
-    $priority      = $original['priority'];
-    $status        = $original['resolution'];
-    $comments      = $original['comment']['comments'];
-
-    $creator = PhabricatorUser::loadOneWithEmailAddress($creator_email);
-    if ($creator === null) {
-      throw new Exception(
-        pht(
-          'No Phabricator user found with email address: %s',
-          $creator_email));
-    }
+    $creator     = get_user($original['creator']['emailAddress']);
+    $title       = $original['summary'];
+    $description = $original['description'];
+    $priority    = $original['priority'];
+    $status      = $original['resolution'];
+    $comments    = $original['comment']['comments'];
 
     $task = ManiphestTask::initializeNewTask($creator)
       ->setTitle($title);
@@ -291,9 +336,11 @@ foreach (new FutureIterator($futures) as $key => $future) {
           'mime-type'        => $attachment['mimeType'],
         ];
 
-        $attachment_author = PhabricatorUser::loadOneWithEmailAddress($attachment['author']['emailAddress']);
-        if ($attachment_author !== null) {
+        try {
+          $attachment_author = get_user($attachment['author']['emailAddress']);
           $params['authorPHID'] = $attachment_author->getPHID();
+        } catch (Exception $ex) {
+          // Just ignore missing users here.
         }
 
         list($attachment_body) = $attachment_future->resolvex();
@@ -306,16 +353,7 @@ foreach (new FutureIterator($futures) as $key => $future) {
     }
 
     if ($original['assignee'] !== null) {
-      $assignee_email = $original['assignee']['emailAddress'];
-      $assignee       = PhabricatorUser::loadOneWithEmailAddress($assignee_email);
-
-      if ($assignee === null) {
-        throw new Exception(
-          pht(
-            'No Phabricator user found with email address: %s',
-            $assignee_email));
-      }
-
+      $assignee = get_user($original['assignee']['emailAddress']);
       $task->setOwnerPHID($assignee->getPHID());
     }
 
@@ -396,16 +434,7 @@ foreach (new FutureIterator($futures) as $key => $future) {
         continue;
       }
 
-      $author_email = $comment['author']['emailAddress'];
-      $author = PhabricatorUser::loadOneWithEmailAddress($author_email);
-
-      if ($author === null) {
-        throw new Exception(
-          pht(
-            'No Phabricator user found with email address: %s',
-            $author_email));
-      }
-
+      $author = get_user($comment['author']['emailAddress']);
       $transactions[] = (new ManiphestTransaction())
         ->setAuthorPHID($author->getPHID())
         ->setTransactionType(PhabricatorTransactions::TYPE_COMMENT)
