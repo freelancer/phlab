@@ -330,21 +330,16 @@ foreach (new FutureIterator($futures) as $key => $future) {
         $attachment_future = (new HTTPSFuture($attachment['content']))
           ->addHeader('Cookie', "JSESSIONID=${jira_auth}");
 
-        $params = [
-          'isExplicitUpload' => true,
-          'name'             => $attachment['filename'],
-          'mime-type'        => $attachment['mimeType'],
-        ];
-
-        try {
-          $attachment_author = get_user($attachment['author']['emailAddress']);
-          $params['authorPHID'] = $attachment_author->getPHID();
-        } catch (Exception $ex) {
-          // Just ignore missing users here.
-        }
-
+        $attachment_author = get_user($attachment['author']['emailAddress']);
         list($attachment_body) = $attachment_future->resolvex();
-        return PhabricatorFile::newFromFileData($attachment_body, $params);
+
+        return (new PhabricatorIteratorFileUploadSource())
+          ->setName($attachment['filename'])
+          ->setViewPolicy(PhabricatorPolicies::POLICY_USER)
+          ->setMIMEType($attachment['mimeType'])
+          ->setAuthorPHID($attachment_author->getPHID())
+          ->setIterator(new ArrayIterator(str_split($attachment_body)))
+          ->uploadFile();
       },
       ipull($original['attachment'], null, 'filename'));
 
