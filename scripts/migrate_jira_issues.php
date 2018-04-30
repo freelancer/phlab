@@ -552,16 +552,21 @@ foreach (new FutureIterator($futures) as $key => $future) {
         ->execute();
 
       $revision_phids = mpull($revisions, 'getPHID');
-      $transactions[] = (new ManiphestTransaction())
-        ->setTransactionType(PhabricatorTransactions::TYPE_EDGE)
-        ->setMetadataValue('edge:type', ManiphestTaskHasRevisionEdgeType::EDGECONST)
-        ->setNewValue(['=' => array_fuse($revision_phids)]);
+      $commit_phids   = array_mergev(mpull($revisions, 'getCommitPHIDs'));
 
-      $commit_phids = array_mergev(mpull($revisions, 'getCommitPHIDs'));
-      $transactions[] = (new ManiphestTransaction())
-        ->setTransactionType(PhabricatorTransactions::TYPE_EDGE)
-        ->setMetadataValue('edge:type', ManiphestTaskHasCommitEdgeType::EDGECONST)
-        ->setNewValue(['=' => array_fuse($commit_phids)]);
+      if (count($revision_phids) > 0) {
+        $transactions[] = (new ManiphestTransaction())
+          ->setTransactionType(PhabricatorTransactions::TYPE_EDGE)
+          ->setMetadataValue('edge:type', ManiphestTaskHasRevisionEdgeType::EDGECONST)
+          ->setNewValue(['=' => array_fuse($revision_phids)]);
+
+        if (count($commit_phids) > 0) {
+          $transactions[] = (new ManiphestTransaction())
+            ->setTransactionType(PhabricatorTransactions::TYPE_EDGE)
+            ->setMetadataValue('edge:type', ManiphestTaskHasCommitEdgeType::EDGECONST)
+            ->setNewValue(['=' => array_fuse($commit_phids)]);
+        }
+      }
     }
 
     $editor->applyTransactions($task, $transactions);
