@@ -49,6 +49,12 @@ $args->parse([
       'Transition to be performed after the issue has been migrated.'),
   ],
   [
+    'name' => 'import-only',
+    'help' => pht(
+      "Don't modify the external JIRA issue after it has been imported into ".
+      "Maniphest. This flag is intended for testing purposes only."),
+  ],
+  [
     'name'     => 'issues',
     'wildcard' => true,
   ],
@@ -578,6 +584,12 @@ foreach (new FutureIterator($futures) as $key => $future) {
     $console->writeOut(
       "%s\n",
       pht('Migrated %s to %s.', $key, $task->getMonogram()));
+
+    // If the `--import-only` flag was provided then we don't want to interact
+    // with the upstream JIRA issue.
+    if ($args->getArg('import-only')) {
+      continue;
+    }
 
     // Comment on the JIRA issue, explaining that it has been migrated to Phabricator.
     try {
