@@ -434,6 +434,11 @@ foreach (new FutureIterator($futures) as $key => $future) {
         continue;
       }
 
+      // Skip comments that don't have an author.
+      if (!isset($comment['author'])) {
+        continue;
+      }
+
       $author = get_user($comment['author']['emailAddress']);
       $transactions[] = (new ManiphestTransaction())
         ->setAuthorPHID($author->getPHID())
