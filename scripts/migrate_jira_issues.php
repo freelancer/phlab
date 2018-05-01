@@ -54,9 +54,11 @@ $args->parse([
       "Don't modify the external JIRA issue after it has been imported into ".
       "Maniphest. This flag is intended for testing purposes only."),
   ],
+
   [
-    'name'     => 'issues',
-    'wildcard' => true,
+    'name'  => 'query',
+    'param' => 'JQL',
+    'help'  => pht('Migrate all issues matching the provided JQL query.'),
   ],
 ]);
 
@@ -151,9 +153,37 @@ if ($slug !== null) {
   }
 }
 
-$jira_issues = $args->getArg('issues');
-if (count($jira_issues) === 0) {
+$jql = $args->getArg('query');
+if ($jql === null) {
   $args->printHelpAndExit();
+}
+
+$search_uri = (new PhutilURI($jira_url))
+  ->setPath('/rest/api/2/search');
+$offset = 0;
+$jira_issues = [];
+
+// Retrieve all JIRA issues matching the specified JQL query.
+while (true) {
+  $search_future = (new HTTPSFuture($search_uri))
+    ->addHeader('Cookie', "JSESSIONID=${jira_auth}")
+    ->addHeader('Content-Type', 'application/json')
+    ->setData(phutil_json_encode([
+      'fields'  => ['key'],
+      'jql'     => $jql,
+      'startAt' => $offset,
+    ]))
+    ->setMethod('POST');
+
+  list($search_body) = $search_future->resolvex();
+  $search_results = phutil_json_decode($search_body)['issues'];
+
+  if (($num_results = count($search_results)) === 0) {
+    break;
+  }
+
+  $jira_issues = array_merge($jira_issues, ipull($search_results, 'key'));
+  $offset += $num_results;
 }
 
 /**
