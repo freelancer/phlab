@@ -38,9 +38,10 @@ $args->parse([
     'help'  => pht('Mapping of JIRA statuses to Phabricator statuses.'),
   ],
   [
-    'name'  => 'project',
-    'param' => 'slug',
-    'help'  => pht('Project to tag migrated Phabricator tasks with.'),
+    'name'   => 'project',
+    'param'  => 'slug',
+    'help'   => pht('Project to tag migrated Phabricator tasks with.'),
+    'repeat' => true,
   ],
   [
     'name'  => 'transition',
@@ -134,10 +135,10 @@ foreach (explode(',', $args->getArg('status-map')) as $mapping) {
   $status_map[$from] = $to;
 }
 
-$project = null;
-$slug    = $args->getArg('project');
+$projects = [];
+$slugs    = $args->getArg('project');
 
-if ($slug !== null) {
+foreach ($slugs as $slug) {
   $project = id(new PhabricatorProjectQuery())
     ->setViewer($actor)
     ->withSlugs([$slug])
@@ -151,6 +152,8 @@ if ($slug !== null) {
           $slug)));
     exit(PhutilArgumentParser::PARSE_ERROR_CODE);
   }
+
+  $projects[] = $project;
 }
 
 $jql = $args->getArg('query');
@@ -530,11 +533,11 @@ foreach (new FutureIterator($futures) as $key => $future) {
       ->attachComment((new ManiphestTransactionComment())->setContent($migration_comment));
 
     // Tag the imported task with the specified project.
-    if ($project !== null) {
+    if (count($projects) > 0) {
       $transactions[] = (new ManiphestTransaction())
         ->setTransactionType(PhabricatorTransactions::TYPE_EDGE)
         ->setMetadataValue('edge:type', PhabricatorProjectObjectHasProjectEdgeType::EDGECONST)
-        ->setNewValue(['=' => array_fuse([$project->getPHID()])]);
+        ->setNewValue(['=' => array_fuse(mpull($projects, 'getPHID'))]);
     }
 
     // Add subscribers.
