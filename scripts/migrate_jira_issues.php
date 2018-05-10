@@ -602,15 +602,24 @@ foreach (new FutureIterator($futures) as $key => $future) {
 
     // `PhabricatorApplicationTransactionEditor` doesn't seem to respect the
     // comment author that we set on `ManiphestTransactionComment`. See D99344.
-    $comment_table = new ManiphestTransactionComment();
-    $comment_conn = $comment_table->establishConnection('w');
-    $comment_conn->openTransaction();
+    $transaction_table = new ManiphestTransaction();
+    $comment_table     = new ManiphestTransactionComment();
+
+    $transaction_conn = $transaction_table->establishConnection('w');
+    $transaction_conn->openTransaction();
 
     foreach (mfilter($transactions, 'isCommentTransaction') as $transaction) {
       $comment = $transaction->getComment();
 
       queryfx(
-        $comment_conn,
+        $transaction_conn,
+        'UPDATE %T SET editPolicy = %s WHERE id = %d',
+        $transaction_table->getTableName(),
+        $transaction->getAuthorPHID(),
+        $transaction->getID());
+
+      queryfx(
+        $transaction_conn,
         'UPDATE %T SET authorPHID = %s, editPolicy = %s WHERE id = %d',
         $comment_table->getTableName(),
         $transaction->getAuthorPHID(),
@@ -618,7 +627,7 @@ foreach (new FutureIterator($futures) as $key => $future) {
         $comment->getID());
     }
 
-    $comment_conn->saveTransaction();
+    $transaction_conn->saveTransaction();
     $transactions = [];
 
     // Unsubscribe the actor from the migrated task if they weren't watching
