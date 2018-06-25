@@ -365,8 +365,7 @@ foreach (new FutureIterator($futures) as $key => $future) {
     // NOTE: We need to import JIRA attachments before we can process comments
     // so that we can support the embedding of attachments in comment text.
     $attachments = array_filter(array_map(
-      function (array $attachment) use ($console, $jira_auth, $key)
-        : ?PhabricatorFile {
+      function (array $attachment) use ($console, $jira_auth, $key): ?PhabricatorFile {
 
         try {
           $attachment_future = (new HTTPSFuture($attachment['content']))
@@ -385,9 +384,10 @@ foreach (new FutureIterator($futures) as $key => $future) {
         } catch (Exception $ex) {
           $console->writeErr(
             "%s\n",
-            pht('Failed to upload attachment for JIRA issue %s: %s',
-              $key, $ex->getMessage()));
-
+            pht(
+              'Failed to upload attachment for JIRA issue %s: %s',
+              $key,
+              $ex->getMessage()));
           return null;
         }
       },
