@@ -364,23 +364,34 @@ foreach (new FutureIterator($futures) as $key => $future) {
     //
     // NOTE: We need to import JIRA attachments before we can process comments
     // so that we can support the embedding of attachments in comment text.
-    $attachments = array_map(
-      function (array $attachment) use ($jira_auth): PhabricatorFile {
-        $attachment_future = (new HTTPSFuture($attachment['content']))
-          ->addHeader('Cookie', "JSESSIONID=${jira_auth}");
+    $attachments = array_filter(array_map(
+      function (array $attachment) use ($console, $jira_auth, $key)
+        : ?PhabricatorFile {
 
-        $attachment_author = get_user($attachment['author']['emailAddress']);
-        list($attachment_body) = $attachment_future->resolvex();
+        try {
+          $attachment_future = (new HTTPSFuture($attachment['content']))
+            ->addHeader('Cookie', "JSESSIONID=${jira_auth}");
 
-        return (new PhabricatorIteratorFileUploadSource())
-          ->setName($attachment['filename'])
-          ->setViewPolicy(PhabricatorPolicies::POLICY_USER)
-          ->setMIMEType($attachment['mimeType'])
-          ->setAuthorPHID($attachment_author->getPHID())
-          ->setIterator(new ArrayIterator(str_split($attachment_body)))
-          ->uploadFile();
+          $attachment_author = get_user($attachment['author']['emailAddress']);
+          list($attachment_body) = $attachment_future->resolvex();
+
+          return (new PhabricatorIteratorFileUploadSource())
+            ->setName($attachment['filename'])
+            ->setViewPolicy(PhabricatorPolicies::POLICY_USER)
+            ->setMIMEType($attachment['mimeType'])
+            ->setAuthorPHID($attachment_author->getPHID())
+            ->setIterator(new ArrayIterator(str_split($attachment_body)))
+            ->uploadFile();
+        } catch (Exception $ex) {
+          $console->writeErr(
+            "%s\n",
+            pht('Failed to upload attachment for JIRA issue %s: %s',
+              $key, $ex->getMessage()));
+
+          return null;
+        }
       },
-      ipull($original['attachment'], null, 'filename'));
+      ipull($original['attachment'], null, 'filename')));
 
     if ($description !== null) {
       $task->setDescription(transform_text($description, $attachments));
