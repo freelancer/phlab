@@ -10,6 +10,7 @@ phutil_register_library_map(array(
   '__library_version__' => 2,
   'class' => array(
     'CreatePolicyConduitAPIMethod' => 'conduit/CreatePolicyConduitAPIMethod.php',
+    'DiffusionCommitRevisionResigningReviewersHeraldField' => 'applications/diffusion/herald/DiffusionCommitRevisionResigningReviewersHeraldField.php',
     'DiffusionPreCommitRepositoryProjectsMatchesUserProjectsHeraldField' => 'applications/diffusion/herald/DiffusionPreCommitRepositoryProjectsMatchesUserProjectsHeraldField.php',
     'FreelancerGoogleAuthRegistrationListener' => 'applications/auth/event/FreelancerGoogleAuthRegistrationListener.php',
     'HarbormasterJenkinsBuildStepImplementation' => 'applications/harbormaster/step/HarbormasterJenkinsBuildStepImplementation.php',
@@ -24,6 +25,7 @@ phutil_register_library_map(array(
   'function' => array(),
   'xmap' => array(
     'CreatePolicyConduitAPIMethod' => 'ConduitAPIMethod',
+    'DiffusionCommitRevisionResigningReviewersHeraldField' => 'DiffusionCommitHeraldField',
     'DiffusionPreCommitRepositoryProjectsMatchesUserProjectsHeraldField' => 'DiffusionPreCommitRefHeraldField',
     'FreelancerGoogleAuthRegistrationListener' => 'PhabricatorEventListener',
     'HarbormasterJenkinsBuildStepImplementation' => 'HarbormasterBuildStepImplementation',
