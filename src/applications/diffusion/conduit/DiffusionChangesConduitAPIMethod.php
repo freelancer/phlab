@@ -8,25 +8,25 @@
 final class DiffusionChangesConduitAPIMethod
   extends DiffusionQueryConduitAPIMethod {
 
-  public function getMethodDescription() {
+  public function getMethodDescription(): string {
     return pht(
       'Retrieve information about the commits within a specified range. '.
       'This method is intended to be used exclusively by [[%s | Changelog]].',
       'https://changelog.analytics.flnltd.com');
   }
 
-  protected function defineCustomParamTypes() {
-    return array(
+  protected function defineCustomParamTypes(): array {
+    return [
       'startCommit' => 'string',
       'endCommit'   => 'string',
-    );
+    ];
   }
 
-  protected function defineReturnType() {
+  protected function defineReturnType(): string {
     return 'list<map<string, wild>>';
   }
 
-  protected function getGitResult(ConduitAPIRequest $request) {
+  protected function getGitResult(ConduitAPIRequest $request): array {
     $repository = $this->getRepository($request);
     $viewer     = $request->getUser();
 
@@ -39,7 +39,7 @@ final class DiffusionChangesConduitAPIMethod
       $request->getValue('endCommit'));
     $commit_hashes = phutil_split_lines($stdout, false);
 
-    $commits = id(new DiffusionCommitQuery())
+    $commits = (new DiffusionCommitQuery())
       ->setViewer($viewer)
       ->withRepositoryIDs([$repository->getID()])
       ->withIdentifiers($commit_hashes)
@@ -62,11 +62,11 @@ final class DiffusionChangesConduitAPIMethod
       $commits);
   }
 
-  public function getMethodStatus() {
+  public function getMethodStatus(): string {
     return self::METHOD_STATUS_UNSTABLE;
   }
 
-  public function getAPIMethodName() {
+  public function getAPIMethodName(): string {
     return 'diffusion.changes';
   }
 
