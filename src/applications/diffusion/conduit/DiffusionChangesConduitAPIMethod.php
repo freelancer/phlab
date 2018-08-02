@@ -28,6 +28,7 @@ final class DiffusionChangesConduitAPIMethod
 
   protected function getGitResult(ConduitAPIRequest $request) {
     $repository = $this->getRepository($request);
+    $viewer     = $request->getUser();
 
     // TODO: We should add `--skip` and `--max-count` so that we can paginate
     // the results.
@@ -36,19 +37,26 @@ final class DiffusionChangesConduitAPIMethod
       '%H',
       $request->getValue('startCommit'),
       $request->getValue('endCommit'));
-
     $commit_hashes = phutil_split_lines($stdout, false);
-    $commits = DiffusionQuery::loadCommitsByIdentifiers(
-      $commit_hashes,
-      $this->getDiffusionRequest());
+
+    $commits = id(new DiffusionCommitQuery())
+      ->setViewer($viewer)
+      ->withRepositoryIDs([$repository->getID()])
+      ->withIdentifiers($commit_hashes)
+      ->needCommitData(true)
+      ->needIdentities(true)
+      ->execute();
 
     return array_map(
-      function (PhabricatorRepositoryCommit $commit) {
+      function (PhabricatorRepositoryCommit $commit): array {
         return [
           'id'         => $commit->getID(),
           'phid'       => $commit->getPHID(),
           'identifier' => $commit->getCommitIdentifier(),
           'summary'    => $commit->getCommitData()->getSummary(),
+
+          'author'    => $commit->getAuthorIdentity()->getIdentityName(),
+          'committer' => $commit->getCommiterIdentity()->getIdentityName(),
         ];
       },
       $commits);
