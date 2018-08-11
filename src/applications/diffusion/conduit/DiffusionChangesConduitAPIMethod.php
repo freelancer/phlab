@@ -56,7 +56,7 @@ final class DiffusionChangesConduitAPIMethod
           'summary'    => $commit->getCommitData()->getSummary(),
 
           'author'    => $commit->getAuthorIdentity()->getIdentityName(),
-          'committer' => $commit->getCommiterIdentity()->getIdentityName(),
+          'committer' => $commit->getCommitterIdentity()->getIdentityName(),
         ];
       },
       $commits);
