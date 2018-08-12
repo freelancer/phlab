@@ -9,7 +9,9 @@
     "(\\.diviner$)": "DivinerArticleAtomizer",
     "(\\.php$)": "DivinerPHPAtomizer"
   },
-  "exclude": [],
+  "exclude": [
+    "(^scripts/)"
+  ],
   "groups": {
     "auth": {
       "name": "Auth",
