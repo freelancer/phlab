@@ -9,7 +9,7 @@
 phutil_register_library_map(array(
   '__library_version__' => 2,
   'class' => array(
-    'CreatePolicyConduitAPIMethod' => 'conduit/CreatePolicyConduitAPIMethod.php',
+    'CreatePolicyConduitAPIMethod' => 'applications/policy/conduit/CreatePolicyConduitAPIMethod.php',
     'DiffusionChangesConduitAPIMethod' => 'applications/diffusion/conduit/DiffusionChangesConduitAPIMethod.php',
     'DiffusionCommitRevisionResigningReviewersHeraldField' => 'applications/diffusion/herald/DiffusionCommitRevisionResigningReviewersHeraldField.php',
     'DiffusionPreCommitRepositoryProjectsMatchesUserProjectsHeraldField' => 'applications/diffusion/herald/DiffusionPreCommitRepositoryProjectsMatchesUserProjectsHeraldField.php',

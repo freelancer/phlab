@@ -4,28 +4,48 @@
   "short": "Phlab Tech Docs",
   "preface": "Technical documentation intended for Phlab developers.",
   "root": "../../..",
-  "uri.source":
-    "https://phabricator.freelancer.com/diffusion/PHL/browse/master/%f$%l",
+  "uri.source": "https://phabricator.tools.flnltd.com/diffusion/PHL/browse/master/%f$%l",
   "rules": {
     "(\\.diviner$)": "DivinerArticleAtomizer",
     "(\\.php$)": "DivinerPHPAtomizer"
   },
-  "exclude": [
-    "(^externals/)",
-    "(^src/docs/user/)"
-  ],
+  "exclude": [],
   "groups": {
+    "auth": {
+      "name": "Auth",
+      "include": "(^src/applications/auth/)"
+    },
     "config": {
       "name": "Config",
       "include": "(^src/applications/config/)"
+    },
+    "diffusion": {
+      "name": "Diffusion",
+      "include": "(^src/applications/diffusion/)"
     },
     "files": {
       "name": "Files",
       "include": "(^src/applications/files/)"
     },
+    "harbormaster": {
+      "name": "Harbormaster",
+      "include": "(^src/applications/harbormaster/)"
+    },
     "herald": {
       "name": "Herald",
       "include": "(^src/applications/herald/)"
+    },
+    "infrastructure": {
+      "name": "Infrastructure",
+      "include": "(^src/infrastructure/)"
+    },
+    "metamta": {
+      "name": "MetaMTA",
+      "include": "(^src/applications/metamta/)"
+    },
+    "policy": {
+      "name": "Policy",
+      "include": "(^src/applications/policy/)"
     }
   }
 }
