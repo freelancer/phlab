@@ -9,7 +9,7 @@ abstract class PhabricatorPrometheusMetric extends Phobject {
   const METRIC_NAMESPACE = 'phabricator';
 
   abstract public function getName(): string;
-  abstract public function getValue(): float;
+  abstract public function getValues();
 
   public function getHelp(): ?string {
     return null;
@@ -25,7 +25,25 @@ abstract class PhabricatorPrometheusMetric extends Phobject {
       $this->getName(),
       $this->getHelp(),
       $this->getLabels());
-    $gauge->set($this->getValue());
+
+    foreach ($this->getValues() as $data) {
+      if (is_array($data)) {
+        list($value, $labels) = $data;
+      } else {
+        $value  = $data;
+        $labels = [];
+      }
+
+      if (count($this->getLabels()) !== count($labels)) {
+        throw new Exception(
+          pht(
+            'Expected value for "%s" metric to have %d labels.',
+            $this->getName(),
+            count($this->getLabels())));
+      }
+
+      $gauge->set($value, $labels);
+    }
   }
 
   final public static function getAllMetrics(): array {

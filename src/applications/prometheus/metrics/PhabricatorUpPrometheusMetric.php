@@ -5,7 +5,7 @@ final class PhabricatorUpPrometheusMetric extends PhabricatorPrometheusMetric {
     return 'up';
   }
 
-  public function getValue(): float {
-    return 1;
+  public function getValues(): array {
+    return [1];
   }
 }
