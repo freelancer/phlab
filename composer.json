@@ -13,7 +13,6 @@
     }
   ],
   "require": {
-    "aws/aws-sdk-php": "^3.7",
-    "jaxl/jaxl": "dev-master"
+    "aws/aws-sdk-php": "^3.7"
   }
 }
