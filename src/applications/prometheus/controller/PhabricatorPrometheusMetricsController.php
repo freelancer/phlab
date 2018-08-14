@@ -18,14 +18,7 @@ final class PhabricatorPrometheusMetricsController extends PhabricatorController
   }
 
   public function willBeginExecution(): void {
-    // TODO: We should probably use APC-backed storage.
-    $adapter        = new InMemoryStorage();
-    $this->registry = new CollectorRegistry($adapter);
-
-    $this->registry
-      ->registerGauge('phabricator', 'up', null)
-      ->set(1);
-
+    $this->loadMetrics();
     parent::willBeginExecution();
   }
 
@@ -35,6 +28,19 @@ final class PhabricatorPrometheusMetricsController extends PhabricatorController
 
     return (new AphrontPlainTextResponse())
       ->setContent($content);
+  }
+
+  private function loadMetrics(): void {
+    // TODO: We should probably use APC-backed storage.
+    $adapter  = new InMemoryStorage();
+    $registry = new CollectorRegistry($adapter);
+    $metrics  = PhabricatorPrometheusMetric::getAllMetrics();
+
+    foreach ($metrics as $metric) {
+      $metric->register($registry);
+    }
+
+    $this->registry = $registry;
   }
 
 }
