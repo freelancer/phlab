@@ -1,6 +1,7 @@
 <?php
 
 final class PhabricatorSetupIssuesPrometheusMetric extends PhabricatorPrometheusMetric {
+
   public function getName(): string {
     return 'setup_issues';
   }
@@ -41,4 +42,5 @@ final class PhabricatorSetupIssuesPrometheusMetric extends PhabricatorPrometheus
 
     return $values;
   }
+
 }

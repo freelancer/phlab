@@ -19,7 +19,7 @@ phutil_register_library_map(array(
     'PhabricatorPrometheusApplication' => 'applications/prometheus/application/PhabricatorPrometheusApplication.php',
     'PhabricatorPrometheusMetric' => 'applications/prometheus/metrics/PhabricatorPrometheusMetric.php',
     'PhabricatorPrometheusMetricsController' => 'applications/prometheus/controller/PhabricatorPrometheusMetricsController.php',
-    'PhabricatorSetupIssuesPrometheusMetric' => 'applications/prometheus/metrics/PhabricatorSetupIssuesPrometheusMetric.php',
+    'PhabricatorSetupIssuesPrometheusMetric' => 'applications/config/metric/PhabricatorSetupIssuesPrometheusMetric.php',
     'PhabricatorUpPrometheusMetric' => 'applications/prometheus/metrics/PhabricatorUpPrometheusMetric.php',
     'PhlabAmazonSESMailImplementationAdapter' => 'applications/metamta/adapter/PhlabAmazonSESMailImplementationAdapter.php',
     'PhlabLibraryTestCase' => '__tests__/PhlabLibraryTestCase.php',
