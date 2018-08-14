@@ -1,12 +1,5 @@
 # Composer
 /vendor/
 
-# Diviner
-/.divinercache/
-/docs/
-
-# i18n
-/src/.cache/
-
 # libphutil
 /src/.phutil_module_cache
