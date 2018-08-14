@@ -3,4 +3,9 @@
 phutil_register_library('phlab', __FILE__);
 
 // Register the Composer autoloader.
-require_once dirname(__FILE__).'/../vendor/autoload.php';
+if (!@include_once(__DIR__.'/../vendor/autoload.php')) {
+  throw new Exception(
+    pht(
+      'Dependencies are not installed. Please run `%s` to install dependencies.',
+      'composer install'));
+}
