@@ -1,7 +1,4 @@
 {
-  "exclude": [
-    "(^externals/)"
-  ],
   "linters": {
     "chmod": {
       "type": "chmod"
