@@ -30,15 +30,24 @@ final class PhabricatorSetupIssuesPrometheusMetric extends PhabricatorPrometheus
           return [
             [
               count($fatal_issues),
-              [$class, 'fatal'],
+              [
+                'class'    => $class,
+                'severity' => 'fatal',
+              ],
             ],
             [
               count($ignored_issues),
-              [$class, 'ignored'],
+              [
+                'class'    => $class,
+                'severity' => 'ignored',
+              ],
             ],
             [
               count($issues) - count($fatal_issues) - count($ignored_issues),
-              [$class, 'warning'],
+              [
+                'class'    => $class,
+                'severity' => 'warning',
+              ],
             ],
           ];
         },

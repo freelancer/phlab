@@ -20,7 +20,13 @@ final class PhabricatorDaemonTasksPrometheusMetric extends PhabricatorPrometheus
 
     foreach ($task_statuses as $status => $task) {
       foreach ($this->getTaskCounts($task) as $class => $count) {
-        $values[] = [$count, [$class, $status]];
+        $values[] = [
+          $count,
+          [
+            'class'  => $class,
+            'status' => $status,
+          ],
+      ];
       }
     }
 

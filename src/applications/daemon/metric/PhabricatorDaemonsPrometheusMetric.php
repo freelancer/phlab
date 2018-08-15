@@ -22,9 +22,9 @@ final class PhabricatorDaemonsPrometheusMetric extends PhabricatorPrometheusMetr
         return [
           $daemon['count'],
           [
-            $daemon['host'],
-            $daemon['class'],
-            $daemon['status'],
+            'class'  => $daemon['class'],
+            'host'   => $daemon['host'],
+            'status' => $daemon['status'],
           ],
         ];
       },
