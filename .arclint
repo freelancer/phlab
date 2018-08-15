@@ -27,10 +27,7 @@
     },
     "phutil-library": {
       "type": "phutil-library",
-      "include": "(\\.php$)",
-      "severity": {
-        "1": "advice"
-      }
+      "include": "(\\.php$)"
     },
     "spelling": {
       "type": "spelling"
