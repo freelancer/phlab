@@ -21,6 +21,10 @@
       "name": "Config",
       "include": "(^src/applications/config/)"
     },
+    "daemon": {
+      "name": "Daemon",
+      "include": "(^src/applications/daemon/)"
+    },
     "diffusion": {
       "name": "Diffusion",
       "include": "(^src/applications/diffusion/)"
@@ -48,6 +52,10 @@
     "policy": {
       "name": "Policy",
       "include": "(^src/applications/policy/)"
-    }
+    },
+    "prometheus": {
+      "name": "Policy",
+      "include": "(^src/applications/prometheus/)"
+    },
   }
 }
