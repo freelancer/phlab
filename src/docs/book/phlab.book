@@ -56,6 +56,6 @@
     "prometheus": {
       "name": "Policy",
       "include": "(^src/applications/prometheus/)"
-    },
+    }
   }
 }
