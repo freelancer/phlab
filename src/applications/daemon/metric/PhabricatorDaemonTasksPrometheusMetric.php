@@ -13,31 +13,64 @@ final class PhabricatorDaemonTasksPrometheusMetric extends PhabricatorPrometheus
   public function getValues(): array {
     $values = [];
 
+    // TODO: We should also expose counts for triggers, bulk jobs and failed tasks.
     $task_statuses = [
-      'active'   => new PhabricatorWorkerActiveTask(),
-      'archived' => new PhabricatorWorkerArchiveTask(),
+      'completed' => [
+        new PhabricatorWorkerArchiveTask(),
+        [],
+      ],
+      'expired'   => [
+        new PhabricatorWorkerActiveTask(),
+        ['leaseExpires < UNIX_TIMESTAMP()'],
+      ],
+      'leased'    => [
+        new PhabricatorWorkerActiveTask(),
+        ['leaseOwner IS NOT NULL', 'leaseExpires >= UNIX_TIMESTAMP()'],
+      ],
+      'queued'    => [
+        new PhabricatorWorkerActiveTask(),
+        ['leaseOwner IS NULL'],
+      ],
     ];
 
-    foreach ($task_statuses as $status => $task) {
-      foreach ($this->getTaskCounts($task) as $class => $count) {
+    foreach ($task_statuses as $status => $params) {
+      list($table, $where) = $params;
+
+      foreach ($this->getTaskCounts($table, $where) as $class => $count) {
         $values[] = [
           $count,
           [
             'class'  => $class,
             'status' => $status,
           ],
-      ];
+        ];
       }
     }
 
     return $values;
   }
 
-  private function getTaskCounts(PhabricatorWorkerDAO $table): array {
+  private function getTaskCounts(PhabricatorWorkerDAO $table, array $conditions = []): array {
+    $conn = $table->establishConnection('r');
+
+    // If `$conditions` is empty, add a dummy condition.
+    if (count($conditions) === 0) {
+      $conditions[] = '1 = 1';
+    }
+
+    $where_clause = implode(
+      ' AND ',
+      array_map(
+        function (string $condition) use ($conn): string {
+          return qsprintf($conn, '(%s)', $condition);
+        },
+        $conditions));
+
     $tasks = queryfx_all(
-      $table->establishConnection('r'),
-      'SELECT taskClass, COUNT(*) AS count FROM %T GROUP BY taskClass',
-      $table->getTableName());
+      $conn,
+      'SELECT taskClass, COUNT(*) AS count FROM %T WHERE %Q GROUP BY taskClass',
+      $table->getTableName(),
+      $where_clause);
     return ipull($tasks, 'count', 'taskClass');
   }
 
