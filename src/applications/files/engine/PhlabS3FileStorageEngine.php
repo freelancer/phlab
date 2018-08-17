@@ -1,5 +1,7 @@
 <?php
 
+use Aws\S3\S3Client;
+
 /**
  * This storage engine is similar to @{class:PhabricatorS3FileStorageEngine},
  * but supports the use of
@@ -9,6 +11,8 @@
  * This file engine uses [[http://aws.amazon.com/sdk-for-php/ | aws-sdk-php]]
  * to interact with [[http://aws.amazon.com/ | Amazon Web Services]].
  *
+ * @phutil-external-symbol class S3Client
+ *
  * @todo This class will be obsolete after https://secure.phabricator.com/T5155.
  */
 final class PhlabS3FileStorageEngine extends PhabricatorFileStorageEngine {
@@ -16,9 +20,9 @@ final class PhlabS3FileStorageEngine extends PhabricatorFileStorageEngine {
   /**
    * Return a unique string which identifies this storage engine.
    *
-   * @return string  Unique string for this engine.
+   * @return string
    */
-  public function getEngineIdentifier() {
+  public function getEngineIdentifier(): string {
     return 'aws-sdk';
   }
 
@@ -27,7 +31,7 @@ final class PhlabS3FileStorageEngine extends PhabricatorFileStorageEngine {
    *
    * @return float
    */
-  public function getEnginePriority() {
+  public function getEnginePriority(): float {
     return 100;
   }
 
@@ -36,16 +40,7 @@ final class PhlabS3FileStorageEngine extends PhabricatorFileStorageEngine {
    *
    * @return bool
    */
-  public function canWriteFiles() {
-    return true;
-  }
-
-  /**
-   * Return `true` if the engine has a filesize limit on storable files.
-   *
-   * @return bool
-   */
-  public function hasFilesizeLimit() {
+  public function canWriteFiles(): bool {
     return true;
   }
 
@@ -59,7 +54,7 @@ final class PhlabS3FileStorageEngine extends PhabricatorFileStorageEngine {
    * @param  map<string, wild>  File metadata.
    * @return string             Unique string which identifies the stored file.
    */
-  public function writeFile($data, array $params) {
+  public function writeFile($data, array $params): string {
     $s3 = $this->getClient();
 
     // Generate a random name for this file. We add some directories to it
@@ -74,18 +69,17 @@ final class PhlabS3FileStorageEngine extends PhabricatorFileStorageEngine {
     ];
     $name = implode('/', $parts);
 
-    $s3_params = array(
+    $s3_params = [
       'Bucket'   => $this->getBucketName(),
       'Key'      => $name,
       'Body'     => $data,
       'ACL'      => 'private',
-
       'Metadata' => [
         'authorPHID'       => idx($params, 'authorPHID'),
         'isExplicitUpload' => (string)idx($params, 'isExplicitUpload'),
         'name'             => rawurlencode(idx($params, 'name')),
       ],
-    );
+    ];
 
     $mime_type = idx($params, 'mime-type');
     if ($mime_type) {
@@ -94,7 +88,7 @@ final class PhlabS3FileStorageEngine extends PhabricatorFileStorageEngine {
 
     AphrontWriteGuard::willWrite();
     $profiler = PhutilServiceProfiler::getInstance();
-    $call_id = $profiler->beginServiceCall([
+    $call_id  = $profiler->beginServiceCall([
       'type'   => 's3',
       'method' => 'putObject',
     ]);
@@ -112,11 +106,11 @@ final class PhlabS3FileStorageEngine extends PhabricatorFileStorageEngine {
    *                 was written.
    * @return string  File contents.
    */
-  public function readFile($handle) {
+  public function readFile($handle): string {
     $s3 = $this->getClient();
 
     $profiler = PhutilServiceProfiler::getInstance();
-    $call_id = $profiler->beginServiceCall([
+    $call_id  = $profiler->beginServiceCall([
       'type'   => 's3',
       'method' => 'getObject',
     ]);
@@ -137,12 +131,12 @@ final class PhlabS3FileStorageEngine extends PhabricatorFileStorageEngine {
    *                 was written.
    * @return void
    */
-  public function deleteFile($handle) {
+  public function deleteFile($handle): void {
     $s3 = $this->getClient();
 
     AphrontWriteGuard::willWrite();
     $profiler = PhutilServiceProfiler::getInstance();
-    $call_id = $profiler->beginServiceCall([
+    $call_id  = $profiler->beginServiceCall([
       'type'   => 's3',
       'method' => 'deleteObject',
     ]);
@@ -159,13 +153,15 @@ final class PhlabS3FileStorageEngine extends PhabricatorFileStorageEngine {
    *
    * @return  string
    */
-  protected function getBucketName() {
+  protected function getBucketName(): string {
     $key    = 'storage.s3.bucket';
     $bucket = PhabricatorEnv::getEnvConfig($key);
 
     if (!$bucket) {
       throw new PhabricatorFileStorageConfigurationException(
-        pht("No '%s' specified!", $key));
+        pht(
+          "No '%s' specified!",
+          $key));
     }
 
     return $bucket;
@@ -174,12 +170,12 @@ final class PhlabS3FileStorageEngine extends PhabricatorFileStorageEngine {
   /**
    * Create a new S3 API object.
    *
-   * @phutil-external-symbol class Aws\S3\S3Client
+   * @return S3Client
    */
-  protected function getClient() {
+  protected function getClient(): S3Client {
     $region = PhabricatorEnv::getEnvConfig('amazon-s3.region');
 
-    return new Aws\S3\S3Client([
+    return new S3Client([
       'region'  => $region,
       'version' => 'latest',
     ]);
