@@ -66,6 +66,10 @@ final class DiffusionChangesConduitAPIMethod
     return self::METHOD_STATUS_UNSTABLE;
   }
 
+  public function getRequiredScope() {
+    return self::SCOPE_ALWAYS;
+  }
+
   public function getAPIMethodName(): string {
     return 'diffusion.changes';
   }
