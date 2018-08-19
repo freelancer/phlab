@@ -51,6 +51,7 @@ final class PhlabAmazonSESMailImplementationAdapter
   public function newLegacyOptions(): array {
     return parent::newLegacyOptions() + [
       'endpoint' => PhabricatorEnv::getEnvConfig('amazon-ses.endpoint'),
+      'encoding' => PhabricatorEnv::getEnvConfig('phpmailer.smtp-encoding'),
     ];
   }
 
