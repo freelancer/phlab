@@ -16,10 +16,6 @@ final class PhlabAmazonSESMailImplementationAdapter
 
   const ADAPTERTYPE = 'aws-ses';
 
-  // We pin the API version so our code will not be affected by a breaking
-  // change made to the service
-  const API_VERSION = '2010-12-01';
-
   private $message;
   private $isHTML;
 
@@ -67,7 +63,7 @@ final class PhlabAmazonSESMailImplementationAdapter
 
     $client = new Aws\Ses\SesClient([
       'region'  => $region,
-      'version' => self::API_VERSION,
+      'version' => 'latest',
     ]);
 
     return $client->sendRawEmail([
