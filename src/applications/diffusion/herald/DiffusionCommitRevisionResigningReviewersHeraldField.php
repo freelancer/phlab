@@ -5,22 +5,22 @@ final class DiffusionCommitRevisionResigningReviewersHeraldField
 
   const FIELDCONST = 'diffusion.commit.revision.resigning';
 
-  public function getHeraldFieldName() {
+  public function getHeraldFieldName(): string {
     return pht('Resigning reviewers');
   }
 
-  public function getFieldGroupKey() {
+  public function getFieldGroupKey(): string {
     return HeraldRelatedFieldGroup::FIELDGROUPKEY;
   }
 
-  public function getHeraldFieldValue($object) {
+  public function getHeraldFieldValue($object): array {
     $revision = $this->getAdapter()->loadDifferentialRevision();
 
     if (!$revision) {
-      return array();
+      return [];
     }
 
-    $resignee_phids = array();
+    $resignee_phids = [];
     foreach ($revision->getReviewers() as $reviewer) {
       if ($reviewer->isResigned()) {
         $resignee_phids[] = $reviewer->getReviewerPHID();
@@ -30,11 +30,11 @@ final class DiffusionCommitRevisionResigningReviewersHeraldField
     return $resignee_phids;
   }
 
-  protected function getHeraldFieldStandardType() {
+  protected function getHeraldFieldStandardType(): string {
     return self::STANDARD_PHID_LIST;
   }
 
-  protected function getDatasource() {
+  protected function getDatasource(): PhabricatorTypeaheadDatasource {
     return new DifferentialReviewerDatasource();
   }
 
