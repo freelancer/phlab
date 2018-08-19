@@ -20,14 +20,9 @@ final class DiffusionCommitRevisionResigningReviewersHeraldField
       return [];
     }
 
-    $resignee_phids = [];
-    foreach ($revision->getReviewers() as $reviewer) {
-      if ($reviewer->isResigned()) {
-        $resignee_phids[] = $reviewer->getReviewerPHID();
-      }
-    }
+    $resigning_reviewers = mfilter($revision->getReviewers(), 'isResigned');
 
-    return $resignee_phids;
+    return mpull($resigning_reviewers, 'getReviewerPHID');
   }
 
   protected function getHeraldFieldStandardType(): string {
