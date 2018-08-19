@@ -1,5 +1,7 @@
 <?php
 
+use Aws\Ses\SesClient;
+
 /**
  * This mail adapter is similar to
  * @{class:PhabricatorMailImplementationAmazonSESAdapter}, but supports the use
@@ -8,6 +10,8 @@
  *
  * This file engine uses [[http://aws.amazon.com/sdk-for-php/ | aws-sdk-php]]
  * to interact with [[http://aws.amazon.com/ | Amazon Web Services]].
+ *
+ * @phutil-external-symbol class SesClient
  *
  * @todo This class will be obsolete after https://secure.phabricator.com/T5155.
  */
@@ -19,18 +23,19 @@ final class PhlabAmazonSESMailImplementationAdapter
   private $message;
   private $isHTML;
 
-  public function prepareForSend() {
+  public function prepareForSend(): void {
     parent::prepareForSend();
+
     $this->mailer->Mailer = 'amazon-ses';
     $this->mailer->customMailer = $this;
   }
 
-  public function supportsMessageIDHeader() {
+  public function supportsMessageIDHeader(): bool {
     // Amazon SES will ignore any Message-ID we provide.
     return false;
   }
 
-  protected function validateOptions(array $options) {
+  protected function validateOptions(array $options): void {
     PhutilTypeSpec::checkMap(
       $options,
       [
@@ -39,21 +44,18 @@ final class PhlabAmazonSESMailImplementationAdapter
       ]);
   }
 
-  public function newDefaultOptions() {
+  public function newDefaultOptions(): array {
     return parent::newDefaultOptions() + [
       'endpoint' => null,
     ];
   }
 
-  public function newLegacyOptions() {
+  public function newLegacyOptions(): array {
     return parent::newLegacyOptions() + [
       'endpoint' => PhabricatorEnv::getEnvConfig('amazon-ses.endpoint'),
     ];
   }
 
-  /**
-   * @phutil-external-symbol class Aws\Ses\SesClient
-   */
   public function executeSend($body) {
     // Instead of introducing new config option, we use the endpoint config for
     // @{class:PhabricatorMailImplementationAmazonSESAdapter} to get region
@@ -61,7 +63,7 @@ final class PhlabAmazonSESMailImplementationAdapter
     $endpoint = $this->getOption('endpoint');
     $region   = idx(explode('.', $endpoint), 1);
 
-    $client = new Aws\Ses\SesClient([
+    $client = new SesClient([
       'region'  => $region,
       'version' => 'latest',
     ]);
