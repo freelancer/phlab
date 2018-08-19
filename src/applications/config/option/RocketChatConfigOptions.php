@@ -3,23 +3,19 @@
 final class RocketChatConfigOptions
   extends PhabricatorApplicationConfigOptions {
 
-  public function getName() {
+  public function getName(): string {
     return pht('Integration with Rocket.Chat');
   }
 
-  public function getDescription() {
+  public function getDescription(): string {
     return pht('Configure Rocket.Chat integration.');
   }
 
-  public function getGroup() {
+  public function getGroup(): string {
     return 'core';
   }
 
-  public function getFontIcon() {
-    return 'fa-comments';
-  }
-
-  public function getOptions() {
+  public function getOptions(): array {
     return [
       $this->newOption('rocketchat.author', 'string', 'Phabricator')
         ->setSummary(pht('Rocket.Chat notifications author.'))
@@ -40,7 +36,25 @@ final class RocketChatConfigOptions
     ];
   }
 
-  public function getKey() {
+  public function getIcon(): string {
+    return 'fa-comments';
+  }
+
+  protected function didValidateOption(PhabricatorConfigOption $option, $value): void {
+    switch ($option->getKey()) {
+      case 'rocketchat.server':
+        if (!preg_match('(^https?://)', $value)) {
+          throw new PhabricatorConfigValidationException(
+            pht(
+              "Config option '%s' is not a valid URI.",
+              $value));
+        }
+
+        break;
+    }
+  }
+
+  public function getKey(): string {
     return 'rocketchat';
   }
 
