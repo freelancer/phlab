@@ -20,9 +20,6 @@ final class PhlabAmazonSESMailImplementationAdapter
 
   const ADAPTERTYPE = 'aws-ses';
 
-  private $message;
-  private $isHTML;
-
   public function prepareForSend(): void {
     parent::prepareForSend();
 
