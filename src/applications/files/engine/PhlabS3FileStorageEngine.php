@@ -41,7 +41,13 @@ final class PhlabS3FileStorageEngine extends PhabricatorFileStorageEngine {
    * @return bool
    */
   public function canWriteFiles(): bool {
-    return true;
+    try {
+      $this->getClient();
+      $this->getBucketName();
+      return true;
+    } catch (Exception $ex) {
+      return false;
+    }
   }
 
   /**
