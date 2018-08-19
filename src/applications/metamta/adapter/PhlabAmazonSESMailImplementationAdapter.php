@@ -44,6 +44,7 @@ final class PhlabAmazonSESMailImplementationAdapter
   public function newDefaultOptions(): array {
     return parent::newDefaultOptions() + [
       'endpoint' => null,
+      'encoding' => 'base64',
     ];
   }
 
