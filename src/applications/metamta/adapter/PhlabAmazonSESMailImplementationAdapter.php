@@ -56,21 +56,30 @@ final class PhlabAmazonSESMailImplementationAdapter
   }
 
   public function executeSend($body) {
-    // Instead of introducing new config option, we use the endpoint config for
-    // @{class:PhabricatorMailImplementationAmazonSESAdapter} to get region
-    // information. So it will be eaiser for us to migrate our code later.
-    $endpoint = $this->getOption('endpoint');
-    $region   = idx(explode('.', $endpoint), 1);
+    $ses = $this->getClient();
 
-    $client = new SesClient([
-      'region'  => $region,
-      'version' => 'latest',
-    ]);
-
-    return $client->sendRawEmail([
+    return $ses->sendRawEmail([
       'RawMessage' => [
         'Data' => $body,
       ],
+    ]);
+  }
+
+  /**
+   * Create a new SES API object.
+   *
+   * @return SesClient
+   */
+  protected function getClient(): SesClient {
+    // Instead of introducing new config option, we use the `endpoint` config
+    // for @{class:PhabricatorMailImplementationAmazonSESAdapter} to get region
+    // information.
+    $endpoint = $this->getOption('endpoint');
+    $region   = idx(explode('.', $endpoint), 1);
+
+    return new SesClient([
+      'region'  => $region,
+      'version' => 'latest',
     ]);
   }
 
