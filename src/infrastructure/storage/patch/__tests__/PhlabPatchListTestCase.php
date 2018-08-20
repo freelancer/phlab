@@ -5,6 +5,7 @@ final class PhlabPatchListTestCase extends PhutilTestCase {
   public function testPatches() {
     $this->assertPatchExists('20180119.herald.php');
     $this->assertPatchExists('20180510.maniphest.jiramigration.sql');
+    $this->assertPatchExists('20180820.files.aws-s3-engine.sql');
   }
 
   private function assertPatchExists(string $name): void {

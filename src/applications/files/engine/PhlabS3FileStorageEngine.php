@@ -23,7 +23,7 @@ final class PhlabS3FileStorageEngine extends PhabricatorFileStorageEngine {
    * @return string
    */
   public function getEngineIdentifier(): string {
-    return 'aws-sdk';
+    return 'aws-s3';
   }
 
   /**
