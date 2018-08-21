@@ -33,8 +33,6 @@ EOTEXT
     HarbormasterBuild $build,
     HarbormasterBuildTarget $build_target) {
 
-    $viewer = PhabricatorUser::getOmnipotentUser();
-
     if (PhabricatorEnv::getEnvConfig('phabricator.silent')) {
       $this->logSilencedCall($build, $build_target, pht('Jenkins'));
       throw new HarbormasterBuildFailureException();
@@ -43,7 +41,7 @@ EOTEXT
     $buildable = $build->getBuildable();
     $object = $buildable->getBuildableObject();
 
-    if (!($object instanceof HarbormasterBuildkiteBuildableInterface)) {
+    if (!($object instanceof PhabricatorRepositoryCommit)) {
       throw new Exception(
         pht('This object does not support builds with Jenkins.'));
     }
@@ -51,17 +49,27 @@ EOTEXT
     $uri = new PhutilURI($this->getSetting('uri'));
     $build_variables = $object->getBuildVariables();
 
+    $branches = $this->getBranches($object);
+
+    if (!$branches) {
+      throw new Exception(
+        pht(
+          'Commit "%s" is not an ancestor of any branch head, so it can not '.
+          'be built with Jenkins.',
+          $object->getCommitIdentifier()));
+    }
+
     $query = array(
-      'url'    => $build_variables['repository.uri'],
-      'commit' => $object->getBuildkiteCommit(),
-      'branch' => $object->getBuildkiteBranch(),
+      'url'      => $build_variables['repository.uri'],
+      'commit'   => $object->getCommitIdentifier(),
+      'branches' => implode(',', $branches),
     );
 
     $uri->setQueryParams($query);
     $uri->setPath('/git/notifyCommit');
 
     $future = id(new HTTPSFuture($uri))
-      ->setMethod('POST')
+      ->setMethod('GET')
       ->setTimeout(60);
 
     $this->resolveFutures(
@@ -85,5 +93,25 @@ EOTEXT
         'required' => true,
       ),
     );
+  }
+
+  private function getBranches(PhabricatorRepositoryCommit $commit) : array {
+    $repository = $commit->getRepository();
+    $viewer = PhabricatorUser::getOmnipotentUser();
+
+    $branches = DiffusionQuery::callConduitWithDiffusionRequest(
+      $viewer,
+      DiffusionRequest::newFromDictionary(
+        [
+          'repository' => $repository,
+          'user'       => $viewer,
+        ]),
+      'diffusion.branchquery',
+      [
+        'contains'   => $commit->getCommitIdentifier(),
+        'branch'     => null,
+      ]);
+
+    return ipull($branches, 'shortName');
   }
 }
