@@ -13,7 +13,7 @@ final class DiffusionCommitHostedRepositoryHeraldField
     return $object->getRepository()->isHosted();
   }
 
-  protected function getHeraldFieldStandardType() {
+  protected function getHeraldFieldStandardType(): string {
     return self::STANDARD_BOOL;
   }
 
