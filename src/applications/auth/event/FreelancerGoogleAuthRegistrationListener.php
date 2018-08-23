@@ -12,7 +12,7 @@
  * for some related discussion upstream.
  */
 final class FreelancerGoogleAuthRegistrationListener
-  extends PhabricatorEventListener {
+  extends PhabricatorAutoEventListener {
 
   public function register() {
     $this->listen(PhabricatorEventType::TYPE_AUTH_WILLREGISTERUSER);
@@ -22,16 +22,17 @@ final class FreelancerGoogleAuthRegistrationListener
     $account = $event->getValue('account');
     $profile = $event->getValue('profile');
 
-    if ($account->getProviderKey() != 'google') {
+    if ($account->getAccountType() !== 'google') {
       return;
     }
 
+    $profile->setDefaultUserName($account->getUsername());
     $profile->setDefaultEmail($account->getEmail());
     $profile->setDefaultRealName($account->getRealName());
 
+    $profile->setCanEditUsername(false);
     $profile->setCanEditEmail(false);
     $profile->setCanEditRealName(false);
-    $profile->setCanEditUsername(false);
     $profile->setShouldVerifyEmail(false);
   }
 }

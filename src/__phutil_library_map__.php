@@ -41,7 +41,7 @@ phutil_register_library_map(array(
     'DiffusionCommitHostedRepositoryHeraldField' => 'DiffusionCommitHeraldField',
     'DiffusionCommitRevisionResigningReviewersHeraldField' => 'DiffusionCommitHeraldField',
     'DiffusionPreCommitRepositoryProjectsMatchesUserProjectsHeraldField' => 'DiffusionPreCommitRefHeraldField',
-    'FreelancerGoogleAuthRegistrationListener' => 'PhabricatorEventListener',
+    'FreelancerGoogleAuthRegistrationListener' => 'PhabricatorAutoEventListener',
     'HarbormasterJenkinsBuildStepImplementation' => 'HarbormasterBuildStepImplementation',
     'HeraldRocketChatNotificationAction' => 'HeraldAction',
     'PhabricatorCopyPHIDAction' => 'PhabricatorAutoEventListener',
