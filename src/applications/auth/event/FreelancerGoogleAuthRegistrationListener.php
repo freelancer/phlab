@@ -14,11 +14,11 @@
 final class FreelancerGoogleAuthRegistrationListener
   extends PhabricatorAutoEventListener {
 
-  public function register() {
+  public function register(): void {
     $this->listen(PhabricatorEventType::TYPE_AUTH_WILLREGISTERUSER);
   }
 
-  public function handleEvent(PhutilEvent $event) {
+  public function handleEvent(PhutilEvent $event): void {
     $account = $event->getValue('account');
     $profile = $event->getValue('profile');
 
@@ -35,4 +35,5 @@ final class FreelancerGoogleAuthRegistrationListener
     $profile->setCanEditRealName(false);
     $profile->setShouldVerifyEmail(false);
   }
+
 }
