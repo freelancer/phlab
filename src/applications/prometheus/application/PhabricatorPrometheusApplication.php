@@ -32,9 +32,7 @@ final class PhabricatorPrometheusApplication extends PhabricatorApplication {
 
   public function getRoutes(): array {
     return [
-      '/prometheus/' => [
-        'metrics' => PhabricatorPrometheusMetricsController::class,
-      ],
+      '/metrics' => PhabricatorPrometheusMetricsController::class,
     ];
   }
 
