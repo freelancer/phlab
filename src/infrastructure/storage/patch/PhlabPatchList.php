@@ -7,9 +7,7 @@ final class PhlabPatchList extends PhabricatorSQLPatchList {
   }
 
   public function getPatches(): array {
-    $root = dirname(phutil_get_library_root('phlab'));
-    $patches = $this->buildPatchesFromDirectory(
-      $root.'/resources/sql/autopatches/');
+    $patches = $this->buildPatchesFromDirectory(self::getPatchDirectory());
 
     // Phabricator requires that the first element of a patch list
     // has an `after` key.
@@ -17,5 +15,12 @@ final class PhlabPatchList extends PhabricatorSQLPatchList {
     $patches[key($patches)]['after'] = [];
 
     return $patches;
+  }
+
+  public static function getPatchDirectory(): string {
+    $library = phutil_get_current_library_name();
+    $root    = dirname(phutil_get_library_root($library));
+
+    return $root.'/resources/sql/autopatches/';
   }
 }
