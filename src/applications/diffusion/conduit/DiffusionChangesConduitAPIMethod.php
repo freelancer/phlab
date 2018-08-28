@@ -8,6 +8,11 @@
 final class DiffusionChangesConduitAPIMethod
   extends DiffusionQueryConduitAPIMethod {
 
+  public function getMethodSummary(): string {
+    return pht(
+      'Retrieve information about the commits within a specified range.');
+  }
+
   public function getMethodDescription(): string {
     return pht(
       'Retrieve information about the commits within a specified range. '.
@@ -24,6 +29,26 @@ final class DiffusionChangesConduitAPIMethod
 
   protected function defineReturnType(): string {
     return 'list<map<string, wild>>';
+  }
+
+  protected function defineCustomErrorTypes(): array {
+    return [];
+  }
+
+  public function getMethodStatus(): string {
+    return self::METHOD_STATUS_UNSTABLE;
+  }
+
+  public function getMethodStatusDescription(): ?string {
+    return null;
+  }
+
+  public function getRequiredScope(): string {
+    return self::SCOPE_ALWAYS;
+  }
+
+  public function getAPIMethodName(): string {
+    return 'diffusion.changes';
   }
 
   protected function getGitResult(ConduitAPIRequest $request): array {
@@ -60,18 +85,6 @@ final class DiffusionChangesConduitAPIMethod
         ];
       },
       $commits);
-  }
-
-  public function getMethodStatus(): string {
-    return self::METHOD_STATUS_UNSTABLE;
-  }
-
-  public function getRequiredScope() {
-    return self::SCOPE_ALWAYS;
-  }
-
-  public function getAPIMethodName(): string {
-    return 'diffusion.changes';
   }
 
 }
