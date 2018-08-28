@@ -21,7 +21,6 @@ final class DiffusionCommitRevisionResigningReviewersHeraldField
     }
 
     $resigning_reviewers = mfilter($revision->getReviewers(), 'isResigned');
-
     return mpull($resigning_reviewers, 'getReviewerPHID');
   }
 
