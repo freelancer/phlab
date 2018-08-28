@@ -47,23 +47,30 @@ final class PhabricatorPeopleAddEmailWorkflow
           '--email_address'));
     }
 
-    $existing_user = PhabricatorUser::loadOneWithEmailAddress($email_address);
-    if ($existing_user) {
+    $existing_user = (new PhabricatorPeopleQuery())
+      ->setViewer($this->getViewer())
+      ->withEmails([$email_address])
+      ->executeOne();
+
+    if ($existing_user !== null) {
       throw new PhutilArgumentUsageException(
         pht(
           'The specified email address is already in use by user @%s.',
           $existing_user->getUserName()));
     }
 
-    $user = (new PhabricatorUser())->loadOneWhere('userName = %s', $username);
-    if (!$user) {
+    $user = (new PhabricatorPeopleQuery())
+      ->setViewer($this->getViewer())
+      ->withUsernames([$username])
+      ->executeOne();
+
+    if ($user === null) {
       throw new PhutilArgumentUsageException(
         pht(
           'User @%s not found.',
           $username));
     }
 
-    $actor = PhabricatorUser::getOmnipotentUser();
     $email = (new PhabricatorUserEmail())
       ->setUserPHID($user->getPHID())
       ->setAddress($email_address)
@@ -71,7 +78,7 @@ final class PhabricatorPeopleAddEmailWorkflow
       ->setIsPrimary(0);
 
     $editor = (new PhabricatorUserEditor())
-      ->setActor($actor)
+      ->setActor($this->getViewer())
       ->updateUser($user, $email);
   }
 }
