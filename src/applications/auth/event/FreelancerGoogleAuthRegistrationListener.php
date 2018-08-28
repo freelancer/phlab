@@ -1,7 +1,8 @@
 <?php
 
 /**
- * An event listener which prevents users from changing their account details.
+ * An event listener which prevents users from changing their account details
+ * when using the Google authentication provider.
  *
  * When users attempt to login with Google for the very first time, they are
  * able to choose their own username. This is confusing and historically has
