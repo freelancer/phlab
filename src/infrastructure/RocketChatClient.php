@@ -4,6 +4,8 @@
  * Library for interacting with the RocketChat REST API.
  *
  * @see https://rocket.chat/docs/developer-guides/rest-api/
+ *
+ * @todo Add unit tests.
  */
 final class RocketChatClient extends Phobject {
 
