@@ -22,8 +22,10 @@ final class DiffusionChangesConduitAPIMethod
 
   protected function defineCustomParamTypes(): array {
     return [
-      'startCommit' => 'string',
-      'endCommit'   => 'string',
+      'startCommit' => 'required string',
+      'endCommit'   => 'required string',
+      'offset'      => 'optional int',
+      'limit'       => 'optional int',
     ];
   }
 
@@ -55,10 +57,10 @@ final class DiffusionChangesConduitAPIMethod
     $repository = $this->getRepository($request);
     $viewer     = $request->getUser();
 
-    // TODO: We should add `--skip` and `--max-count` so that we can paginate
-    // the results.
     list($stdout) = $repository->execxLocalCommand(
-      'log --pretty=format:%s %s..%s',
+      'log --max-count=%d --skip=%d --format=format:%s %s..%s',
+      $request->getValue('limit', 100),
+      $request->getValue('offset', 0),
       '%H',
       $request->getValue('startCommit'),
       $request->getValue('endCommit'));
