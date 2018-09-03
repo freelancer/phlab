@@ -34,7 +34,9 @@ final class DiffusionChangesConduitAPIMethod
   }
 
   protected function defineCustomErrorTypes(): array {
-    return [];
+    return [
+      'ERR-INVALID-PARAMETER' => pht('Missing or malformed parameter.'),
+    ];
   }
 
   public function getMethodStatus(): string {
@@ -54,6 +56,25 @@ final class DiffusionChangesConduitAPIMethod
   }
 
   protected function getGitResult(ConduitAPIRequest $request): array {
+    $start_commit = $request->getValue('startCommit');
+    $end_commit   = $request->getValue('endCommit');
+
+    if (!self::isValidCommitIdentifier($start_commit)) {
+      throw (new ConduitException('ERR-INVALID-PARAMETER'))
+        ->setErrorDescription(
+          pht(
+            'Parameter "%s" should be a commit hash.',
+            'startCommit'));
+    }
+
+    if (!self::isValidCommitIdentifier($end_commit)) {
+      throw (new ConduitException('ERR-INVALID-PARAMETER'))
+        ->setErrorDescription(
+          pht(
+            'Parameter "%s" should be a commit hash.',
+            'endCommit'));
+    }
+
     $repository = $this->getRepository($request);
     $viewer     = $request->getUser();
 
@@ -62,8 +83,8 @@ final class DiffusionChangesConduitAPIMethod
       $request->getValue('limit', 100),
       $request->getValue('offset', 0),
       '%H',
-      $request->getValue('startCommit'),
-      $request->getValue('endCommit'));
+      $start_commit,
+      $end_commit);
     $commit_hashes = phutil_split_lines($stdout, false);
 
     $commits = (new DiffusionCommitQuery())
@@ -87,6 +108,16 @@ final class DiffusionChangesConduitAPIMethod
         ];
       },
       $commits);
+  }
+
+  /**
+   * Validate commit identifiers.
+   *
+   * Commit idenitifers (i.e. the `startCommit` and `endCommit` parameters)
+   * must be a 40-character SHA-1 hash, optionally succeeded by a tilde (`~`).
+   */
+  public static function isValidCommitIdentifier(?string $commit): bool {
+    return preg_match('/^[0-9a-f]{40}~?$/', $commit);
   }
 
 }
