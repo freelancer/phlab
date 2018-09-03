@@ -22,10 +22,14 @@ final class DiffusionChangesConduitAPIMethod
 
   protected function defineCustomParamTypes(): array {
     return [
-      'startCommit' => 'required string',
-      'endCommit'   => 'required string',
-      'offset'      => 'optional int',
-      'limit'       => 'optional int',
+      'commit'  => 'required string',
+      'against' => 'optional string',
+      'offset'  => 'optional int',
+      'limit'   => 'optional int',
+
+      // TODO: Remove these parameters after T65473.
+      'startCommit' => 'deprecated string',
+      'endCommit'   => 'deprecated string',
     ];
   }
 
@@ -56,35 +60,70 @@ final class DiffusionChangesConduitAPIMethod
   }
 
   protected function getGitResult(ConduitAPIRequest $request): array {
-    $start_commit = $request->getValue('startCommit');
-    $end_commit   = $request->getValue('endCommit');
+    $commit  = $request->getValue('commit');
+    $against = $request->getValue('against');
 
-    if (!self::isValidCommitIdentifier($start_commit)) {
+    if ($commit !== null && !self::isValidCommitIdentifier($commit)) {
       throw (new ConduitException('ERR-INVALID-PARAMETER'))
         ->setErrorDescription(
           pht(
             'Parameter "%s" should be a commit hash.',
-            'startCommit'));
+            'commit'));
     }
 
-    if (!self::isValidCommitIdentifier($end_commit)) {
+    if ($against !== null && !self::isValidCommitIdentifier($against)) {
       throw (new ConduitException('ERR-INVALID-PARAMETER'))
         ->setErrorDescription(
           pht(
             'Parameter "%s" should be a commit hash.',
-            'endCommit'));
+            'against'));
+    }
+
+    // TODO: Remove this conditional after T65473.
+    if ($commit === null) {
+      $against = $request->getValue('startCommit');
+      $commit  = $request->getValue('endCommit');
+
+      if (!self::isValidCommitIdentifier($against, true)) {
+        throw (new ConduitException('ERR-INVALID-PARAMETER'))
+          ->setErrorDescription(
+            pht(
+              'Parameter "%s" should be a commit hash.',
+              'startCommit'));
+      }
+
+      if (!self::isValidCommitIdentifier($commit, true)) {
+        throw (new ConduitException('ERR-INVALID-PARAMETER'))
+          ->setErrorDescription(
+            pht(
+              'Parameter "%s" should be a commit hash.',
+              'endCommit'));
+      }
     }
 
     $repository = $this->getRepository($request);
     $viewer     = $request->getUser();
 
+    if ($against !== null) {
+      $commit_range = "${against}..${commit}";
+
+      $limit  = $request->getValue('limit', 100);
+      $offset = $request->getValue('offset', 0);
+    } else {
+      $commit_range = $commit;
+
+      // `--max-count` and `--skip` don't really make sense when querying
+      // for a single commit.
+      $limit  = 1;
+      $offset = 0;
+    }
+
     list($stdout) = $repository->execxLocalCommand(
-      'log --max-count=%d --skip=%d --format=format:%s %s..%s',
-      $request->getValue('limit', 100),
-      $request->getValue('offset', 0),
+      'log --max-count=%d --skip=%d --format=format:%s %s',
+      $limit,
+      $offset,
       '%H',
-      $start_commit,
-      $end_commit);
+      $commit_range);
     $commit_hashes = phutil_split_lines($stdout, false);
 
     $commits = (new DiffusionCommitQuery())
@@ -115,9 +154,15 @@ final class DiffusionChangesConduitAPIMethod
    *
    * Commit idenitifers (i.e. the `startCommit` and `endCommit` parameters)
    * must be a 40-character SHA-1 hash, optionally succeeded by a tilde (`~`).
+   *
+   * @todo Remove the `$allow_tilde` parameter after T65473.
    */
-  public static function isValidCommitIdentifier(?string $commit): bool {
-    return preg_match('/^[0-9a-f]{40}~?$/', $commit);
+  public static function isValidCommitIdentifier(?string $commit, bool $allow_tilde = false): bool {
+    if ($allow_tilde) {
+      return preg_match('/^[0-9a-f]{40}~?$/', $commit);
+    }
+
+    return preg_match('/^[0-9a-f]{40}$/', $commit);
   }
 
 }
