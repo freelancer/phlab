@@ -24,21 +24,4 @@ final class DiffusionChangesConduitAPIMethodTestCase extends PhutilTestCase {
     }
   }
 
-  public function testIsValidCommitIdentifierWithTilde() {
-    $identifiers = [
-      '4b825dc6~'                                 => false,
-      '4b825dc642cb6eb9a060e54bf8d69288fbee4904~' => true,
-    ];
-
-    foreach ($identifiers as $identifier => $should_be_valid) {
-      $is_valid = DiffusionChangesConduitAPIMethod::isValidCommitIdentifier($identifier, true);
-
-      if ($should_be_valid) {
-        $this->assertTrue($is_valid);
-      } else {
-        $this->assertFalse($is_valid);
-      }
-    }
-  }
-
 }

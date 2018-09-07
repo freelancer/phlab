@@ -26,10 +26,6 @@ final class DiffusionChangesConduitAPIMethod
       'against' => 'optional string',
       'offset'  => 'optional int',
       'limit'   => 'optional int',
-
-      // TODO: Remove these parameters after T65473.
-      'startCommit' => 'deprecated string',
-      'endCommit'   => 'deprecated string',
     ];
   }
 
@@ -63,7 +59,7 @@ final class DiffusionChangesConduitAPIMethod
     $commit  = $request->getValue('commit');
     $against = $request->getValue('against');
 
-    if ($commit !== null && !self::isValidCommitIdentifier($commit)) {
+    if (!self::isValidCommitIdentifier($commit)) {
       throw (new ConduitException('ERR-INVALID-PARAMETER'))
         ->setErrorDescription(
           pht(
@@ -77,28 +73,6 @@ final class DiffusionChangesConduitAPIMethod
           pht(
             'Parameter "%s" should be a commit hash.',
             'against'));
-    }
-
-    // TODO: Remove this conditional after T65473.
-    if ($commit === null) {
-      $against = $request->getValue('startCommit');
-      $commit  = $request->getValue('endCommit');
-
-      if (!self::isValidCommitIdentifier($against, true)) {
-        throw (new ConduitException('ERR-INVALID-PARAMETER'))
-          ->setErrorDescription(
-            pht(
-              'Parameter "%s" should be a commit hash.',
-              'startCommit'));
-      }
-
-      if (!self::isValidCommitIdentifier($commit, true)) {
-        throw (new ConduitException('ERR-INVALID-PARAMETER'))
-          ->setErrorDescription(
-            pht(
-              'Parameter "%s" should be a commit hash.',
-              'endCommit'));
-      }
     }
 
     $repository = $this->getRepository($request);
@@ -154,14 +128,8 @@ final class DiffusionChangesConduitAPIMethod
    *
    * Commit idenitifers (i.e. the `startCommit` and `endCommit` parameters)
    * must be a 40-character SHA-1 hash, optionally succeeded by a tilde (`~`).
-   *
-   * @todo Remove the `$allow_tilde` parameter after T65473.
    */
-  public static function isValidCommitIdentifier(?string $commit, bool $allow_tilde = false): bool {
-    if ($allow_tilde) {
-      return preg_match('/^[0-9a-f]{40}~?$/', $commit);
-    }
-
+  public static function isValidCommitIdentifier(?string $commit): bool {
     return preg_match('/^[0-9a-f]{40}$/', $commit);
   }
 
