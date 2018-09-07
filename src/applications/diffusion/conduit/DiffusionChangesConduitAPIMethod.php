@@ -121,9 +121,6 @@ final class DiffusionChangesConduitAPIMethod
           'identifier' => $commit->getCommitIdentifier(),
           'fields'     => $parser->parseFields($message),
 
-          // TODO: Remove this after D108511.
-          'summary'    => $commit->getCommitData()->getSummary(),
-
           'author'    => $commit->getAuthorIdentity()->getIdentityName(),
           'committer' => $commit->getCommitterIdentity()->getIdentityName(),
         ];
