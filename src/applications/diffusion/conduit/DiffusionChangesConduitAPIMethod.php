@@ -108,12 +108,20 @@ final class DiffusionChangesConduitAPIMethod
       ->needIdentities(true)
       ->execute();
 
+    $parser = DifferentialCommitMessageParser::newStandardParser($viewer)
+      ->setRaiseMissingFieldErrors(false);
+
     return array_map(
-      function (PhabricatorRepositoryCommit $commit): array {
+      function (PhabricatorRepositoryCommit $commit) use ($parser): array {
+        $message = $commit->getCommitData()->getCommitMessage();
+
         return [
           'id'         => $commit->getID(),
           'phid'       => $commit->getPHID(),
           'identifier' => $commit->getCommitIdentifier(),
+          'fields'     => $parser->parseFields($message),
+
+          // TODO: Remove this after D108511.
           'summary'    => $commit->getCommitData()->getSummary(),
 
           'author'    => $commit->getAuthorIdentity()->getIdentityName(),
