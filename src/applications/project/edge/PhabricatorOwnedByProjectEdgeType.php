@@ -20,6 +20,10 @@ final class PhabricatorOwnedByProjectEdgeType extends PhabricatorEdgeType {
     return PhabricatorOwnsProjectEdgeType::EDGECONST;
   }
 
+  public function shouldPreventCycles(): bool {
+    return true;
+  }
+
   public function shouldWriteInverseTransactions(): bool {
     return true;
   }
