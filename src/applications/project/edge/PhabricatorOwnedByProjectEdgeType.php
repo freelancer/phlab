@@ -4,6 +4,18 @@ final class PhabricatorOwnedByProjectEdgeType extends PhabricatorEdgeType {
 
   const EDGECONST = 10002;
 
+  public function getConduitKey(): string {
+    return 'project.owned-by';
+  }
+
+  public function getConduitName(): string {
+    return pht('Project Owned By');
+  }
+
+  public function getConduitDescription(): string {
+    return pht('The source project is owned by the team managing the destination project.');
+  }
+
   public function getInverseEdgeConstant(): int {
     return PhabricatorOwnsProjectEdgeType::EDGECONST;
   }
