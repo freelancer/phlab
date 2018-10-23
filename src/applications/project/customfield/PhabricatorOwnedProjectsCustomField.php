@@ -1,14 +1,14 @@
 <?php
 
-final class PhabricatorRelatedProjectsCustomField
+final class PhabricatorOwnedProjectsCustomField
   extends PhabricatorProjectStoredCustomField {
 
   public function getFieldKey(): string {
-    return 'phlab:related-projects';
+    return 'phlab:owned-projects';
   }
 
   public function getFieldName(): string {
-    return pht('Related Projects');
+    return pht('Owned Projects');
   }
 
   public function getFieldDescription(): ?string {
