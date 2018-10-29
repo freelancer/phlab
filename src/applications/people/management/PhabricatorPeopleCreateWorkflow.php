@@ -32,6 +32,12 @@ final class PhabricatorPeopleCreateWorkflow
               'Administrative user to act on behalf of. '.
               'The welcome email will be sent on behalf of this user.'),
           ],
+          [
+            'name' => 'force',
+            'help' => pht(
+              'Forcefully create the user, bypassing `%s`.',
+              'auth.email-domains'),
+          ],
         ]);
   }
 
@@ -59,6 +65,13 @@ final class PhabricatorPeopleCreateWorkflow
 
     // Unconditionally approve new accounts created from the CLI.
     $user->setIsApproved(1);
+
+    // TODO: This is extremely hacky, but we want to be able to create accounts
+    // for external users, so we need to bypass `auth.email-domains`.
+    if ($args->getArg('force')) {
+      // Set `auth.email-domains` to an empty array to allow all domains.
+      PhabricatorEnv::overrideConfig('auth.email-domains', []);
+    }
 
     $editor->createNewUser($user, $email);
     $user->sendWelcomeEmail($admin);
