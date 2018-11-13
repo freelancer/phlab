@@ -50,6 +50,13 @@ final class PhabricatorFilesManagementResetViewPolicyWorkflow
     foreach ($iterator as $file) {
       $view_policy = $file->getViewPolicy();
 
+      if ($file->isBuiltin()) {
+        $this->logInfo(
+          pht('SKIP'),
+          pht('%s is a built-in file.', $file->getMonogram()));
+        continue;
+      }
+
       if ($view_policy !== $from_policy) {
         $this->logInfo(
           pht('SKIP'),
