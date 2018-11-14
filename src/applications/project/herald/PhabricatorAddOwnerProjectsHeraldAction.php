@@ -16,17 +16,9 @@ final class PhabricatorAddOwnerProjectsHeraldAction
     $current_projects = $adapter->loadEdgePHIDs(
       PhabricatorProjectObjectHasProjectEdgeType::EDGECONST);
 
-    $owner_projects = array_mergev(
-      array_map(
-        function (string $owned_project): array {
-          return PhabricatorEdgeQuery::loadDestinationPHIDs(
-            $owned_project,
-            PhabricatorOwnedByProjectEdgeType::EDGECONST);
-        },
-        $current_projects));
-    $owner_projects = array_unique($owner_projects);
-
-    $this->applyProjects($owner_projects, $is_add = true);
+    $this->applyProjects(
+      $this->getOwnerProjects($current_projects),
+      $is_add = true);
   }
 
   public function renderActionDescription($value): string {
@@ -35,6 +27,30 @@ final class PhabricatorAddOwnerProjectsHeraldAction
 
   public function getHeraldActionStandardType(): string {
     return HeraldAction::STANDARD_NONE;
+  }
+
+  private function getOwnerProjects(array $project_phids): array {
+    $unvisited = $project_phids;
+    $visited   = [];
+
+    while ($unvisited) {
+      $project_phid = array_shift($unvisited);
+      $visited[$project_phid] = true;
+
+      $owner_project_phids = PhabricatorEdgeQuery::loadDestinationPHIDs(
+        $project_phid,
+        PhabricatorOwnedByProjectEdgeType::EDGECONST);
+
+      foreach ($owner_project_phids as $owner_project_phid) {
+        if (isset($visited[$owner_project_phid])) {
+          continue;
+        }
+
+        $unvisited[] = $owner_project_phid;
+      }
+    }
+
+    return array_diff(array_keys($visited), $project_phids);
   }
 
 }
