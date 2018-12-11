@@ -3,7 +3,7 @@
 final class DiffusionCommitRevisionResigningReviewersHeraldField
   extends DiffusionCommitHeraldField {
 
-  const FIELDCONST = 'diffusion.commit.revision.resigning';
+  const FIELDCONST = 'diffusion.commit.revision.resigning-reviewers';
 
   public function getHeraldFieldName(): string {
     return pht('Resigning reviewers');
