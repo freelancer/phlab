@@ -14,26 +14,25 @@ final class PhabricatorCopyPHIDAction extends PhabricatorAutoEventListener {
     }
   }
 
-  private function handleActionEvent($event): void {
+  private function handleActionEvent(PhabricatorEvent $event): void {
     $viewer = $event->getUser();
     $object = $event->getValue('object');
 
-    if (!$viewer->getIsAdmin()) {
+    if ($object === null || $object->getPHID() === null) {
       return;
     }
 
-    if (!$object || !$object->getPHID()) {
-      return;
-    }
-
-    Javelin::initBehavior('phabricator-clipboard-copy');
     $action = (new PhabricatorActionView())
+      ->setViewer($viewer)
+      ->initBehavior('phabricator-clipboard-copy')
       ->setHref('#')
       ->setRenderAsForm(true)
       ->setName(pht('Copy PHID'))
       ->setIcon('fa-clipboard')
       ->addSigil('clipboard-copy')
-      ->setMetadata(['text' => $object->getPHID()]);
+      ->setMetadata(['text' => $object->getPHID()])
+      ->setHidden(!$viewer->getIsAdmin());
+
     $this->addActionMenuItems($event, $action);
   }
 
