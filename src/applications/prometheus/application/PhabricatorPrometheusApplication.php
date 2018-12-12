@@ -6,8 +6,12 @@ final class PhabricatorPrometheusApplication extends PhabricatorApplication {
     return pht('Prometheus');
   }
 
-  public function isUnlisted(): bool {
-    return true;
+  public function getShortDescription(): string {
+    return pht('Monitoring');
+  }
+
+  public function isLaunchable(): bool {
+    return false;
   }
 
   public function canUninstall(): bool {
@@ -30,10 +34,18 @@ final class PhabricatorPrometheusApplication extends PhabricatorApplication {
     return "\xE2\x99\xA5";
   }
 
+  public function getOverview(): ?string {
+    return null;
+  }
+
   public function getRoutes(): array {
     return [
       '/metrics' => PhabricatorPrometheusMetricsController::class,
     ];
+  }
+
+  public function getFlavorText(): ?string {
+    return null;
   }
 
 }
