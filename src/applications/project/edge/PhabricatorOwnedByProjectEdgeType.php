@@ -28,7 +28,7 @@ final class PhabricatorOwnedByProjectEdgeType extends PhabricatorEdgeType {
     return true;
   }
 
-  public function getTransactionAddString($actor, $add_count, $add_edges): PhutilSafeHTML {
+  public function getTransactionAddString($actor, $add_count, $add_edges) {
     return pht(
       '%s added %s owner project(s): %s.',
       $actor,
@@ -36,7 +36,7 @@ final class PhabricatorOwnedByProjectEdgeType extends PhabricatorEdgeType {
       $add_edges);
   }
 
-  public function getTransactionRemoveString($actor, $remove_count, $remove_edges): PhutilSafeHTML {
+  public function getTransactionRemoveString($actor, $remove_count, $remove_edges) {
 
     return pht(
       '%s removed %s owner project(s): %s.',
@@ -45,7 +45,7 @@ final class PhabricatorOwnedByProjectEdgeType extends PhabricatorEdgeType {
       $remove_edges);
   }
 
-  public function getTransactionEditString($actor, $total_count, $add_count, $add_edges, $remove_count, $remove_edges): PhutilSafeHTML {
+  public function getTransactionEditString($actor, $total_count, $add_count, $add_edges, $remove_count, $remove_edges) {
     return pht(
       '%s edited owner projects(s), added %s: %s; removed %s: %s.',
       $actor,
@@ -55,7 +55,7 @@ final class PhabricatorOwnedByProjectEdgeType extends PhabricatorEdgeType {
       $remove_edges);
   }
 
-  public function getFeedAddString($actor, $object, $add_count, $add_edges): PhutilSafeHTML {
+  public function getFeedAddString($actor, $object, $add_count, $add_edges) {
     return pht(
       '%s added %s owner project(s) for %s: %s.',
       $actor,
@@ -64,7 +64,7 @@ final class PhabricatorOwnedByProjectEdgeType extends PhabricatorEdgeType {
       $add_edges);
   }
 
-  public function getFeedRemoveString($actor, $object, $remove_count, $remove_edges): PhutilSafeHTML {
+  public function getFeedRemoveString($actor, $object, $remove_count, $remove_edges) {
     return pht(
       '%s removed %s owner project(s) for %s: %s.',
       $actor,
@@ -73,7 +73,7 @@ final class PhabricatorOwnedByProjectEdgeType extends PhabricatorEdgeType {
       $remove_edges);
   }
 
-  public function getFeedEditString($actor, $object, $total_count, $add_count, $add_edges, $remove_count, $remove_edges): PhutilSafeHTML {
+  public function getFeedEditString($actor, $object, $total_count, $add_count, $add_edges, $remove_count, $remove_edges) {
     return pht(
       '%s edited owner project(s) for %s, added %s: %s; removed %s: %s.',
       $actor,
