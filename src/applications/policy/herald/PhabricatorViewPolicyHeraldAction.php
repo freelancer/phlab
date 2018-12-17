@@ -35,8 +35,8 @@ final class PhabricatorViewPolicyHeraldAction extends HeraldAction {
     $current_policy = $this->getPolicy($object->getViewPolicy());
     $target_policy  = $this->getPolicy($target);
 
-    // TODO: This doesn't seem to work. The intention is that this Herald
-    // action shouldn't ever change the view policy to be //less// restrictive.
+    // TODO: This could be improved, but comparing the "strength" of two
+    // policies isn't trivial, see @{method:PhabricatorPolicy::isStrongerThan}.
     if ($current_policy->isStrongerThan($target_policy)) {
       $this->logEffect(self::DO_STANDARD_NO_EFFECT, $target);
       return;
@@ -72,7 +72,7 @@ final class PhabricatorViewPolicyHeraldAction extends HeraldAction {
   }
 
   public function willSaveActionValue($value) {
-    if (PhabricatorPolicyQuery::isGlobalPolicy($value)) {
+    if (PhabricatorPolicyQuery::isSpecialPolicy($value)) {
       return parent::willSaveActionValue($value);
     }
 
@@ -113,16 +113,16 @@ final class PhabricatorViewPolicyHeraldAction extends HeraldAction {
   }
 
   private function renderPolicy(string $value): PhutilSafeHTML {
-    switch ($value) {
-      case PhabricatorPolicies::POLICY_ADMIN:
-      case PhabricatorPolicies::POLICY_NOONE:
-      case PhabricatorPolicies::POLICY_PUBLIC:
-      case PhabricatorPolicies::POLICY_USER:
-        return new PhutilSafeHTML($value);
-
-      default:
-        return $this->renderHandleList([$value]);
+    if (PhabricatorPolicyQuery::isGlobalPolicy($value)) {
+      return new PhutilSafeHTML($value);
     }
+
+    if (PhabricatorPolicyQuery::isObjectPolicy($value)) {
+      $value = PhabricatorPolicyQuery::getObjectPolicy($value);
+      return phutil_tag('tt', [], $value->getPHID());
+    }
+
+    return $this->renderHandleList([$value]);
   }
 
 }
