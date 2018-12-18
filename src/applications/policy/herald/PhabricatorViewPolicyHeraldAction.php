@@ -35,6 +35,11 @@ final class PhabricatorViewPolicyHeraldAction extends HeraldAction {
     $current_policy = $this->getPolicy($object->getViewPolicy());
     $target_policy  = $this->getPolicy($target);
 
+    if ($current_policy->getPHID() === $target_policy->getPHID()) {
+      $this->logEffect(self::DO_STANDARD_NO_EFFECT, $target);
+      return;
+    }
+
     // TODO: This could be improved, but comparing the "strength" of two
     // policies isn't trivial, see @{method:PhabricatorPolicy::isStrongerThan}.
     if ($current_policy->isStrongerThan($target_policy)) {
@@ -54,10 +59,13 @@ final class PhabricatorViewPolicyHeraldAction extends HeraldAction {
     return pht('Set view policy: %s', $this->renderPolicy($value));
   }
 
-  protected function renderActionEffectDescription($type, $data): PhutilSafeHTML {
+  protected function renderActionEffectDescription($type, $data): ?PhutilSafeHTML {
     switch ($type) {
       case self::DO_POLICY:
         return pht('Set view policy to %s.', $this->renderPolicy($data));
+
+      default:
+        return null;
     }
   }
 
