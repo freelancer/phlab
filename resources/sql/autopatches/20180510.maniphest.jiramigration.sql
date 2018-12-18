@@ -7,7 +7,7 @@ SET
   comment.editPolicy = transaction.authorPHID
 WHERE
   transaction.phid = comment.transactionPHID
-  AND transaction.transactionType = "core:comment"
+  AND transaction.transactionType = 'core:comment'
   AND transaction.authorPHID != comment.authorPHID
   AND comment.content != ""
 ;
