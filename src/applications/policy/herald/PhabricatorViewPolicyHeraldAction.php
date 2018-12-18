@@ -126,8 +126,8 @@ final class PhabricatorViewPolicyHeraldAction extends HeraldAction {
     }
 
     if (PhabricatorPolicyQuery::isObjectPolicy($value)) {
-      $value = PhabricatorPolicyQuery::getObjectPolicy($value);
-      return phutil_tag('tt', [], $value->getPHID());
+      $policy = PhabricatorPolicyQuery::getObjectPolicy($value);
+      return phutil_tag('tt', [], $policy->getPHID());
     }
 
     return $this->renderHandleList([$value]);
