@@ -13,8 +13,8 @@ final class PhabricatorViewPolicyHeraldActionTestCase extends PhutilTestCase {
     $action = new PhabricatorViewPolicyHeraldAction();
 
     $rule_types = [
-      HeraldRuleTypeConfig::RULE_TYPE_GLOBAL  => true,
-      HeraldRuleTypeConfig::RULE_TYPE_OBJECT  => false,
+      HeraldRuleTypeConfig::RULE_TYPE_GLOBAL   => true,
+      HeraldRuleTypeConfig::RULE_TYPE_OBJECT   => false,
       HeraldRuleTypeConfig::RULE_TYPE_PERSONAL => false,
     ];
 
@@ -45,7 +45,7 @@ final class PhabricatorViewPolicyHeraldActionTestCase extends PhutilTestCase {
         true,
         false,
       ],
-      function ($value): void {
+      function (string $value): void {
         $action = new PhabricatorViewPolicyHeraldAction();
         $action->willSaveActionValue($value);
       });
