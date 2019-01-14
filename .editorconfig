@@ -5,3 +5,9 @@ end_of_line = lf
 charset = utf-8
 trim_trailing_whitespace = true
 insert_final_newline = true
+
+[src/infrastructure/markup/__tests__/remarkup/*.txt]
+indent_style =
+end_of_line =
+max_line_length =
+trim_trailing_whitespace = false

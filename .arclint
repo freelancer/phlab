@@ -36,7 +36,10 @@
       "type": "text",
       "severity": {
         "3": "advice"
-      }
+      },
+      "exclude": [
+        "(^src/infrastructure/markup/__tests__/remarkup/.*\\.txt$)"
+      ]
     },
     "xhpast": {
       "type": "xhpast",
