@@ -21,6 +21,6 @@ final class PhabricatorNewLineRemarkupRule extends PhabricatorRemarkupCustomInli
     }
 
     return $engine->storeText(phutil_tag('br'));
-   }
+  }
 
 }
