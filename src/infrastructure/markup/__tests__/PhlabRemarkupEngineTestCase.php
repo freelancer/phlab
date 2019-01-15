@@ -24,7 +24,6 @@ final class PhlabRemarkupEngineTestCase extends PhutilTestCase {
     }
 
     list($input, $expected_html, $expected_text) = $contents;
-
     $engine = $this->buildNewTestEngine();
 
     $this->assertEqual(
@@ -50,31 +49,33 @@ final class PhlabRemarkupEngineTestCase extends PhutilTestCase {
 
     $engine->setConfig('preserve-linebreaks', true);
 
-    $rules = [];
-    $rules[] = new PhutilRemarkupEscapeRemarkupRule();
-    $rules[] = new PhutilRemarkupMonospaceRule();
-    $rules[] = new PhutilRemarkupDocumentLinkRule();
-    $rules[] = new PhutilRemarkupHyperlinkRule();
-    $rules[] = new PhutilRemarkupBoldRule();
-    $rules[] = new PhutilRemarkupItalicRule();
-    $rules[] = new PhutilRemarkupDelRule();
-    $rules[] = new PhutilRemarkupUnderlineRule();
-    $rules[] = new PhutilRemarkupHighlightRule();
-    $rules[] = new PhabricatorNewLineRemarkupRule();
+    $rules = [
+      new PhutilRemarkupEscapeRemarkupRule(),
+      new PhutilRemarkupMonospaceRule(),
+      new PhutilRemarkupDocumentLinkRule(),
+      new PhutilRemarkupHyperlinkRule(),
+      new PhutilRemarkupBoldRule(),
+      new PhutilRemarkupItalicRule(),
+      new PhutilRemarkupDelRule(),
+      new PhutilRemarkupUnderlineRule(),
+      new PhutilRemarkupHighlightRule(),
+      new PhabricatorNewLineRemarkupRule(),
+    ];
 
-    $blocks = [];
-    $blocks[] = new PhutilRemarkupQuotesBlockRule();
-    $blocks[] = new PhutilRemarkupReplyBlockRule();
-    $blocks[] = new PhutilRemarkupHeaderBlockRule();
-    $blocks[] = new PhutilRemarkupHorizontalRuleBlockRule();
-    $blocks[] = new PhutilRemarkupCodeBlockRule();
-    $blocks[] = new PhutilRemarkupLiteralBlockRule();
-    $blocks[] = new PhutilRemarkupNoteBlockRule();
-    $blocks[] = new PhutilRemarkupTableBlockRule();
-    $blocks[] = new PhutilRemarkupSimpleTableBlockRule();
-    $blocks[] = new PhutilRemarkupDefaultBlockRule();
-    $blocks[] = new PhutilRemarkupListBlockRule();
-    $blocks[] = new PhutilRemarkupInterpreterBlockRule();
+    $blocks = [
+      new PhutilRemarkupQuotesBlockRule(),
+      new PhutilRemarkupReplyBlockRule(),
+      new PhutilRemarkupHeaderBlockRule(),
+      new PhutilRemarkupHorizontalRuleBlockRule(),
+      new PhutilRemarkupCodeBlockRule(),
+      new PhutilRemarkupLiteralBlockRule(),
+      new PhutilRemarkupNoteBlockRule(),
+      new PhutilRemarkupTableBlockRule(),
+      new PhutilRemarkupSimpleTableBlockRule(),
+      new PhutilRemarkupDefaultBlockRule(),
+      new PhutilRemarkupListBlockRule(),
+      new PhutilRemarkupInterpreterBlockRule(),
+    ];
 
     foreach ($blocks as $block) {
       if (!$block instanceof PhutilRemarkupCodeBlockRule) {
