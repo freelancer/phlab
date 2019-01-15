@@ -6,14 +6,14 @@ final class PhabricatorNewLineRemarkupRule extends PhabricatorRemarkupCustomInli
     return 300.0;
   }
 
-  public function apply($text) {
+  public function apply($text): string {
     return preg_replace_callback(
       '@{newline}@m',
       [$this, 'markupNewLine'],
       $text);
   }
 
-  public function markupNewLine(array $matches) {
+  public function markupNewLine(array $matches): string {
     $engine = $this->getEngine();
 
     if ($engine->isTextMode()) {
