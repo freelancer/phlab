@@ -37,20 +37,17 @@ final class ManiphestDeadlineCustomField extends ManiphestCustomField {
 
     if ($old_value === null) {
       return pht(
-        '%s set %s to %s.',
+        '%s set task deadline to %s.',
         $xaction->renderHandleLink($author_phid),
-        $this->getFieldName(),
         phabricator_datetime($new_value, $viewer));
     } else if ($new_value === null) {
       return pht(
-        '%s removed %s.',
-        $xaction->renderHandleLink($author_phid),
-        $this->getFieldName());
+        '%s removed task deadline.',
+        $xaction->renderHandleLink($author_phid));
     } else {
       return pht(
-        '%s changed %s from %s to %s.',
+        '%s changed task deadline from %s to %s.',
         $xaction->renderHandleLink($author_phid),
-        $this->getFieldName(),
         phabricator_datetime($old_value, $viewer),
         phabricator_datetime($new_value, $viewer));
     }
@@ -66,25 +63,22 @@ final class ManiphestDeadlineCustomField extends ManiphestCustomField {
 
     if ($old_value === null) {
       return pht(
-        '%s set %s to %s on %s.',
+        '%s set deadline for %s to %s.',
         $xaction->renderHandleLink($author_phid),
-        $this->getFieldName(),
-        phabricator_datetime($new_value, $viewer),
-        $xaction->renderHandleLink($object_phid));
+        $xaction->renderHandleLink($object_phid),
+        phabricator_datetime($new_value, $viewer));
     } else if ($new_value === null) {
       return pht(
-        '%s removed %s on %s.',
+        '%s removed deadline for %s.',
         $xaction->renderHandleLink($author_phid),
-        $this->getFieldName(),
         $xaction->renderHandleLink($object_phid));
     } else {
       return pht(
-        '%s changed %s from %s to %s on %s.',
+        '%s changed deadline for %s from %s to %s.',
         $xaction->renderHandleLink($author_phid),
-        $this->getFieldName(),
+        $xaction->renderHandleLink($object_phid),
         phabricator_datetime($old_value, $viewer),
-        phabricator_datetime($new_value, $viewer),
-        $xaction->renderHandleLink($object_phid));
+        phabricator_datetime($new_value, $viewer));
     }
   }
 
