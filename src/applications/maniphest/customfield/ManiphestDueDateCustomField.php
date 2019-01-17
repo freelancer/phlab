@@ -88,6 +88,10 @@ final class ManiphestDueDateCustomField extends ManiphestCustomField {
     }
   }
 
+  public function shouldAppearInEditView(): bool {
+    return true;
+  }
+
   public function readValueFromRequest(AphrontRequest $request): void {
     $control = $this->newDateControl();
     $control->setUser($request->getUser());
