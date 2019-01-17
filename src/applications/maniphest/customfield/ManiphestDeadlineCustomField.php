@@ -1,15 +1,15 @@
 <?php
 
-final class ManiphestDueDateCustomField extends ManiphestCustomField {
+final class ManiphestDeadlineCustomField extends ManiphestCustomField {
 
   private $value;
 
   public function getFieldKey(): string {
-    return 'maniphest:due-date';
+    return 'maniphest:deadline';
   }
 
   public function getFieldName(): string {
-    return pht('Due Date');
+    return pht('Deadline');
   }
 
   public function shouldUseStorage(): bool {
