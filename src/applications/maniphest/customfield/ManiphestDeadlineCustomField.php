@@ -39,7 +39,7 @@ final class ManiphestDeadlineCustomField extends ManiphestCustomField {
       return pht(
         '%s set task deadline to %s.',
         $xaction->renderHandleLink($author_phid),
-        phabricator_datetime($new_value, $viewer));
+        phabricator_date($new_value, $viewer));
     } else if ($new_value === null) {
       return pht(
         '%s removed task deadline.',
@@ -48,8 +48,8 @@ final class ManiphestDeadlineCustomField extends ManiphestCustomField {
       return pht(
         '%s changed task deadline from %s to %s.',
         $xaction->renderHandleLink($author_phid),
-        phabricator_datetime($old_value, $viewer),
-        phabricator_datetime($new_value, $viewer));
+        phabricator_date($old_value, $viewer),
+        phabricator_date($new_value, $viewer));
     }
   }
 
@@ -66,7 +66,7 @@ final class ManiphestDeadlineCustomField extends ManiphestCustomField {
         '%s set deadline for %s to %s.',
         $xaction->renderHandleLink($author_phid),
         $xaction->renderHandleLink($object_phid),
-        phabricator_datetime($new_value, $viewer));
+        phabricator_date($new_value, $viewer));
     } else if ($new_value === null) {
       return pht(
         '%s removed deadline for %s.',
@@ -77,8 +77,8 @@ final class ManiphestDeadlineCustomField extends ManiphestCustomField {
         '%s changed deadline for %s from %s to %s.',
         $xaction->renderHandleLink($author_phid),
         $xaction->renderHandleLink($object_phid),
-        phabricator_datetime($old_value, $viewer),
-        phabricator_datetime($new_value, $viewer));
+        phabricator_date($old_value, $viewer),
+        phabricator_date($new_value, $viewer));
     }
   }
 
@@ -106,7 +106,7 @@ final class ManiphestDeadlineCustomField extends ManiphestCustomField {
       return null;
     }
 
-    return phabricator_datetime($this->value, $this->getViewer());
+    return phabricator_date($this->value, $this->getViewer());
   }
 
   /**
