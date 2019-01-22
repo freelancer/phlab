@@ -2,11 +2,11 @@
 
 final class ManiphestDeadlineCustomField extends ManiphestCustomField {
 
-  private $value;
+  private $epoch;
 
   public function getFieldKey(): string {
-    return 'maniphest:deadline';
-  }
+     return 'maniphest:deadline';
+   }
 
   public function getFieldName(): string {
     return pht('Deadline');
@@ -16,12 +16,24 @@ final class ManiphestDeadlineCustomField extends ManiphestCustomField {
     return true;
   }
 
-  public function getValueForStorage(): ?int {
-    return $this->value;
+  public function getValueForStorage(): ?string {
+    if ($this->epoch === null) {
+      return null;
+    }
+
+    return phutil_json_encode([
+      'epoch' => $this->epoch,
+    ]);
   }
 
   public function setValueFromStorage($value): void {
-    $this->value = $value;
+    if ($value !== null) {
+      $value = phutil_json_decode($value);
+    } else {
+      $value = [];
+    }
+
+    $this->epoch = idx($value, 'epoch');
   }
 
   public function shouldAppearInApplicationSearch(): bool {
@@ -31,8 +43,8 @@ final class ManiphestDeadlineCustomField extends ManiphestCustomField {
   public function buildFieldIndexes(): array {
     $indexes = [];
 
-    if ($this->value !== null) {
-      $indexes[] = $this->newNumericIndex($this->value);
+    if ($this->epoch !== null) {
+      $indexes[] = $this->newNumericIndex($this->epoch);
     }
 
     return $indexes;
@@ -108,15 +120,26 @@ final class ManiphestDeadlineCustomField extends ManiphestCustomField {
     $author_phid = $xaction->getAuthorPHID();
     $viewer      = $this->getViewer();
 
-    $old_value = $xaction->getOldValue();
-    $new_value = $xaction->getNewValue();
+    if ($xaction->getOldValue() !== null) {
+      $old_value = phutil_json_decode($xaction->getOldValue());
+      $old_epoch = $old_value['epoch'];
+    } else {
+      $old_epoch = null;
+    }
 
-    if ($old_value === null) {
+    if ($xaction->getNewValue() !== null) {
+      $new_value = phutil_json_decode($xaction->getNewValue());
+      $new_epoch = $new_value['epoch'];
+    } else {
+      $new_epoch = null;
+    }
+
+    if ($old_epoch === null) {
       return pht(
         '%s set task deadline to %s.',
         $xaction->renderHandleLink($author_phid),
-        phabricator_date($new_value, $viewer));
-    } else if ($new_value === null) {
+        phabricator_date($new_epoch, $viewer));
+    } else if ($new_epoch === null) {
       return pht(
         '%s removed task deadline.',
         $xaction->renderHandleLink($author_phid));
@@ -124,8 +147,8 @@ final class ManiphestDeadlineCustomField extends ManiphestCustomField {
       return pht(
         '%s changed task deadline from %s to %s.',
         $xaction->renderHandleLink($author_phid),
-        phabricator_date($old_value, $viewer),
-        phabricator_date($new_value, $viewer));
+        phabricator_date($old_epoch, $viewer),
+        phabricator_date($new_epoch, $viewer));
     }
   }
 
@@ -134,16 +157,27 @@ final class ManiphestDeadlineCustomField extends ManiphestCustomField {
     $object_phid = $xaction->getObjectPHID();
     $viewer      = $this->getViewer();
 
-    $old_value = $xaction->getOldValue();
-    $new_value = $xaction->getNewValue();
+    if ($xaction->getOldValue() !== null) {
+      $old_value = phutil_json_decode($xaction->getOldValue());
+      $old_epoch = $old_value['epoch'];
+    } else {
+      $old_epoch = null;
+    }
 
-    if ($old_value === null) {
+    if ($xaction->getNewValue() !== null) {
+      $new_value = phutil_json_decode($xaction->getNewValue());
+      $new_epoch = $new_value['epoch'];
+    } else {
+      $new_epoch = null;
+    }
+
+    if ($old_epoch === null) {
       return pht(
         '%s set deadline for %s to %s.',
         $xaction->renderHandleLink($author_phid),
         $xaction->renderHandleLink($object_phid),
-        phabricator_date($new_value, $viewer));
-    } else if ($new_value === null) {
+        phabricator_date($new_epoch, $viewer));
+    } else if ($new_epoch === null) {
       return pht(
         '%s removed deadline for %s.',
         $xaction->renderHandleLink($author_phid),
@@ -153,8 +187,8 @@ final class ManiphestDeadlineCustomField extends ManiphestCustomField {
         '%s changed deadline for %s from %s to %s.',
         $xaction->renderHandleLink($author_phid),
         $xaction->renderHandleLink($object_phid),
-        phabricator_date($old_value, $viewer),
-        phabricator_date($new_value, $viewer));
+        phabricator_date($old_epoch, $viewer),
+        phabricator_date($new_epoch, $viewer));
     }
   }
 
@@ -166,7 +200,13 @@ final class ManiphestDeadlineCustomField extends ManiphestCustomField {
     $control = $this->newDateControl();
     $control->setUser($request->getUser());
 
-    $this->value = $control->readValueFromRequest($request);
+    $value = $control->readValueFromRequest($request);
+
+    if ($value !== null) {
+      $this->epoch = (int)$value;
+    } else {
+      $this->epoch = null;
+    }
   }
 
   public function renderEditControl(array $handles): AphrontFormControl {
@@ -178,11 +218,11 @@ final class ManiphestDeadlineCustomField extends ManiphestCustomField {
   }
 
   public function renderPropertyViewValue(array $handles): ?string {
-    if ($this->value === null) {
+    if ($this->epoch === null) {
       return null;
     }
 
-    return phabricator_date($this->value, $this->getViewer());
+    return phabricator_date($this->epoch, $this->getViewer());
   }
 
   /**
@@ -194,7 +234,7 @@ final class ManiphestDeadlineCustomField extends ManiphestCustomField {
       ->setViewer($this->getViewer())
       ->setLabel($this->getFieldName())
       ->setName($this->getFieldKey())
-      ->setValue($this->value)
+      ->setValue($this->epoch)
       ->setAllowNull(true)
       ->setIsTimeDisabled(true);
   }
