@@ -116,7 +116,7 @@ final class ManiphestDeadlineCustomField extends ManiphestCustomField {
     return true;
   }
 
-  public function getApplicationTransactionTitle(PhabricatorApplicationTransaction $xaction): PhutilSafeHTML {
+  public function getApplicationTransactionTitle(PhabricatorApplicationTransaction $xaction) {
     $author_phid = $xaction->getAuthorPHID();
     $viewer      = $this->getViewer();
 
@@ -152,7 +152,7 @@ final class ManiphestDeadlineCustomField extends ManiphestCustomField {
     }
   }
 
-  public function getApplicationTransactionTitleForFeed(PhabricatorApplicationTransaction $xaction): PhutilSafeHTML {
+  public function getApplicationTransactionTitleForFeed(PhabricatorApplicationTransaction $xaction) {
     $author_phid = $xaction->getAuthorPHID();
     $object_phid = $xaction->getObjectPHID();
     $viewer      = $this->getViewer();
