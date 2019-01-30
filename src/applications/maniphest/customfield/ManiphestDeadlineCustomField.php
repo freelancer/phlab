@@ -120,6 +120,22 @@ final class ManiphestDeadlineCustomField extends ManiphestCustomField {
   }
 
   public function applyApplicationTransactionInternalEffects(PhabricatorApplicationTransaction $xaction): void {
+    if ($xaction->getNewValue() === null) {
+      return;
+    }
+
+    $new_value = phutil_json_decode($xaction->getNewValue());
+
+    if ($new_value['triggerPHID'] === null) {
+      $new_value['triggerPHID'] = PhabricatorPHID::generateNewPHID(
+        PhabricatorWorkerTriggerPHIDType::TYPECONST);
+      $xaction->setNewValue(phutil_json_encode($new_value));
+    }
+  }
+
+  public function applyApplicationTransactionExternalEffects(PhabricatorApplicationTransaction $xaction): void {
+    parent::applyApplicationTransactionExternalEffects($xaction);
+
     if ($xaction->getOldValue() !== null) {
       $old_value = phutil_json_decode($xaction->getOldValue());
     } else {
@@ -139,15 +155,18 @@ final class ManiphestDeadlineCustomField extends ManiphestCustomField {
       // TODO: If the existing trigger has already fired then we should
       // possibly create a new trigger instead as the existing trigger will not
       // fire again.
-      if ($trigger_phid !== null) {
-        $trigger = $this->loadTrigger($trigger_phid);
-      } else {
+      $trigger = $this->loadTrigger($trigger_phid);
+
+      if ($trigger === null) {
         $trigger = new PhabricatorWorkerTrigger();
+        $trigger->setPHID($trigger_phid);
       }
 
       // Schedule a reminder notification 24 hours before the deadline.
       //
       // TODO: We should possibly allow the epoch to be customizable.
+      // TODO: We probably shouldn't schedule triggers if the trigger
+      //       epoch is in the past.
       $clock = new PhabricatorOneTimeTriggerClock([
         'epoch' => ($epoch - phutil_units('24 hours in seconds')),
       ]);
@@ -164,15 +183,14 @@ final class ManiphestDeadlineCustomField extends ManiphestCustomField {
         ->setAction($action)
         ->setClock($clock)
         ->save();
-
-      // Modify the transaction data to store the trigger PHID.
-      $new_value['triggerPHID'] = $trigger->getPHID();
-      $xaction->setNewValue(phutil_json_encode($new_value));
     } else {
       // TODO: We should possibly not delete the trigger if it has already
       // fired.
       $trigger = $this->loadTrigger($old_value['triggerPHID']);
-      $trigger->delete();
+
+      if ($trigger !== null) {
+        $trigger->delete();
+      }
     }
   }
 
@@ -285,7 +303,7 @@ final class ManiphestDeadlineCustomField extends ManiphestCustomField {
     return phabricator_date($this->epoch, $this->getViewer());
   }
 
-  private function loadTrigger(string $phid): PhabricatorWorkerTrigger {
+  private function loadTrigger(string $phid): ?PhabricatorWorkerTrigger {
     return (new PhabricatorWorkerTriggerQuery())
       ->setViewer($this->getViewer())
       ->withPHIDs([$phid])
