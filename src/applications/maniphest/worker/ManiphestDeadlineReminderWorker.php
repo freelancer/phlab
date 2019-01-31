@@ -16,14 +16,11 @@ final class ManiphestDeadlineReminderWorker extends PhabricatorWorker {
     }
 
     $xaction = $task->getApplicationTransactionTemplate()
-      ->setTransactionType(PhabricatorTransactions::TYPE_COMMENT);
-    $comment = $xaction->getApplicationTransactionCommentObject()
-      ->setContent(pht('The deadline for this task is approaching!'));
-    $xaction->attachComment($comment);
+      ->setTransactionType(ManiphestTaskDeadlineReminderTransaction::TRANSACTIONTYPE);
 
     $application    = new PhabricatorDaemonsApplication();
     $content_source = $this->newContentSource();
-    $editor = $task->getApplicationTransactionEditor();
+    $editor         = $task->getApplicationTransactionEditor();
 
     $editor
       ->setActor($actor)
