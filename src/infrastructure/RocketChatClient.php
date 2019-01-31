@@ -66,7 +66,8 @@ final class RocketChatClient extends Phobject {
 
     $future = id(new HTTPSFuture($uri))
       ->setMethod('POST')
-      ->setData(phutil_json_encode($args));
+      ->setData(phutil_json_encode($args))
+      ->setTimeout(2);
 
     foreach ($request_headers as $key => $value) {
       $future->addHeader($key, $value);
