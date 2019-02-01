@@ -173,9 +173,12 @@ final class ManiphestDeadlineCustomField extends ManiphestCustomField {
 
       $action = new PhabricatorScheduleTaskTriggerAction([
         'class'   => ManiphestDeadlineReminderWorker::class,
-        'data'    => [],
+        'data'    => [
+          'objectPHID' => $xaction->getObjectPHID(),
+        ],
         'options' => [
-          'priority' => PhabricatorWorker::PRIORITY_DEFAULT,
+          'objectPHID' => $xaction->getObjectPHID(),
+          'priority'   => PhabricatorWorker::PRIORITY_DEFAULT,
         ],
       ]);
 
