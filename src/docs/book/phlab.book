@@ -10,7 +10,9 @@
     "(\\.php$)": "DivinerPHPAtomizer"
   },
   "exclude": [
-    "(^scripts/)"
+    "(^resources/)",
+    "(^scripts/)",
+    "(^vendor/)"
   ],
   "groups": {
     "auth": {
@@ -29,6 +31,10 @@
       "name": "Diffusion",
       "include": "(^src/applications/diffusion/)"
     },
+    "events": {
+      "name": "Events",
+      "include": "(^src/infrastructure/events/)"
+    },
     "files": {
       "name": "Files",
       "include": "(^src/applications/files/)"
@@ -45,6 +51,10 @@
       "name": "Infrastructure",
       "include": "(^src/infrastructure/)"
     },
+    "maniphest": {
+      "name": "Maniphest",
+      "include": "(^src/applications/maniphest/)"
+    },
     "metamta": {
       "name": "MetaMTA",
       "include": "(^src/applications/metamta/)"
@@ -57,9 +67,21 @@
       "name": "Policy",
       "include": "(^src/applications/policy/)"
     },
+    "project": {
+      "name": "Project",
+      "include": "(^src/applications/project/)"
+    },
     "prometheus": {
       "name": "Policy",
       "include": "(^src/applications/prometheus/)"
+    },
+    "remarkup": {
+      "name": "Remarkup",
+      "include": "(^src/infrastructure/markup/)"
+    },
+    "storage": {
+      "name": "Storage",
+      "include": "(^src/infrastructure/storage/)"
     }
   }
 }
