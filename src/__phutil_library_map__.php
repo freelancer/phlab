@@ -19,6 +19,7 @@ phutil_register_library_map(array(
     'HeraldRocketChatNotificationAction' => 'applications/herald/action/HeraldRocketChatNotificationAction.php',
     'ManiphestDeadlineCustomField' => 'applications/maniphest/customfield/ManiphestDeadlineCustomField.php',
     'ManiphestDeadlineReminderWorker' => 'applications/maniphest/worker/ManiphestDeadlineReminderWorker.php',
+    'ManiphestPerformanceReviewRevieweeCustomField' => 'applications/maniphest/customfield/ManiphestPerformanceReviewRevieweeCustomField.php',
     'ManiphestTaskDeadlineReminderTransaction' => 'applications/maniphest/xaction/ManiphestTaskDeadlineReminderTransaction.php',
     'PhabricatorAddOwnerProjectsHeraldAction' => 'applications/project/herald/PhabricatorAddOwnerProjectsHeraldAction.php',
     'PhabricatorCopyPHIDAction' => 'infrastructure/events/PhabricatorCopyPHIDAction.php',
@@ -64,6 +65,10 @@ phutil_register_library_map(array(
     'HeraldRocketChatNotificationAction' => 'HeraldAction',
     'ManiphestDeadlineCustomField' => 'ManiphestCustomField',
     'ManiphestDeadlineReminderWorker' => 'PhabricatorWorker',
+    'ManiphestPerformanceReviewRevieweeCustomField' => array(
+      'ManiphestCustomField',
+      'PhabricatorStandardCustomFieldInterface',
+    ),
     'ManiphestTaskDeadlineReminderTransaction' => 'ManiphestTaskTransactionType',
     'PhabricatorAddOwnerProjectsHeraldAction' => 'PhabricatorProjectHeraldAction',
     'PhabricatorCopyPHIDAction' => 'PhabricatorAutoEventListener',
