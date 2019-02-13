@@ -9,6 +9,6 @@
   "require": {
     "aws/aws-sdk-php": "^3.7",
     "jimdo/prometheus_client_php": "^0.9.1",
-    "php": ">= 7.0.0"
+    "php": ">= 7.1.0"
   }
 }
