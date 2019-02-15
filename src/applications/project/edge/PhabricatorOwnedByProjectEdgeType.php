@@ -47,7 +47,7 @@ final class PhabricatorOwnedByProjectEdgeType extends PhabricatorEdgeType {
 
   public function getTransactionEditString($actor, $total_count, $add_count, $add_edges, $remove_count, $remove_edges) {
     return pht(
-      '%s edited owner projects(s), added %s: %s; removed %s: %s.',
+      '%s edited owner project(s), added %s: %s; removed %s: %s.',
       $actor,
       $add_count,
       $add_edges,
