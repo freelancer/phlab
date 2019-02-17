@@ -13,7 +13,7 @@ final class PhabricatorNewLineRemarkupRule extends PhabricatorRemarkupCustomInli
       $text);
   }
 
-  public function markupNewLine(array $matches): string {
+  private function markupNewLine(array $matches): string {
     $engine = $this->getEngine();
 
     if ($engine->isTextMode()) {
