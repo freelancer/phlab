@@ -5,7 +5,7 @@ final class PhlabRemarkupEngineTestCase extends PhutilTestCase {
   public function testEngine(): void {
     $root = __DIR__.'/remarkup/';
 
-    $files = id(new FileFinder($root))
+    $files = (new FileFinder($root))
       ->withType('f')
       ->withSuffix('txt')
       ->find();
@@ -20,7 +20,11 @@ final class PhlabRemarkupEngineTestCase extends PhutilTestCase {
     $contents = explode("\n~~~~~~~~~~\n", $contents);
 
     if (count($contents) < 3) {
-      throw new Exception(pht('Malformed test case.'));
+      throw new Exception(
+        pht(
+          "Expected '%s' separating test case, ".
+          "rendered HTML and rendered text.",
+          '~~~~~~~~~~'));
     }
 
     list($input, $expected_html, $expected_text) = $contents;
