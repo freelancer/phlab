@@ -50,7 +50,6 @@ final class PhabricatorRepositoryManagementFindOrphanedCommitsWorkflow
     $commits = (new DiffusionCommitQuery())
       ->setViewer($viewer)
       ->withRepository($repository)
-      ->setLimit(1024)
       ->execute();
 
     $client  = $repository->newConduitClient($this->getViewer());
