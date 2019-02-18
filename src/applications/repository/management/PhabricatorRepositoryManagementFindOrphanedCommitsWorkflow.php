@@ -68,10 +68,24 @@ final class PhabricatorRepositoryManagementFindOrphanedCommitsWorkflow
       ->limit(8);
 
     foreach ($futures as $key => $future) {
-      $branches = $future->resolve();
+      try {
+        $branches = $future->resolve();
+      } catch (ConduitClientException $ex) {
+        // Ignore commits which no longer seem to exist.
+        //
+        // TODO: This is very hacky, but the alternative is to call
+        // `diffusion.existsquery` to check whether or not the commit
+        // exists, which seems unnecessary.
+        if (strpos($ex->getMessage(), 'no such commit') !== false) {
+          $branches = [];
+          continue;
+        }
 
-      if (!$branches) {
-        yield $key;
+        throw $ex;
+      } finally {
+        if (!$branches) {
+          yield $key;
+        }
       }
     }
   }
