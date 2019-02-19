@@ -18,10 +18,6 @@ final class PhabricatorPrometheusApplication extends PhabricatorApplication {
     return false;
   }
 
-  public function getBaseURI(): string {
-    return '/prometheus/';
-  }
-
   public function getIcon(): string {
     return 'fa-heartbeat';
   }
