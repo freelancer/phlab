@@ -5,8 +5,10 @@ final class ManiphestDeadlineCustomField extends ManiphestCustomField {
   private $epoch;
   private $triggerPHID;
 
+  const FIELD_KEY = 'maniphest:deadline';
+
   public function getFieldKey(): string {
-     return 'maniphest:deadline';
+     return self::FIELD_KEY;
    }
 
   public function getFieldName(): string {
@@ -168,7 +170,7 @@ final class ManiphestDeadlineCustomField extends ManiphestCustomField {
       // TODO: We should possibly allow the epoch to be customizable.
       // TODO: We probably shouldn't schedule triggers if the trigger
       //       epoch is in the past.
-      $clock = new PhabricatorDeadlineReminderTriggerClock([
+      $clock = new ManiphestDeadlineReminderTriggerClock([
         'taskPHID' => $xaction->getObjectPHID(),
       ]);
 
