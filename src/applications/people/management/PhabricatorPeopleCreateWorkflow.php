@@ -74,7 +74,14 @@ final class PhabricatorPeopleCreateWorkflow
     }
 
     $editor->createNewUser($user, $email);
-    $user->sendWelcomeEmail($admin);
+
+    $welcome_engine = (new PhabricatorPeopleWelcomeMailEngine())
+      ->setSender($admin)
+      ->setRecipient($user);
+
+    if ($welcome_engine->canSendMail()) {
+      $welcome_engine->sendMail();
+    }
   }
 
 }
