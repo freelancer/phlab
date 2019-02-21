@@ -17,6 +17,10 @@ final class ManiphestDeadlineCustomField extends ManiphestCustomField {
     return true;
   }
 
+  public function getEpoch(): ?int {
+    return $this->epoch;
+  }
+
   public function getValueForStorage(): ?string {
     if ($this->epoch === null) {
       return null;
@@ -152,9 +156,6 @@ final class ManiphestDeadlineCustomField extends ManiphestCustomField {
       $epoch        = $new_value['epoch'];
       $trigger_phid = $new_value['triggerPHID'];
 
-      // TODO: If the existing trigger has already fired then we should
-      // possibly create a new trigger instead as the existing trigger will not
-      // fire again.
       $trigger = $this->loadTrigger($trigger_phid);
 
       if ($trigger === null) {
@@ -167,8 +168,8 @@ final class ManiphestDeadlineCustomField extends ManiphestCustomField {
       // TODO: We should possibly allow the epoch to be customizable.
       // TODO: We probably shouldn't schedule triggers if the trigger
       //       epoch is in the past.
-      $clock = new PhabricatorOneTimeTriggerClock([
-        'epoch' => ($epoch - phutil_units('24 hours in seconds')),
+      $clock = new PhabricatorDeadlineReminderTriggerClock([
+        'taskPHID' => $xaction->getObjectPHID(),
       ]);
 
       $action = new PhabricatorScheduleTaskTriggerAction([
