@@ -5,10 +5,8 @@ final class ManiphestDeadlineCustomField extends ManiphestCustomField {
   private $epoch;
   private $triggerPHID;
 
-  const FIELD_KEY = 'maniphest:deadline';
-
   public function getFieldKey(): string {
-     return self::FIELD_KEY;
+     return 'maniphest:deadline';
    }
 
   public function getFieldName(): string {
@@ -17,10 +15,6 @@ final class ManiphestDeadlineCustomField extends ManiphestCustomField {
 
   public function shouldUseStorage(): bool {
     return true;
-  }
-
-  public function getEpoch(): ?int {
-    return $this->epoch;
   }
 
   public function getValueForStorage(): ?string {
@@ -170,8 +164,8 @@ final class ManiphestDeadlineCustomField extends ManiphestCustomField {
       // TODO: We should possibly allow the epoch to be customizable.
       // TODO: We probably shouldn't schedule triggers if the trigger
       //       epoch is in the past.
-      $clock = new ManiphestDeadlineReminderTriggerClock([
-        'taskPHID' => $xaction->getObjectPHID(),
+      $clock = new PhabricatorOneTimeTriggerClock([
+        'epoch' => ($epoch - phutil_units('24 hours in seconds')),
       ]);
 
       $action = new PhabricatorScheduleTaskTriggerAction([
@@ -187,8 +181,33 @@ final class ManiphestDeadlineCustomField extends ManiphestCustomField {
 
       $trigger
         ->setAction($action)
-        ->setClock($clock)
-        ->save();
+        ->setClock($clock);
+
+      // `$trigger->getEvent()` will throw even if the trigger has no event.
+      try {
+        $event = $trigger->getEvent();
+      } catch (PhabricatorDataNotAttachedException $ex) {
+        $event = null;
+      }
+
+      $trigger->openTransaction();
+        $trigger->save();
+
+        // If the trigger has already fired, delete the trigger event and
+        // create a new one. This logic is copied from
+        // @{method:PhabricatorTriggerDaemon::scheduleTriggers}.
+        if ($event !== null) {
+          $last_epoch = null;
+          $next_epoch = $trigger->getNextEventEpoch($last_epoch, false);
+
+          $new_event = PhabricatorWorkerTriggerEvent::initializeNewEvent($trigger)
+            ->setLastEventEpoch($last_epoch)
+            ->setNextEventEpoch($next_epoch);
+
+          $event->delete();
+          $new_event->save();
+        }
+      $trigger->saveTransaction();
     } else {
       // TODO: We should possibly not delete the trigger if it has already
       // fired.
@@ -313,6 +332,7 @@ final class ManiphestDeadlineCustomField extends ManiphestCustomField {
     return (new PhabricatorWorkerTriggerQuery())
       ->setViewer($this->getViewer())
       ->withPHIDs([$phid])
+      ->needEvents(true)
       ->executeOne();
   }
 

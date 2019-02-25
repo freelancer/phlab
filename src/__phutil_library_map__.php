@@ -20,7 +20,6 @@ phutil_register_library_map(array(
     'HarbormasterJenkinsBuildStepImplementation' => 'applications/harbormaster/step/HarbormasterJenkinsBuildStepImplementation.php',
     'HeraldRocketChatNotificationAction' => 'applications/herald/action/HeraldRocketChatNotificationAction.php',
     'ManiphestDeadlineCustomField' => 'applications/maniphest/customfield/ManiphestDeadlineCustomField.php',
-    'ManiphestDeadlineReminderTriggerClock' => 'applications/maniphest/worker/clock/ManiphestDeadlineReminderTriggerClock.php',
     'ManiphestDeadlineReminderWorker' => 'applications/maniphest/worker/ManiphestDeadlineReminderWorker.php',
     'ManiphestPerformanceReviewRevieweeCustomField' => 'applications/maniphest/customfield/ManiphestPerformanceReviewRevieweeCustomField.php',
     'ManiphestTaskDeadlineReminderTransaction' => 'applications/maniphest/xaction/ManiphestTaskDeadlineReminderTransaction.php',
@@ -70,7 +69,6 @@ phutil_register_library_map(array(
     'HarbormasterJenkinsBuildStepImplementation' => 'HarbormasterBuildStepImplementation',
     'HeraldRocketChatNotificationAction' => 'HeraldAction',
     'ManiphestDeadlineCustomField' => 'ManiphestCustomField',
-    'ManiphestDeadlineReminderTriggerClock' => 'PhabricatorTriggerClock',
     'ManiphestDeadlineReminderWorker' => 'PhabricatorWorker',
     'ManiphestPerformanceReviewRevieweeCustomField' => array(
       'ManiphestCustomField',
