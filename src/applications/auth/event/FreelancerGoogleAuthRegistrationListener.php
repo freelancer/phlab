@@ -23,18 +23,19 @@ final class FreelancerGoogleAuthRegistrationListener
     $account = $event->getValue('account');
     $profile = $event->getValue('profile');
 
-    if ($account->getAccountType() !== 'google') {
+    $adapter = new PhutilGoogleAuthAdapter();
+
+    if ($account->getAccountType() !== $adapter->getAdapterType()) {
       return;
     }
 
-    $profile->setDefaultUserName($account->getUsername());
-    $profile->setDefaultEmail($account->getEmail());
-    $profile->setDefaultRealName($account->getRealName());
-
-    $profile->setCanEditUsername(false);
+    $profile->setShouldVerifyEmail(false);
     $profile->setCanEditEmail(false);
     $profile->setCanEditRealName(false);
-    $profile->setShouldVerifyEmail(false);
+    $profile->setCanEditUsername(false);
+    $profile->setDefaultEmail($account->getEmail());
+    $profile->setDefaultRealName($account->getRealName());
+    $profile->setDefaultUserName($account->getUsername());
   }
 
 }
