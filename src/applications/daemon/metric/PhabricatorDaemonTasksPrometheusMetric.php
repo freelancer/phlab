@@ -58,19 +58,16 @@ final class PhabricatorDaemonTasksPrometheusMetric extends PhabricatorPrometheus
       $conditions[] = '1 = 1';
     }
 
-    $where_clause = implode(
-      ' AND ',
-      array_map(
-        function (string $condition) use ($conn): string {
-          return qsprintf($conn, '(%s)', $condition);
-        },
-        $conditions));
-
     $tasks = queryfx_all(
       $conn,
-      'SELECT taskClass, COUNT(*) AS count FROM %T WHERE %Q GROUP BY taskClass',
+      'SELECT taskClass, COUNT(*) AS count FROM %T WHERE %LA GROUP BY taskClass',
       $table->getTableName(),
-      $where_clause);
+      array_map(
+        function (string $condition) use ($conn): PhutilQueryString {
+          return qsprintf($conn, '%s', $condition);
+        },
+        $conditions);
+
     return ipull($tasks, 'count', 'taskClass');
   }
 
