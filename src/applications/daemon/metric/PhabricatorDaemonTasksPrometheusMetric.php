@@ -66,7 +66,7 @@ final class PhabricatorDaemonTasksPrometheusMetric extends PhabricatorPrometheus
         function (string $condition) use ($conn): PhutilQueryString {
           return qsprintf($conn, '%s', $condition);
         },
-        $conditions);
+        $conditions));
 
     return ipull($tasks, 'count', 'taskClass');
   }
