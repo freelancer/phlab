@@ -54,10 +54,13 @@ phutil_register_library_map(array(
     'PhlabS3FileStorageEngine' => 'applications/files/engine/PhlabS3FileStorageEngine.php',
     'PhlabSESMailAdapter' => 'applications/metamta/adapter/PhlabSESMailAdapter.php',
     'PhlabUSEnglishTranslation' => 'infrastructure/internationalization/translation/PhlabUSEEnglishTranslation.php',
+    'PhlabUtilsTestCase' => 'utils/__tests__/PhlabUtilsTestCase.php',
     'RocketChatClient' => 'infrastructure/RocketChatClient.php',
     'RocketChatConfigOptions' => 'applications/config/option/RocketChatConfigOptions.php',
   ),
-  'function' => array(),
+  'function' => array(
+    'varsprintf' => 'utils/utils.php',
+  ),
   'xmap' => array(
     'DiffusionChangesConduitAPIMethod' => 'DiffusionQueryConduitAPIMethod',
     'DiffusionChangesConduitAPIMethodTestCase' => 'PhutilTestCase',
@@ -107,6 +110,7 @@ phutil_register_library_map(array(
     'PhlabS3FileStorageEngine' => 'PhabricatorFileStorageEngine',
     'PhlabSESMailAdapter' => 'PhabricatorMailAdapter',
     'PhlabUSEnglishTranslation' => 'PhutilTranslation',
+    'PhlabUtilsTestCase' => 'PhutilTestCase',
     'RocketChatClient' => 'Phobject',
     'RocketChatConfigOptions' => 'PhabricatorApplicationConfigOptions',
   ),
