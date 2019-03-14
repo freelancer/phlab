@@ -22,6 +22,11 @@ final class PhlabUtilsTestCase extends PhutilTestCase {
         ],
         'Hello Bob',
       ],
+      [
+        'Hello ${name}, %s',
+        ['name' => 'Bob'],
+        'Hello Bob, %s',
+      ],
     ];
 
     foreach ($test_cases as $test_case) {
