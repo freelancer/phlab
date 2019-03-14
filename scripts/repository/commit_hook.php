@@ -76,7 +76,7 @@ foreach (phutil_split_lines($stdin, false) as $line) {
     'repository.uri' => $repository->getPublicCloneURI(),
   ];
 
-  $uri = varsprintf('vurisprintf', $args->getArg('uri'), $variables);
+  $uri = varsprintf('vurisprintf', $args->getArg('url'), $variables);
   $uri = new PhutilURI($uri);
 
   $future = (new HTTPSFuture($uri))
