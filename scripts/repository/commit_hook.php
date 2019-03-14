@@ -83,5 +83,9 @@ foreach (phutil_split_lines($stdin, false) as $line) {
     ->setMethod('GET')
     ->setTimeout(10);
 
-  $future->resolvex();
+  list($status, $body, $headers) = $future->resolve();
+
+  if (strlen($body) > 0) {
+    $console->writeOut("%s\n", $body);
+  }
 }
