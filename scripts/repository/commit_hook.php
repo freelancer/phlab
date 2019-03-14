@@ -15,9 +15,9 @@ $args->parseStandardArguments();
 $args->parse(
   [
     [
-      'name'  => 'uri',
+      'name'  => 'url',
       'param' => 'template',
-      'help'  => pht('The URI to make a HTTP request to.'),
+      'help'  => pht('The URL to make a HTTP request to.'),
     ],
   ]);
 
