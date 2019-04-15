@@ -17,21 +17,7 @@ final class PhabricatorPrometheusMetricsController extends PhabricatorController
     return false;
   }
 
-  public function willBeginExecution(): void {
-    $this->loadMetrics();
-    parent::willBeginExecution();
-  }
-
-  public function processRequest(): AphrontResponse {
-    $renderer = new RenderTextFormat();
-    $content  = $renderer->render($this->registry->getMetricFamilySamples());
-
-    return (new AphrontPlainTextResponse())
-      ->setContent($content);
-  }
-
-  private function loadMetrics(): void {
-    // TODO: We should probably use APC-backed storage.
+  public function willProcessRequest(array $uri_data): void {
     $adapter  = new InMemoryStorage();
     $registry = new CollectorRegistry($adapter);
     $metrics  = PhabricatorPrometheusMetric::getAllMetrics();
@@ -41,6 +27,14 @@ final class PhabricatorPrometheusMetricsController extends PhabricatorController
     }
 
     $this->registry = $registry;
+  }
+
+  public function processRequest(): AphrontResponse {
+    $metrics  = $this->registry->getMetricFamilySamples();
+    $renderer = new RenderTextFormat();
+
+    return (new AphrontPlainTextResponse())
+      ->setContent($renderer->render($metrics));
   }
 
 }
