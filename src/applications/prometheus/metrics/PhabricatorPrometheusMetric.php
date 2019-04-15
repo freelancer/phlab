@@ -9,7 +9,6 @@ abstract class PhabricatorPrometheusMetric extends Phobject {
   const METRIC_NAMESPACE = 'phabricator';
 
   abstract public function getName(): string;
-  abstract public function getValues();
 
   public function getHelp(): ?string {
     return null;
@@ -18,6 +17,8 @@ abstract class PhabricatorPrometheusMetric extends Phobject {
   public function getLabels(): array {
     return [];
   }
+
+  abstract public function getValues(): array;
 
   final public function register(CollectorRegistry $registry): void {
     $gauge = $registry->registerGauge(
