@@ -37,8 +37,10 @@ final class PhabricatorCopyPHIDActionTestCase extends PhabricatorTestCase {
   }
 
   private function generateEvent(PhabricatorUser $user): PhabricatorEvent {
-    return (new PhabricatorEvent(PhabricatorEventType::TYPE_UI_DIDRENDERACTIONS))
-      ->setUser($user);
+    $type  = PhabricatorEventType::TYPE_UI_DIDRENDERACTIONS;
+    $event = (new PhabricatorEvent($type))->setUser($user);
+
+    return $event;
   }
 
   private function handleEvent(PhabricatorEvent $event): void {
