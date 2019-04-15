@@ -11,11 +11,13 @@ final class PhlabRemarkupEngineTestCase extends PhutilTestCase {
       ->find();
 
     foreach ($files as $file) {
-      $this->markupText($file, $root.$file);
+      $this->markupText($root.$file);
     }
   }
 
-  private function markupText(string $name, string $path): void {
+  private function markupText(string $path): void {
+    $name = basename($path);
+
     $contents = Filesystem::readFile($path);
     $contents = explode("\n~~~~~~~~~~\n", $contents);
 
@@ -23,11 +25,13 @@ final class PhlabRemarkupEngineTestCase extends PhutilTestCase {
       throw new Exception(
         pht(
           "Expected '%s' separating test case, ".
-          "rendered HTML and rendered text.",
-          '~~~~~~~~~~'));
+          "rendered HTML and rendered text in file '%s'.",
+          '~~~~~~~~~~',
+          $name));
+    } else {
+      list($input, $expected_html, $expected_text) = $contents;
     }
 
-    list($input, $expected_html, $expected_text) = $contents;
     $engine = $this->buildNewTestEngine();
 
     $this->assertEqual(
@@ -44,44 +48,64 @@ final class PhlabRemarkupEngineTestCase extends PhutilTestCase {
 
   /**
    * Build a Remarkup engine.
-   *
-   * NOTE: Most of this method is copied from
-   * @{method:PhutilRemarkupEngineTestCase:buildNewTestEngine}.
    */
   private function buildNewTestEngine(): PhutilRemarkupEngine {
     $engine = new PhutilRemarkupEngine();
-
     $engine->setConfig('preserve-linebreaks', true);
 
-    $rules = [
-      new PhutilRemarkupEscapeRemarkupRule(),
-      new PhutilRemarkupMonospaceRule(),
-      new PhutilRemarkupDocumentLinkRule(),
-      new PhutilRemarkupHyperlinkRule(),
-      new PhutilRemarkupBoldRule(),
-      new PhutilRemarkupItalicRule(),
-      new PhutilRemarkupDelRule(),
-      new PhutilRemarkupUnderlineRule(),
-      new PhutilRemarkupHighlightRule(),
-      new PhabricatorNewLineRemarkupRule(),
-    ];
+    // NOTE: We have to use `PhutilSymbolLoader` instead of
+    // `PhutilClassMapQuery` because the latter doesn't have a
+    // `setLibrary` method.
+    $current_library = phutil_get_current_library_name();
 
-    $blocks = [
-      new PhutilRemarkupQuotesBlockRule(),
-      new PhutilRemarkupReplyBlockRule(),
-      new PhutilRemarkupHeaderBlockRule(),
-      new PhutilRemarkupHorizontalRuleBlockRule(),
-      new PhutilRemarkupCodeBlockRule(),
-      new PhutilRemarkupLiteralBlockRule(),
-      new PhutilRemarkupNoteBlockRule(),
-      new PhutilRemarkupTableBlockRule(),
-      new PhutilRemarkupSimpleTableBlockRule(),
-      new PhutilRemarkupDefaultBlockRule(),
-      new PhutilRemarkupListBlockRule(),
-      new PhutilRemarkupInterpreterBlockRule(),
-    ];
+    $phutil_rules = (new PhutilSymbolLoader())
+      ->setType('class')
+      ->setLibrary('phutil')
+      ->setAncestorClass(PhutilRemarkupRule::class)
+      ->setConcreteOnly(true)
+      ->loadObjects();
+    $phlab_rules = (new PhutilSymbolLoader())
+      ->setType('class')
+      ->setLibrary($current_library)
+      ->setAncestorClass(PhutilRemarkupRule::class)
+      ->setConcreteOnly(true)
+      ->loadObjects();
+
+    // Merge rules from `phutil` and `phlab`.
+    $rules = array_merge($phutil_rules, $phlab_rules);
+
+    // Order `$rules` by priority.
+    usort(
+      $rules,
+      function (PhutilRemarkupRule $a, PhutilRemarkupRule $b): bool {
+        return $a->getPriority() <=> $b->getPriority();
+      });
+
+    $phutil_blocks = (new PhutilSymbolLoader())
+      ->setType('class')
+      ->setLibrary('phutil')
+      ->setAncestorClass(PhutilRemarkupBlockRule::class)
+      ->setConcreteOnly(true)
+      ->loadObjects();
+    $phlab_blocks = (new PhutilSymbolLoader())
+      ->setType('class')
+      ->setLibrary($current_library)
+      ->setAncestorClass(PhutilRemarkupBlockRule::class)
+      ->setConcreteOnly(true)
+      ->loadObjects();
+
+    // Merge block rules from `phutil` and `phlab`.
+    $blocks = array_merge($phutil_blocks, $phlab_blocks);
+
+    // Order `$blocks` by priority.
+    usort(
+      $blocks,
+      function (PhutilRemarkupBlockRule $a, PhutilRemarkupBlockRule $b): bool {
+        return $a->getPriority() <=> $b->getPriority();
+      });
 
     foreach ($blocks as $block) {
+      // TODO: Why do we need this?
       if (!$block instanceof PhutilRemarkupCodeBlockRule) {
         $block->setMarkupRules($rules);
       }

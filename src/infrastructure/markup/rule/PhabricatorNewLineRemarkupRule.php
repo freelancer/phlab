@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * Insert a literal newline.
+ *
+ * See https://discourse.phabricator-community.org/t/request-for-a-newline-in-a-table-t5427/1618.
+ */
 final class PhabricatorNewLineRemarkupRule extends PhabricatorRemarkupCustomInlineRule {
 
   public function getPriority(): float {
