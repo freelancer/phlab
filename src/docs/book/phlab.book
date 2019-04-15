@@ -47,10 +47,6 @@
       "name": "Herald",
       "include": "(^src/applications/herald/)"
     },
-    "infrastructure": {
-      "name": "Infrastructure",
-      "include": "(^src/infrastructure/)"
-    },
     "maniphest": {
       "name": "Maniphest",
       "include": "(^src/applications/maniphest/)"
@@ -78,6 +74,10 @@
     "remarkup": {
       "name": "Remarkup",
       "include": "(^src/infrastructure/markup/)"
+    },
+    "repository": {
+      "name": "Repositories",
+      "include": "(^src/applications/repository/)"
     },
     "storage": {
       "name": "Storage",
