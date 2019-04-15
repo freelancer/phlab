@@ -7,7 +7,8 @@ final class PhlabPatchList extends PhabricatorSQLPatchList {
   }
 
   public function getPatches(): array {
-    $patches = $this->buildPatchesFromDirectory($this->getPatchDirectory());
+    $auto_root = $this->getPatchDirectory();
+    $patches   = $this->buildPatchesFromDirectory($auto_root);
 
     // Phabricator requires that the first element of a patch list
     // has an `after` key.

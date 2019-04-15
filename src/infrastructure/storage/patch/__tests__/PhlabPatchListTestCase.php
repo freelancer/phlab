@@ -22,9 +22,8 @@ final class PhlabPatchListTestCase extends PhutilTestCase {
     }
   }
 
-  private function assertPatchExists(array $all_patches, string $namespace, string $patch): void {
-    $this->assertTrue(
-      array_key_exists($namespace.':'.$patch, $all_patches));
+  private function assertPatchExists(array $patches, string $namespace, string $patch): void {
+    $this->assertTrue(array_key_exists($namespace.':'.$patch, $patches));
   }
 
 }
