@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * A Herald field that checks whether a repository is hosted.
+ */
 final class DiffusionCommitHostedRepositoryHeraldField
   extends DiffusionCommitHeraldField {
 

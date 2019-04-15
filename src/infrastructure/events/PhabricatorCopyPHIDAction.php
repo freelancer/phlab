@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * Adds a "Copy PHID" button to the UI.
+ */
 final class PhabricatorCopyPHIDAction extends PhabricatorAutoEventListener {
 
   public function register(): void {

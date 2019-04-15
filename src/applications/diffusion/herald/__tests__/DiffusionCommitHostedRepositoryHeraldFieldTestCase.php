@@ -4,8 +4,7 @@ final class DiffusionCommitHostedRepositoryHeraldFieldTestCase
   extends PhutilTestCase {
 
   public function testGetHeraldFieldValue(): void {
-    $repo = (new PhabricatorRepository());
-
+    $repo   = new PhabricatorRepository();
     $commit = (new PhabricatorRepositoryCommit())
       ->attachRepository($repo);
 
