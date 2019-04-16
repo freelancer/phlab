@@ -22,12 +22,13 @@ final class RocketChatConfigOptions
         ->setDescription(
           pht('The name to use when publishing notifications to Rocket.Chat.')),
       $this->newOption('rocketchat.server', 'string', null)
+        ->addExample('https://open.rocket.chat', pht('Demo Server'))
         ->setSummary(pht('Rocket.Chat server URL.'))
         ->setDescription(pht('Base URL of Rocket.Chat Server.')),
       $this->newOption('rocketchat.user-id', 'string', null)
-        ->setSummary(pht('Rocket.Chat User ID.'))
+        ->setSummary(pht('Rocket.Chat user ID.'))
         ->setDescription(
-          pht('The Rocket.Chat User Id to use for publishing to Rocket.Chat.')),
+          pht('The Rocket.Chat User ID to use for publishing to Rocket.Chat.')),
       $this->newOption('rocketchat.token', 'string', null)
         ->setHidden(true)
         ->setSummary(pht('Rocket.Chat API token.'))
@@ -46,7 +47,7 @@ final class RocketChatConfigOptions
         if (!preg_match('(^https?://)', $value)) {
           throw new PhabricatorConfigValidationException(
             pht(
-              "Config option '%s' is not a valid URI.",
+              "Configuration option '%s' is not a valid URI.",
               $value));
         }
 
