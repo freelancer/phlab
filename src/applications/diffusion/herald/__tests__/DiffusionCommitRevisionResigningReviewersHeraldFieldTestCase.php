@@ -72,6 +72,7 @@ final class DiffusionCommitRevisionResigningReviewersHeraldFieldTestCase
     $commit_data = (new PhabricatorRepositoryCommitData())
       ->setCommitID($commit->getID())
       ->save();
+
     $commit->attachCommitData($commit_data);
 
     return $commit;
