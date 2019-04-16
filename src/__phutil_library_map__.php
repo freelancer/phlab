@@ -53,7 +53,7 @@ phutil_register_library_map(array(
     'PhlabRemarkupEngineTestCase' => 'infrastructure/markup/__tests__/PhlabRemarkupEngineTestCase.php',
     'PhlabS3FileStorageEngine' => 'applications/files/engine/PhlabS3FileStorageEngine.php',
     'PhlabSESMailAdapter' => 'applications/metamta/adapter/PhlabSESMailAdapter.php',
-    'PhlabUSEnglishTranslation' => 'infrastructure/internationalization/translation/PhlabUSEEnglishTranslation.php',
+    'PhlabUSEnglishTranslation' => 'infrastructure/internationalization/translation/PhlabUSEnglishTranslation.php',
     'PhlabUtilsTestCase' => 'utils/__tests__/PhlabUtilsTestCase.php',
     'RocketChatClient' => 'infrastructure/RocketChatClient.php',
     'RocketChatConfigOptions' => 'applications/config/option/RocketChatConfigOptions.php',
