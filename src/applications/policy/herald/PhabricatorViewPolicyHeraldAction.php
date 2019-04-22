@@ -32,8 +32,8 @@ final class PhabricatorViewPolicyHeraldAction extends HeraldAction {
       return;
     }
 
-    $current_policy = $this->getPolicy($object->getViewPolicy());
-    $target_policy  = $this->getPolicy($target);
+    $current_policy = $this->loadPolicy($object->getViewPolicy());
+    $target_policy  = $this->loadPolicy($target);
 
     if ($current_policy->getPHID() === $target_policy->getPHID()) {
       $this->logEffect(self::DO_STANDARD_NO_EFFECT, $target);
@@ -80,18 +80,18 @@ final class PhabricatorViewPolicyHeraldAction extends HeraldAction {
   }
 
   public function willSaveActionValue($value) {
+    // Special policies (such as `PhabricatorPolicies::POLICY_PUBLIC`) are allowed.
     if (PhabricatorPolicyQuery::isSpecialPolicy($value)) {
       return parent::willSaveActionValue($value);
     }
 
+    // `$value` should be the PHID of a `PhabricatorPolicy`.
     if (phid_get_type($value) !== PhabricatorPolicyPHIDTypePolicy::TYPECONST) {
       throw new HeraldInvalidActionException(
         pht('Invalid policy identifier: %s', $value));
-    }
-
-    if ($this->getPolicy($value) === null) {
+    } else if ($this->getPolicy($value) === null) {
       throw new HeraldInvalidActionException(
-        pht('Invalid policy identifier: %s', $value));
+        pht('No such policy: %s', $value));
     }
 
     return parent::willSaveActionValue($value);
@@ -102,12 +102,12 @@ final class PhabricatorViewPolicyHeraldAction extends HeraldAction {
       self::DO_POLICY => [
         'icon'  => 'fa-eye',
         'color' => 'green',
-        'name'  => pht('Changed view policy'),
+        'name'  => pht('Changed View Policy'),
       ],
     ];
   }
 
-  private function getPolicy(string $phid): ?PhabricatorPolicy {
+  private function loadPolicy(string $phid): ?PhabricatorPolicy {
     // TODO: We should use `$this->getViewer()`, but it doesn't seem to
     // actually be set.
     $viewer = coalesce(
@@ -122,12 +122,11 @@ final class PhabricatorViewPolicyHeraldAction extends HeraldAction {
 
   private function renderPolicy(string $value): PhutilSafeHTML {
     if (PhabricatorPolicyQuery::isGlobalPolicy($value)) {
-      return new PhutilSafeHTML($value);
-    }
-
-    if (PhabricatorPolicyQuery::isObjectPolicy($value)) {
+      $policy = PhabricatorPolicyQuery::getGlobalPolicy($value);
+      return new PhutilSafeHTML($policy->getName());
+    } else if (PhabricatorPolicyQuery::isObjectPolicy($value)) {
       $policy = PhabricatorPolicyQuery::getObjectPolicy($value);
-      return phutil_tag('tt', [], $policy->getPHID());
+      return new PhutilSafeHTML($policy->getName());
     }
 
     return $this->renderHandleList([$value]);
