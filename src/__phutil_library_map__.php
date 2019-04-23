@@ -102,7 +102,7 @@ phutil_register_library_map(array(
     'PhabricatorSetupIssuesPrometheusMetric' => 'PhabricatorPrometheusMetric',
     'PhabricatorUpPrometheusMetric' => 'PhabricatorPrometheusMetric',
     'PhabricatorViewPolicyHeraldAction' => 'HeraldAction',
-    'PhabricatorViewPolicyHeraldActionTestCase' => 'PhutilTestCase',
+    'PhabricatorViewPolicyHeraldActionTestCase' => 'PhabricatorTestCase',
     'PhlabLibraryTestCase' => 'PhutilLibraryTestCase',
     'PhlabPatchList' => 'PhabricatorSQLPatchList',
     'PhlabPatchListTestCase' => 'PhutilTestCase',

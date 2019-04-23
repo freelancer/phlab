@@ -1,6 +1,12 @@
 <?php
 
-final class PhabricatorViewPolicyHeraldActionTestCase extends PhutilTestCase {
+final class PhabricatorViewPolicyHeraldActionTestCase extends PhabricatorTestCase {
+
+  protected function getPhabricatorTestCaseConfiguration(): array {
+    return [
+      self::PHABRICATOR_TESTCONFIG_BUILD_STORAGE_FIXTURES => true,
+    ];
+  }
 
   public function testSupportsObject(): void {
     $action = new PhabricatorViewPolicyHeraldAction();
@@ -25,6 +31,56 @@ final class PhabricatorViewPolicyHeraldActionTestCase extends PhutilTestCase {
         $this->assertFalse($action->supportsRuleType($rule_type));
       }
     }
+  }
+
+  public function testApplyEffect(): void {
+    $user = $this->generateNewTestUser();
+    $task = ManiphestTask::initializeNewTask($user);
+
+    $adapter = (new HeraldManiphestTaskAdapter())
+      ->setObject($task);
+
+    $record = (new HeraldActionRecord())
+      ->setAction(PhabricatorViewPolicyHeraldAction::ACTIONCONST)
+      ->setTarget(PhabricatorPolicies::POLICY_NOONE);
+
+    $condition = (new HeraldCondition())
+      ->setFieldName(HeraldAlwaysField::FIELDCONST)
+      ->setFieldCondition(HeraldAdapter::CONDITION_UNCONDITIONALLY);
+
+    $rule = (new HeraldRule())
+      ->setName('Test')
+      ->setAuthorPHID($user->getPHID())
+      ->setContentType($adapter->getAdapterContentType())
+      ->setMustMatchAll(true)
+      ->setRepetitionPolicy(HeraldRule::REPEAT_EVERY)
+      ->setRuleType(HeraldRuleTypeConfig::RULE_TYPE_GLOBAL)
+      ->attachConditions([$condition])
+      ->attachActions([$record])
+      ->attachValidAuthor(true)
+      ->save();
+
+    $effect = (new HeraldEffect())
+      ->setObjectPHID($task->getPHID())
+      ->setAction($record)
+      ->setTarget($record->getTarget())
+      ->setRule($rule);
+
+    $engine = new HeraldEngine();
+    $effects = $engine->applyRules([$rule], $adapter);
+    $engine->applyEffects($effects, $adapter, [$rule]);
+
+    (new ManiphestTransactionEditor())
+      ->setContinueOnNoEffect(true)
+      ->setContinueOnMissingFields(true)
+      ->setIsHeraldEditor(true)
+      ->setActor(PhabricatorUser::getOmnipotentUser())
+      ->setActingAsPHID((new PhabricatorHeraldApplication())->getPHID())
+      ->setContentSource(PhabricatorContentSource::newForSource(
+        PhabricatorHeraldContentSource::SOURCECONST))
+      ->applyTransactions($task, $adapter->getQueuedTransactions());
+
+    $this->assertEqual($record->getTarget(), $task->getViewPolicy());
   }
 
   public function testWillSaveActionValue(): void {
