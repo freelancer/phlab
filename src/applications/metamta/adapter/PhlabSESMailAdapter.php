@@ -21,17 +21,16 @@ final class PhlabSESMailAdapter extends PhabricatorMailAdapter {
 
   /**
    * @phutil-external-symbol class PHPMailerLite
-   * @phutil-external-symbol class SesClient
    */
   public function sendMessage(PhabricatorMailExternalMessage $message): void {
     // TODO: We should possibly just add PHPMailer to the autoloader.
     require_once phutil_get_library_root('phabricator').'/../externals/phpmailer/class.phpmailer-lite.php';
 
     $mailer = PHPMailerLite::newFromMessage($message);
-
     $mailer->Mailer = 'amazon-ses';
     $mailer->customMailer = $this;
 
+    // TODO: Catch exceptions.
     $mailer->Send();
   }
 
@@ -44,27 +43,50 @@ final class PhlabSESMailAdapter extends PhabricatorMailAdapter {
     PhutilTypeSpec::checkMap(
       $options,
       [
-        'region' => 'string',
+        'access-key' => 'string | null',
+        'region'     => 'string',
+        'secret-key' => 'string | null',
+
+        // This is intended only to be used for unit tests.
+        'handler'    => 'wild | null',
       ]);
   }
 
   public function newDefaultOptions(): array {
     return [
-      'region' => null,
+      'access-key' => null,
+      'handler'    => null,
+      'region'     => null,
+      'secret-key' => null,
     ];
   }
 
-  public function executeSend($body): void {
-    $ses = new SesClient([
+  /**
+   * @phutil-external-symbol class SesClient
+   */
+  public function executeSend(string $body): array {
+    $config = [
+      'handler' => $this->getOption('handler'),
       'region'  => $this->getOption('region'),
       'version' => 'latest',
-    ]);
+    ];
 
-    $ses->sendRawEmail([
-      'RawMessage' => [
-        'Data' => $body,
-      ],
-    ]);
+    if ($this->getOption('access-key') || $this->getOption('secret-key')) {
+      $config['credentials'] = [
+        'key'    => $this->getOption('access-key'),
+        'secret' => $this->getOption('secret-key'),
+      ];
+    }
+
+    $client = new SesClient($config);
+
+    return $client
+      ->sendRawEmail([
+        'RawMessage' => [
+          'Data' => $body,
+        ],
+      ])
+      ->toArray();
   }
 
 }
