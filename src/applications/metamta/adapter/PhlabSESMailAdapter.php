@@ -8,6 +8,8 @@ use Aws\Ses\SesClient;
  * [[http://aws.amazon.com/sdk-for-php/ | `aws-sdk-php`]].
  *
  * @todo This class will be obsolete after https://secure.phabricator.com/T5155.
+ *
+ * @phutil-external-symbol class SesClient
  */
 final class PhlabSESMailAdapter extends PhabricatorMailAdapter {
 
@@ -61,9 +63,6 @@ final class PhlabSESMailAdapter extends PhabricatorMailAdapter {
     ];
   }
 
-  /**
-   * @phutil-external-symbol class SesClient
-   */
   public function executeSend(string $body): array {
     $config = [
       'handler' => $this->getOption('handler'),

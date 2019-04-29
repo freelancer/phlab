@@ -6,6 +6,13 @@ use InterNations\Component\HttpMock\MockBuilder;
 use InterNations\Component\HttpMock\RequestCollectionFacade;
 use InterNations\Component\HttpMock\Server;
 
+/**
+ * @phutil-external-symbol class ExtractorFactory
+ * @phutil-external-symbol class MatcherFactory
+ * @phutil-external-symbol class MockBuilder
+ * @phutil-external-symbol class RequestCollectionFacade
+ * @phutil-external-symbol class Server
+ */
 final class RocketChatClientTestCase extends PhutilTestCase {
 
   const SERVER_HOST = 'localhost';

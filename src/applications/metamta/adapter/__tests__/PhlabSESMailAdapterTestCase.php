@@ -4,6 +4,10 @@ use Aws\MockHandler;
 use Aws\Result;
 use Aws\Ses\SesClient;
 
+/**
+ * @phutil-external-symbol class MockHandler
+ * @phutil-external-symbol class Result
+ */
 final class PhlabSESMailAdapterTestCase extends PhabricatorTestCase {
 
   protected function getPhabricatorTestCaseConfiguration(): array {
@@ -24,10 +28,6 @@ final class PhlabSESMailAdapterTestCase extends PhabricatorTestCase {
     $this->assertFalse($adapter->supportsMessageType(PhabricatorMailSMSMessage::MESSAGETYPE));
   }
 
-  /**
-   * @phutil-external-symbol class MockHandler
-   * @phutil-external-symbol class Result
-   */
   public function testSendMessage(): void {
     $user = $this->generateNewTestUser();
 
