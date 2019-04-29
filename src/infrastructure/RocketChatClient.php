@@ -65,7 +65,7 @@ final class RocketChatClient extends Phobject {
       $future->addHeader($key, $value);
     }
 
-    [$data, $headers] = $future->resolvex();
+    list($data, $headers) = $future->resolvex();
     return phutil_json_decode($data);
   }
 
