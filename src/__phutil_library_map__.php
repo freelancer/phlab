@@ -57,6 +57,7 @@ phutil_register_library_map(array(
     'PhlabUSEnglishTranslation' => 'infrastructure/internationalization/translation/PhlabUSEnglishTranslation.php',
     'PhlabUtilsTestCase' => 'utils/__tests__/PhlabUtilsTestCase.php',
     'RocketChatClient' => 'infrastructure/RocketChatClient.php',
+    'RocketChatClientTestCase' => 'infrastructure/__tests__/RocketChatClientTestCase.php',
     'RocketChatConfigOptions' => 'applications/config/option/RocketChatConfigOptions.php',
   ),
   'function' => array(
@@ -114,6 +115,7 @@ phutil_register_library_map(array(
     'PhlabUSEnglishTranslation' => 'PhutilTranslation',
     'PhlabUtilsTestCase' => 'PhutilTestCase',
     'RocketChatClient' => 'Phobject',
+    'RocketChatClientTestCase' => 'PhutilTestCase',
     'RocketChatConfigOptions' => 'PhabricatorApplicationConfigOptions',
   ),
 ));

@@ -47,8 +47,7 @@ final class HeraldRocketChatNotificationAction extends HeraldAction {
       $this->getClient()->messageRoom(
         $effect->getTarget(),
         PhabricatorEnv::getEnvConfig('rocketchat.author'),
-        $text,
-        []);
+        $text);
       $this->logEffect(self::DO_NOTIFY, $effect->getTarget());
     } catch (Exception $ex) {
       $this->logEffect(self::DO_FAILED, $ex->getMessage());
