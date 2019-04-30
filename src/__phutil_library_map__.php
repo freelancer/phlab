@@ -70,7 +70,7 @@ phutil_register_library_map(array(
     'DiffusionCommitRevisionResigningReviewersHeraldField' => 'DiffusionCommitHeraldField',
     'DiffusionCommitRevisionResigningReviewersHeraldFieldTestCase' => 'PhabricatorTestCase',
     'DiffusionPreCommitRepositoryProjectsMatchesUserProjectsHeraldField' => 'DiffusionPreCommitRefHeraldField',
-    'FreelancerGoogleAuthRegistrationListener' => 'PhabricatorAutoEventListener',
+    'FreelancerGoogleAuthRegistrationListener' => 'PhabricatorEventListener',
     'FreelancerGoogleAuthRegistrationListenerTestCase' => 'PhabricatorTestCase',
     'HarbormasterJenkinsBuildStepImplementation' => 'HarbormasterBuildStepImplementation',
     'HeraldRocketChatNotificationAction' => 'HeraldAction',

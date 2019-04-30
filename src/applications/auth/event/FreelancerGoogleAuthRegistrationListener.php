@@ -13,7 +13,7 @@
  * for some related discussion upstream.
  */
 final class FreelancerGoogleAuthRegistrationListener
-  extends PhabricatorAutoEventListener {
+  extends PhabricatorEventListener {
 
   public function register(): void {
     $this->listen(PhabricatorEventType::TYPE_AUTH_WILLREGISTERUSER);
