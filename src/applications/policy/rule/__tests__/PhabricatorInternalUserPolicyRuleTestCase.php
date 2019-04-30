@@ -9,14 +9,17 @@ final class PhabricatorInternalUserPolicyRuleTestCase extends PhabricatorTestCas
   }
 
   public function testApplyRule(): void {
+    $internal_domain = 'internal.com';
+    $external_domain = 'external.com';
+
     $internal_user = $this->generateNewTestUser();
     $internal_user->loadPrimaryEmail()
-      ->setAddress('bob@internal.com')
+      ->setAddress('bob@'.$internal_domain)
       ->save();
 
     $external_user = $this->generateNewTestUser();
     $external_user->loadPrimaryEmail()
-      ->setAddress('bob@external.com')
+      ->setAddress('bob@'.$external_domain)
       ->save();
 
     $policy = (new PhabricatorPolicy())
@@ -35,15 +38,17 @@ final class PhabricatorInternalUserPolicyRuleTestCase extends PhabricatorTestCas
       ->save();
 
     $env = PhabricatorEnv::beginScopedEnv();
-    $env->overrideEnvConfig('auth.email-domains', ['internal.com']);
+    $env->overrideEnvConfig('auth.email-domains', [$internal_domain]);
 
     $this->assertTrue($this->canView($internal_user, $task));
     $this->assertFalse($this->canView($external_user, $task));
   }
 
-  private function canView(PhabricatorUser $user, PhabricatorPolicyInterface $object): bool {
-    $capability = PhabricatorPolicyCapability::CAN_VIEW;
-    return PhabricatorPolicyFilter::hasCapability($user, $object, $capability);
+  private function canView(PhabricatorUser $viewer, PhabricatorPolicyInterface $object): bool {
+    return PhabricatorPolicyFilter::hasCapability(
+      $viewer,
+      $object,
+      PhabricatorPolicyCapability::CAN_VIEW);
   }
 
 }
