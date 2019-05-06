@@ -4,7 +4,7 @@
     "platform": {
       "php": "7.2"
     },
-    "prepend-autoloader": true,
+    "prepend-autoloader": false,
     "sort-packages": true
   },
   "require": {
