@@ -10,6 +10,11 @@ final class ManiphestDeadlineReminderWorker extends PhabricatorWorker {
       ->withPHIDs([$this->getTaskDataValue('objectPHID')])
       ->executeOne();
 
+    if ($task === null) {
+      throw new PhabricatorWorkerPermanentFailureException(
+        pht('Task not found.'));
+    }
+
     if ($task->isClosed()) {
       throw new PhabricatorWorkerPermanentFailureException(
         pht('Task is already closed.'));
