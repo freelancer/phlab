@@ -48,5 +48,4 @@ final class PhabricatorOwnerProjectsCustomField
     return true;
   }
 
-
 }
