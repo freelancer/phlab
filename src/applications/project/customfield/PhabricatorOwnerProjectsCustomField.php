@@ -1,14 +1,14 @@
 <?php
 
-final class PhabricatorOwnedProjectsCustomField
+final class PhabricatorOwnerProjectsCustomField
   extends PhabricatorProjectCustomEdgeField {
 
-  public function getFieldKey(): string {
-    return 'phlab:owned-projects';
+   public function getFieldKey(): string {
+    return 'phlab:owner-projects';
   }
 
   public function getFieldName(): string {
-    return pht('Owned Projects');
+    return pht('Owner Projects');
   }
 
   public function getFieldDescription(): ?string {
@@ -21,24 +21,32 @@ final class PhabricatorOwnedProjectsCustomField
     return true;
   }
 
-  /**
-   * @todo We shouldn't need to implement this method since this field is not
-   *   editable.
-   */
   protected function getDatasource(): PhabricatorTypeaheadDatasource {
+    // TODO: We should filter this datasource so as to only include "feature" projects.
     return new PhabricatorProjectDatasource();
   }
 
   protected function getEdgeType(): PhabricatorEdgeType {
-    return new PhabricatorOwnsProjectEdgeType();
+    return new PhabricatorOwnedByProjectEdgeType();
   }
 
   public function shouldAppearInEditView(): bool {
-    return true;
+    return false;
+  }
+
+  public function shouldAppearInEditEngine(): bool {
+    // TODO: Should this be `true`?
+    return false;
+  }
+
+  public function getInstructionsForEdit(): ?string {
+    // TODO: Implement this method.
+    return null;
   }
 
   public function shouldAppearInPropertyView(): bool {
     return true;
   }
+
 
 }
