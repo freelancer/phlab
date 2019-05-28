@@ -24,7 +24,9 @@ final class PhlabUtilsTestCase extends PhutilTestCase {
       ],
       [
         'Hello ${name}, %s',
-        ['name' => 'Bob'],
+        [
+          'name' => 'Bob',
+        ],
         'Hello Bob, %s',
       ],
     ];

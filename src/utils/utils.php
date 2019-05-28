@@ -12,9 +12,9 @@
  * @return string    String with variables replaced safely into it.
  */
 function varsprintf(callable $function, string $pattern, array $variables): string {
-  $regexp = '@\\$\\{(?P<name>[a-z\\./_-]+)\\}@';
+  $regexp = '@\\$\\{(?<name>[a-z\\./_-]+)\\}@';
 
-  $matches = null;
+  $matches = [];
   preg_match_all($regexp, $pattern, $matches);
 
   $argv = array_map(
@@ -30,5 +30,5 @@ function varsprintf(callable $function, string $pattern, array $variables): stri
   $pattern = str_replace('%', '%%', $pattern);
   $pattern = preg_replace($regexp, '%s', $pattern);
 
-  return call_user_func($function, $pattern, $argv);
+  return $function($pattern, $argv);
 }
