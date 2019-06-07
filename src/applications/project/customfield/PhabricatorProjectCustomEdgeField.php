@@ -67,8 +67,13 @@ abstract class PhabricatorProjectCustomEdgeField
       ->setDatasource($this->getDatasource());
   }
 
-  final public function renderPropertyViewValue(array $handles): ?PhutilSafeHTML {
-    return $this->renderHandleList($handles);
+  final public function renderPropertyViewValue(array $handles) {
+    if (!$handles) {
+      return null;
+    }
+
+    return (new PHUIHandleTagListView())
+      ->setHandles($handles);
   }
 
   final public function getRequiredHandlePHIDsForPropertyView(): array {
