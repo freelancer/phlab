@@ -1,8 +1,9 @@
 ---
 version: '3.7'
+
 services:
   database:
-    image: 'mysql:5.7'
+    image: 'mysql:5'
     command:
       - '--log-error-verbosity=1'
       - '--max-allowed-packet=32M'
@@ -16,7 +17,7 @@ services:
 
   nginx:
     depends_on:
-      - 'phpfpm'
+      - 'web'
     image: 'nginx:stable'
     networks:
       - 'frontend'
@@ -25,8 +26,8 @@ services:
     volumes:
       - './support/docker/nginx.conf:/etc/nginx/nginx.conf'
 
-  phpfpm:
-    image: 'joshuaspence/phabricator'
+  web:
+    build: './support/docker'
     depends_on:
       - 'database'
     entrypoint:
@@ -36,22 +37,27 @@ services:
         # Apply storage upgrades.
         /usr/local/src/phabricator/bin/storage upgrade --force
 
-        php-fpm7.2 \
+        docker-php-entrypoint \
           -d error_log=stderr \
           -d opcache.revalidate_freq=0 \
           -d opcache.validate_timestamps=1 \
-          --nodaemonize
+          --fpm-config /usr/local/etc/php/php-fpm.conf \
+          --nodaemonize \
+          --allow-to-run-as-root
     environment:
       PHABRICATOR_DOMAIN: 'phabricator.local'
       PHABRICATOR_ENV: 'docker'
       PHABRICATOR_MYSQL_HOST: 'database'
       PHABRICATOR_MYSQL_USER: 'root'
+    expose:
+      - 8080
     networks:
       - 'backend'
       - 'frontend'
     volumes:
       - '.:/usr/local/src/phlab'
       - './support/docker/config.php:/usr/local/src/phabricator/conf/docker.conf.php'
+      - './support/docker/php-fpm.conf:/usr/local/etc/php/php-fpm.conf'
 
       # Supporting repositories.
       - '../arcanist:/usr/local/src/arcanist'
@@ -60,8 +66,10 @@ services:
 
       # Prevent `../phabricator/conf/local/` from being mounted.
       - '/usr/local/src/phabricator/conf/local'
+
 networks:
   backend: {}
   frontend: {}
+
 volumes:
   mysql: {}
