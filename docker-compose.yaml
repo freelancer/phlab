@@ -5,6 +5,7 @@ services:
   database:
     image: 'mysql:5'
     command:
+      - '--local_infile=0'
       - '--log-error-verbosity=1'
       - '--max-allowed-packet=32M'
       - '--sql-mode=STRICT_ALL_TABLES'
