@@ -12,4 +12,5 @@ return [
   'phabricator.developer-mode'   => true,
   'phabricator.show-prototypes'  => true,
   'phabricator.timezone'         => 'Etc/UTC',
+  'pygments.enabled'             => true,
 ];
