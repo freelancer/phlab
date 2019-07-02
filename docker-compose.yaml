@@ -38,7 +38,7 @@ services:
         # Apply storage upgrades.
         /usr/local/src/phabricator/bin/storage upgrade --force
 
-        docker-php-entrypoint --allow-to-run-as-root
+        docker-php-entrypoint php-fpm
     environment:
       PHABRICATOR_DOMAIN: 'phabricator.local'
       PHABRICATOR_ENV: 'docker'
