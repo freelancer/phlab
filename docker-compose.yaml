@@ -38,27 +38,19 @@ services:
         # Apply storage upgrades.
         /usr/local/src/phabricator/bin/storage upgrade --force
 
-        docker-php-entrypoint \
-          -d error_log=stderr \
-          -d opcache.revalidate_freq=0 \
-          -d opcache.validate_timestamps=1 \
-          --fpm-config /usr/local/etc/php/php-fpm.conf \
-          --nodaemonize \
-          --allow-to-run-as-root
+        docker-php-entrypoint --allow-to-run-as-root
     environment:
       PHABRICATOR_DOMAIN: 'phabricator.local'
       PHABRICATOR_ENV: 'docker'
       PHABRICATOR_MYSQL_HOST: 'database'
       PHABRICATOR_MYSQL_USER: 'root'
-    expose:
-      - 8080
     networks:
       - 'backend'
       - 'frontend'
     volumes:
       - '.:/usr/local/src/phlab'
       - './support/docker/config.php:/usr/local/src/phabricator/conf/docker.conf.php'
-      - './support/docker/php-fpm.conf:/usr/local/etc/php/php-fpm.conf'
+      - './support/docker/php-fpm.conf:/usr/local/etc/php-fpm.conf'
 
       # Supporting repositories.
       - '../arcanist:/usr/local/src/arcanist'
