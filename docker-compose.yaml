@@ -80,6 +80,9 @@ services:
       - 'sh'
       - '-c'
       - |
+        # Send logs to stderr (see https://worp.one/docker-symlink-your-log-files-to-stdout-and-stderr/).
+        ln --symbolic /proc/1/fd/2 /var/log/daemons.log
+
         /usr/local/src/phabricator/bin/phd start
 
         # Keep the container running (see http://bigdatums.net/2017/11/07/how-to-keep-docker-containers-running/).

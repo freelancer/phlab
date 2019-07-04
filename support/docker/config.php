@@ -12,5 +12,6 @@ return [
   'phabricator.developer-mode'   => true,
   'phabricator.show-prototypes'  => true,
   'phabricator.timezone'         => 'Etc/UTC',
+  'phd.log-directory'            => '/var/log',
   'pygments.enabled'             => true,
 ];
