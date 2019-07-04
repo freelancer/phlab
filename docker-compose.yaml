@@ -32,7 +32,7 @@ x-common: &phabricator
 services:
   bootstrap:
     <<: *phabricator
-    build: './support/docker'
+    build: './support/docker/worker'
     depends_on:
       - 'database'
     command:
@@ -68,11 +68,22 @@ services:
 
   web:
     <<: *phabricator
-    build: './support/docker'
+    build: './support/docker/web'
     networks:
       - 'backend'
       - 'frontend'
 
+  worker:
+    <<: *phabricator
+    build: './support/docker/worker'
+    entrypoint:
+      - 'sh'
+      - '-c'
+      - |
+        /usr/local/src/phabricator/bin/phd start
+
+        # Keep the container running (see http://bigdatums.net/2017/11/07/how-to-keep-docker-containers-running/).
+        tail --follow /dev/null
 
 networks:
   backend: {}
