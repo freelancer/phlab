@@ -36,10 +36,9 @@ services:
     depends_on:
       - 'database'
     command:
+      - '/usr/local/src/phabricator/bin/storage'
       - 'upgrade'
       - '--force'
-    entrypoint:
-      - '/usr/local/src/phabricator/bin/storage'
 
   database:
     image: 'mysql:5'
@@ -76,7 +75,7 @@ services:
   worker:
     <<: *phabricator
     build: './support/docker/worker'
-    entrypoint:
+    command:
       - 'sh'
       - '-c'
       - |
