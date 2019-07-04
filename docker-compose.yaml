@@ -3,12 +3,14 @@ version: '3.7'
 
 x-common: &phabricator
   depends_on:
-    - 'database'
+    - 'bootstrap'
   environment:
     PHABRICATOR_DOMAIN: 'phabricator.local'
     PHABRICATOR_ENV: 'docker'
     PHABRICATOR_MYSQL_HOST: 'database'
     PHABRICATOR_MYSQL_USER: 'root'
+  networks:
+    - 'backend'
   volumes:
     - '.:/usr/local/src/phlab'
     - './support/docker/config.php:/usr/local/src/phabricator/conf/docker.conf.php'
@@ -28,6 +30,17 @@ x-common: &phabricator
     - './support/docker/php-fpm.conf:/usr/local/etc/php-fpm.conf'
 
 services:
+  bootstrap:
+    <<: *phabricator
+    build: './support/docker'
+    depends_on:
+      - 'database'
+    command:
+      - 'upgrade'
+      - '--force'
+    entrypoint:
+      - '/usr/local/src/phabricator/bin/storage'
+
   database:
     image: 'mysql:5'
     command:
@@ -56,14 +69,6 @@ services:
   web:
     <<: *phabricator
     build: './support/docker'
-    entrypoint:
-      - 'sh'
-      - '-c'
-      - |
-        # Apply storage upgrades.
-        /usr/local/src/phabricator/bin/storage upgrade --force
-
-        docker-php-entrypoint php-fpm
     networks:
       - 'backend'
       - 'frontend'
