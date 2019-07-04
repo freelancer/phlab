@@ -14,6 +14,6 @@ RUN docker-php-ext-install -j$(nproc) opcache
 
 RUN \
   apt-get update && \
-  apt-get install --no-install-recommends --yes python-pygments
+  apt-get install --no-install-recommends --yes imagemagick python-pygments
 
 WORKDIR /usr/local/src

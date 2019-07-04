@@ -2,6 +2,7 @@
 
 return [
   'darkconsole.enabled'          => true,
+  'files.enable-imagemagick'     => true,
   'load-libraries'               => ['phlab/src'],
   'metamta.default-address'      => 'noreply@'.getenv('PHABRICATOR_DOMAIN'),
   'metamta.reply-handler-domain' => getenv('PHABRICATOR_DOMAIN'),
