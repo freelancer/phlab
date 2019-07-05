@@ -3,7 +3,7 @@
 final class PhabricatorOwnerProjectsCustomField
   extends PhabricatorProjectCustomEdgeField {
 
-   public function getFieldKey(): string {
+  public function getFieldKey(): string {
     return 'phlab:owner-projects';
   }
 
