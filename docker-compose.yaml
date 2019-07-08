@@ -76,17 +76,29 @@ services:
   worker:
     <<: *phabricator
     build: './support/docker/worker'
+
+    # NOTE: This would be simpler if `bin/phd start` could launch daemons in
+    # the foreground (see https://secure.phabricator.com/D20643).
     command:
       - 'sh'
       - '-c'
       - |
-        # Send logs to stderr (see https://worp.one/docker-symlink-your-log-files-to-stdout-and-stderr/).
-        ln --symbolic /proc/1/fd/2 /var/log/daemons.log
+        # Send daemon logs to stderr (see https://worp.one/docker-symlink-your-log-files-to-stdout-and-stderr/).
+        ln --force --symbolic /proc/1/fd/2 /var/log/daemons.log
+
+        trap 'kill $${!}; /usr/local/src/phabricator/bin/phd reload' HUP
+        trap 'kill $${!}; /usr/local/src/phabricator/bin/phd stop; exit 143' TERM
 
         /usr/local/src/phabricator/bin/phd start
 
-        # Keep the container running (see http://bigdatums.net/2017/11/07/how-to-keep-docker-containers-running/).
-        tail --follow /dev/null
+        # Keep the container running (see
+        # http://bigdatums.net/2017/11/07/how-to-keep-docker-containers-running/ and
+        # https://medium.com/@gchudnov/trapping-signals-in-docker-containers-7a57fdda7d86).
+        while true; do
+          tail --follow /dev/null &
+          wait $${!}
+        done
+    stop_grace_period: '20s'
 
 networks:
   backend: {}
