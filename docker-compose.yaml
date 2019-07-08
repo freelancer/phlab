@@ -6,21 +6,22 @@ x-common: &phabricator
     - 'bootstrap'
   environment:
     PHABRICATOR_DOMAIN: 'phabricator.local'
-    PHABRICATOR_ENV: 'docker'
+    PHABRICATOR_ENV: 'custom/docker'
     PHABRICATOR_MYSQL_HOST: 'database'
     PHABRICATOR_MYSQL_USER: 'root'
   networks:
     - 'backend'
   volumes:
     - '.:/usr/local/src/phlab'
-    - './support/docker/config.php:/usr/local/src/phabricator/conf/docker.conf.php'
+    - './support/docker/config.php:/usr/local/src/phabricator/conf/custom/docker.conf.php'
 
     # Supporting repositories.
     - '../arcanist:/usr/local/src/arcanist'
     - '../libphutil:/usr/local/src/libphutil'
     - '../phabricator:/usr/local/src/phabricator'
 
-    # Prevent `../phabricator/conf/local` from being mounted.
+    # Prevent `../phabricator/conf/custom` and `../phabricator/conf/local` from being mounted.
+    - '/usr/local/src/phabricator/conf/custom'
     - '/usr/local/src/phabricator/conf/local'
 
     # NOTE: This file is only needed by the `web` service, but there's currently
