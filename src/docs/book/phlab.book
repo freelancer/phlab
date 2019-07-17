@@ -19,6 +19,10 @@
       "name": "Auth",
       "include": "(^src/applications/auth/)"
     },
+    "celerity": {
+      "name": "Celerity",
+      "include": "(^src/applications/celerity/)"
+    },
     "config": {
       "name": "Config",
       "include": "(^src/applications/config/)"
