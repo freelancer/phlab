@@ -1,4 +1,4 @@
-FROM php:7-fpm
+FROM php:7-fpm-stretch
 
 RUN \
   pecl channel-update pecl.php.net && \
