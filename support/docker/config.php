@@ -9,7 +9,7 @@ return [
   'mysql.host'                   => getenv('PHABRICATOR_MYSQL_HOST'),
   'mysql.pass'                   => getenv('PHABRICATOR_MYSQL_PASSWORD') ?: null,
   'mysql.user'                   => getenv('PHABRICATOR_MYSQL_USER'),
-  'phabricator.base-uri'         => 'http://'.getenv('PHABRICATOR_DOMAIN'),
+  'phabricator.base-uri'         => sprintf('http://%s:%d', getenv('PHABRICATOR_DOMAIN'), getenv('PHABRICATOR_HTTP_PORT')),
   'phabricator.developer-mode'   => true,
   'phabricator.show-prototypes'  => true,
   'phabricator.timezone'         => 'Etc/UTC',

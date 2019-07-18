@@ -7,6 +7,7 @@ x-common: &phabricator
   environment:
     PHABRICATOR_DOMAIN: 'phabricator.local'
     PHABRICATOR_ENV: 'custom/docker'
+    PHABRICATOR_HTTP_PORT: '${HTTP_PORT:-80}'
     PHABRICATOR_MYSQL_HOST: 'database'
     PHABRICATOR_MYSQL_USER: 'root'
   networks:
@@ -62,7 +63,7 @@ services:
     networks:
       - 'frontend'
     ports:
-      - '80:80'
+      - '${HTTP_PORT:-80}:80'
     volumes:
       - './support/docker/nginx.conf:/etc/nginx/nginx.conf'
 
