@@ -2,7 +2,7 @@ FROM php:7-cli
 
 RUN \
   apt-get update && \
-  apt-get install --no-install-recommends --yes procps && \
+  apt-get install --no-install-recommends --yes git procps && \
   rm --force --recursive /var/lib/apt/lists/*
 
 RUN docker-php-ext-install -j$(nproc) mysqli

@@ -14,16 +14,19 @@ x-common: &phabricator
     - 'backend'
   volumes:
     - '.:/usr/local/src/phlab'
-    - './support/docker/config.php:/usr/local/src/phabricator/conf/custom/docker.conf.php'
 
     # Supporting repositories.
     - '../arcanist:/usr/local/src/arcanist'
     - '../libphutil:/usr/local/src/libphutil'
     - '../phabricator:/usr/local/src/phabricator'
 
-    # Prevent `../phabricator/conf/custom` and `../phabricator/conf/local` from being mounted.
+    # Configuration files.
+    - './support/docker/config.php:/usr/local/src/phabricator/conf/custom/docker.conf.php'
     - '/usr/local/src/phabricator/conf/custom'
     - '/usr/local/src/phabricator/conf/local'
+
+    # Data that should be persistent.
+    - 'diffusion:/var/repo'
 
     # NOTE: This file is only needed by the `web` service, but there's currently
     # no way to merge lists in YAML (see https://github.com/yaml/yaml/issues/48).
@@ -57,9 +60,9 @@ services:
       - 'mysql:/var/lib/mysql'
 
   nginx:
+    image: 'nginx:stable'
     depends_on:
       - 'web'
-    image: 'nginx:stable'
     networks:
       - 'frontend'
     ports:
@@ -106,4 +109,5 @@ networks:
   frontend: {}
 
 volumes:
+  diffusion: {}
   mysql: {}

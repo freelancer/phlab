@@ -16,4 +16,5 @@ RUN docker-php-ext-install -j$(nproc) opcache
 
 RUN \
   apt-get update && \
-  apt-get install --no-install-recommends --yes imagemagick python-pygments
+  apt-get install --no-install-recommends --yes git imagemagick python-pygments && \
+  rm --force --recursive /var/lib/apt/lists/*
