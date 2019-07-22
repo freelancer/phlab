@@ -18,7 +18,7 @@ final class PhlabConfigOptions extends PhabricatorApplicationConfigOptions {
     $owned_projects_field = new PhabricatorOwnedProjectsCustomField();
 
     return [
-      $this->newOption('phlab.projects.ownable-subtypes', 'list<string>', null)
+      $this->newOption('phlab.projects.ownable-subtypes', 'list<string>', [])
         ->setSummary(pht('Ownable project subtypes.'))
         ->setDescription(
           pht(
