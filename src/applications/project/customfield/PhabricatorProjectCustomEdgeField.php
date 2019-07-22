@@ -13,7 +13,10 @@ abstract class PhabricatorProjectCustomEdgeField
     $this->value = $value;
   }
 
-  abstract protected function getDatasource(): PhabricatorTypeaheadDatasource;
+  protected function getDatasource(): PhabricatorTypeaheadDatasource {
+    throw new PhutilMethodNotImplementedException();
+  }
+
   abstract protected function getEdgeType(): PhabricatorEdgeType;
 
   final protected function getEdgeConstant(): int {

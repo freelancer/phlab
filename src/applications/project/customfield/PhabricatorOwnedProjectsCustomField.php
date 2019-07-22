@@ -21,12 +21,11 @@ final class PhabricatorOwnedProjectsCustomField
     return true;
   }
 
-  /**
-   * @todo We shouldn't need to implement this method since this field is not
-   *   editable.
-   */
   protected function getDatasource(): PhabricatorTypeaheadDatasource {
-    return new PhabricatorProjectDatasource();
+    $subtypes = PhabricatorEnv::getEnvConfig('phlab.projects.ownable-subtypes');
+
+    return (new PhlabProjectDatasource())
+      ->setParameters(['subtypes' => $subtypes]);
   }
 
   protected function getEdgeType(): PhabricatorEdgeType {
@@ -35,6 +34,16 @@ final class PhabricatorOwnedProjectsCustomField
 
   public function shouldAppearInEditView(): bool {
     return true;
+  }
+
+  public function shouldAppearInEditEngine(): bool {
+    // TODO: Should this be `true`?
+    return false;
+  }
+
+  public function getInstructionsForEdit(): ?string {
+    // TODO: Implement this method.
+    return null;
   }
 
   public function shouldAppearInPropertyView(): bool {
