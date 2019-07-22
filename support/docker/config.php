@@ -1,6 +1,7 @@
 <?php
 
 return [
+  'darkconsole.always-on'         => true,
   'darkconsole.enabled'           => true,
   'environment.append-paths'      => ['/usr/lib/git-core'],
   'files.enable-imagemagick'      => true,
