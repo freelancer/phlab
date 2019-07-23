@@ -88,6 +88,8 @@ final class AphrontFormDateRangeControl extends AphrontFormControl {
   }
 
   protected function renderInput(): PhutilSafeHTML {
+    require_celerity_resource('phui-form-css', 'phlab');
+
     return javelin_tag(
       'div',
       [

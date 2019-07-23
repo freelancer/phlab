@@ -6,8 +6,12 @@
  * @generated
  */
 return array(
-  'names' => array(),
-  'symbols' => array(),
+  'names' => array(
+    'css/phui/phui-form.css' => 'daa52323',
+  ),
+  'symbols' => array(
+    'phui-form-css' => 'daa52323',
+  ),
   'requires' => array(),
   'packages' => array(),
 );

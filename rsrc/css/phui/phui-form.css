@@ -1,0 +1,11 @@
+/**
+ * @provides phui-form-css
+ */
+
+.aphront-form-control-daterange .aphront-form-date-container {
+  margin-right: 50px;
+}
+
+.aphront-form-control-daterange .aphront-form-date-container.no-time .aphront-form-time-input-container {
+  width: 0px;
+}
