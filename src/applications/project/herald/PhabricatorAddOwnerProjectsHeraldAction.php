@@ -33,6 +33,12 @@ final class PhabricatorAddOwnerProjectsHeraldAction
     $unvisited = $project_phids;
     $visited   = [];
 
+    // TODO: We should use `$this->getViewer()`, but it returns `null` for
+    // global Herald rules.
+    $viewer = coalesce(
+      $this->getViewer(),
+      PhabricatorUser::getOmnipotentUser());
+
     while ($unvisited) {
       $project_phid = array_shift($unvisited);
       $visited[$project_phid] = true;
@@ -41,12 +47,21 @@ final class PhabricatorAddOwnerProjectsHeraldAction
         $project_phid,
         PhabricatorOwnedByProjectEdgeType::EDGECONST);
 
-      foreach ($owner_project_phids as $owner_project_phid) {
-        if (isset($visited[$owner_project_phid])) {
+      $owner_projects = (new PhabricatorProjectQuery())
+        ->setViewer($viewer)
+        ->withPHIDs($owner_project_phids)
+        ->execute();
+
+      foreach ($owner_projects as $owner_project) {
+        if ($owner_project->isArchived()) {
           continue;
         }
 
-        $unvisited[] = $owner_project_phid;
+        if (isset($visited[$owner_project->getPHID()])) {
+          continue;
+        }
+
+        $unvisited[] = $owner_project->getPHID();
       }
     }
 
