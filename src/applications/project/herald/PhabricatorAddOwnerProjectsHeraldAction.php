@@ -47,6 +47,10 @@ final class PhabricatorAddOwnerProjectsHeraldAction
         $project_phid,
         PhabricatorOwnedByProjectEdgeType::EDGECONST);
 
+      if (empty($owner_project_phids)) {
+        continue;
+      }
+
       $owner_projects = (new PhabricatorProjectQuery())
         ->setViewer($viewer)
         ->withPHIDs($owner_project_phids)
