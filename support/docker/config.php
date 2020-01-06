@@ -18,9 +18,4 @@ return [
   'phd.log-directory'             => '/var/log',
   'pygments.enabled'              => true,
   'repository.default-local-path' => '/var/repo',
-  'pagerduty.server' => 'https://events.pagerduty.com/v2/enqueue',
-  'pagerduty.integration_keys' => [
-    'service1' => '12334545656767878989012234567812',
-    'service2' => '12334545656767878989012234456564',
-  ],
 ];
