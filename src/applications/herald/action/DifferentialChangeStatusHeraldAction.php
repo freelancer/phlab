@@ -70,17 +70,4 @@ final class DifferentialChangeStatusHeraldAction
       ),
     );
   }
-
-//   protected function renderActionEffectDescription($type, $data) {
-//     switch ($type) {
-//       case self::DO_IGNORE:
-//         return pht(
-//           'Already marked with %s flag.',
-//           var_export($type, true));
-//       case self::DO_FLAG:
-//         return pht(
-//           'Marked with "%s" flag.',
-//           var_export($type, true));
-//     }
-//   }
 }
