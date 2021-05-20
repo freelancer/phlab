@@ -32,8 +32,13 @@ final class DifferentialChangeStatusHeraldAction
 
     $status = $effect->getTarget();
 
+    if ($status === $object->getStatus()) {
+        // do nothing since they're the same
+        return true;
+    }
+
     if ($status === DifferentialRevisionStatus::CHANGES_PLANNED) {
-        if (!$this->isValidPlanChangesEffect()) {
+        if (!$this->isValidPlanChangesEffect($object)) {
             // silently fail
             return true;
         }
@@ -43,20 +48,39 @@ final class DifferentialChangeStatusHeraldAction
   }
 
 
-  public function isValidPlanChangesEffect() {
+  public function isValidPlanChangesEffect($object) {
     $adapter = $this->getAdapter();
     $xactions = $adapter->getAppliedTransactions();
 
-    if (!$xactions) {
-        return true;
+    $requestAction = array_filter($xactions, function ($xaction) {
+        return ($xaction->getTransactionType() == DifferentialRevisionRequestReviewTransaction::TRANSACTIONTYPE);
+    });
+
+    $draftAction = array_filter($xactions, function ($xaction) {
+        return ($xaction->getTransactionType() == DifferentialRevisionHoldDraftTransaction::TRANSACTIONTYPE);
+    });
+
+    $reviewRequestTransactionCount = count($requestAction);
+    $draftTransactionCount = count($draftAction);
+
+    $requestReviewFromDraft = $draftTransactionCount === 1;
+
+    // revisions created from `--draft` flag have no review request transaction
+    // meanwhile, revisions created with `--only` have one review request transaction
+    // i.e.
+    // it's not a valid plan changes if it's a draft that's being published
+    // it's a valid plan changes if it's a revision being created for the first time
+    if ($reviewRequestTransactionCount === 1) {
+        return !$requestReviewFromDraft;
     }
+
     foreach ($xactions as $xaction) {
-        // We need to check if there's a transaction like `request-review`
+        // we need to check if there's a transaction like `request-review`
         // that caused the diff to be in `needs-review` status.
         if ($xaction->getTransactionType() == DifferentialRevisionRequestReviewTransaction::TRANSACTIONTYPE) {
             return false;
         }
-        // However, if there's a more recent update, allow `plan-changes` to take effect
+        // however, if there's a more recent update, allow `plan-changes` to take effect
         if ($xaction->getTransactionType() == DifferentialRevisionUpdateTransaction::TRANSACTIONTYPE) {
             return true;
         }
