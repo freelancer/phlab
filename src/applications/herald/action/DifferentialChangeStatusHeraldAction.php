@@ -48,30 +48,40 @@ final class DifferentialChangeStatusHeraldAction
   }
 
 
-  public function isValidPlanChangesEffect($object) {
+  public function isValidPlanChangesEffect($revision) {
     $adapter = $this->getAdapter();
+    $viewer = $adapter->getViewer();
     $xactions = $adapter->getAppliedTransactions();
 
-    $requestAction = array_filter($xactions, function ($xaction) {
+    if (count($xactions) <= 1) {
+        $xactions = id(new DifferentialTransactionQuery())
+            ->setViewer($viewer)
+            ->withObjectPHIDs(array($revision->getPHID()))
+            ->setOrder('newest')
+            ->setLimit(20)
+            ->execute();
+    }
+
+    $request_actions = array_filter($xactions, function ($xaction) {
         return ($xaction->getTransactionType() == DifferentialRevisionRequestReviewTransaction::TRANSACTIONTYPE);
     });
 
-    $draftAction = array_filter($xactions, function ($xaction) {
+    $draft_actions = array_filter($xactions, function ($xaction) {
         return ($xaction->getTransactionType() == DifferentialRevisionHoldDraftTransaction::TRANSACTIONTYPE);
     });
 
-    $reviewRequestTransactionCount = count($requestAction);
-    $draftTransactionCount = count($draftAction);
+    $review_request_transaction_count = count($request_actions);
+    $draft_transaction_count = count($draft_actions);
 
-    $requestReviewFromDraft = $draftTransactionCount === 1;
+    $request_review_from_draft_state = $draft_transaction_count === 1;
 
     // revisions created from `--draft` flag have no review request transaction
     // meanwhile, revisions created with `--only` have one review request transaction
     // i.e.
     // it's not a valid plan changes if it's a draft that's being published
     // it's a valid plan changes if it's a revision being created for the first time
-    if ($reviewRequestTransactionCount === 1) {
-        return !$requestReviewFromDraft;
+    if ($review_request_transaction_count === 1) {
+        return !$request_review_from_draft_state;
     }
 
     foreach ($xactions as $xaction) {
