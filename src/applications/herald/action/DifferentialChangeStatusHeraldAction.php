@@ -42,9 +42,13 @@ final class DifferentialChangeStatusHeraldAction
             // silently fail
             return true;
         }
+
+        $object->setShouldBroadCast(false);
     }
 
-    return $object->setModernRevisionStatus($status)->save();
+    return $object
+      ->setModernRevisionStatus($status)
+      ->save();
   }
 
 
