@@ -55,6 +55,7 @@ final class DifferentialMakeDraftHeraldAction
     $object
       ->setModernRevisionStatus(DifferentialRevisionStatus::DRAFT)
       ->setShouldBroadcast(false)
+      ->setHoldAsDraft(true)
       ->save();
   }
 
