@@ -47,8 +47,11 @@ final class DifferentialMakeDraftHeraldAction
   }
 
   public function applyEffect($object, HeraldEffect $effect) {
-    if ($object->isDraft() || !$object->isNeedsReview() || !$this->isValidEffect($object)) {
-        // silently ignore the object if not in needs-review state
+    if (
+      $object->isDraft() || 
+      !($object->isNeedsReview() || $object->isChangePlanned()) || 
+      !$this->isValidEffect($object)
+    ) {
         return;
     }
 
