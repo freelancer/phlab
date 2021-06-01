@@ -70,7 +70,7 @@ final class DifferentialMakeDraftHeraldAction
 
     if (count($xactions) > 1) {
       // if it entered this block, it means that there are more than one transaction
-      // done to the object with one click
+      // done to the object with one click/command
       // i.e.
       // comment + request review
       // comment + request review + change reviewers
@@ -80,6 +80,15 @@ final class DifferentialMakeDraftHeraldAction
 
       if ($request_actions) {
           return false;
+      }
+
+      // or maybe we're updating a diff which is update + comment
+      $update_actions = array_filter($xactions, function ($xaction) {
+          return ($xaction->getTransactionType() == DifferentialRevisionUpdateTransaction::TRANSACTIONTYPE);
+      });
+
+      if ($update_actions) {
+        return true;
       }
     }
 
