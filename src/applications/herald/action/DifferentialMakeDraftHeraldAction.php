@@ -68,14 +68,27 @@ final class DifferentialMakeDraftHeraldAction
     $viewer = $adapter->getViewer();
     $xactions = $adapter->getAppliedTransactions();
 
-    if (count($xactions) <= 1) {
-        $xactions = id(new DifferentialTransactionQuery())
-            ->setViewer($viewer)
-            ->withObjectPHIDs(array($revision->getPHID()))
-            ->setOrder('newest')
-            ->setLimit(20)
-            ->execute();
+    if (count($xactions) > 1) {
+      // if it entered this block, it means that there are more than one transaction
+      // done to the object with one click
+      // i.e.
+      // comment + request review
+      // comment + request review + change reviewers
+      $request_actions = array_filter($xactions, function ($xaction) {
+          return ($xaction->getTransactionType() == DifferentialRevisionRequestReviewTransaction::TRANSACTIONTYPE);
+      });
+
+      if ($request_actions) {
+          return false;
+      }
     }
+
+    $xactions = id(new DifferentialTransactionQuery())
+        ->setViewer($viewer)
+        ->withObjectPHIDs(array($revision->getPHID()))
+        ->setOrder('newest')
+        ->setLimit(20)
+        ->execute();
 
     $request_actions = array_filter($xactions, function ($xaction) {
         return ($xaction->getTransactionType() == DifferentialRevisionRequestReviewTransaction::TRANSACTIONTYPE);
