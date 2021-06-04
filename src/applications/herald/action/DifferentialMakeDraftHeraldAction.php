@@ -99,26 +99,30 @@ final class DifferentialMakeDraftHeraldAction
         ->setLimit(20)
         ->execute();
 
-    $request_actions = array_filter($xactions, function ($xaction) {
-        return ($xaction->getTransactionType() == DifferentialRevisionRequestReviewTransaction::TRANSACTIONTYPE);
-    });
+    // the logic below is for new diffs and we should ignore it if
+    // the transaction query returned 20 transactions which is our set limit
+    if (count($xactions) < 20) {
+      $request_actions = array_filter($xactions, function ($xaction) {
+          return ($xaction->getTransactionType() == DifferentialRevisionRequestReviewTransaction::TRANSACTIONTYPE);
+      });
 
-    $draft_actions = array_filter($xactions, function ($xaction) {
-        return ($xaction->getTransactionType() == DifferentialRevisionHoldDraftTransaction::TRANSACTIONTYPE);
-    });
+      $draft_actions = array_filter($xactions, function ($xaction) {
+          return ($xaction->getTransactionType() == DifferentialRevisionHoldDraftTransaction::TRANSACTIONTYPE);
+      });
 
-    $review_request_transaction_count = count($request_actions);
-    $draft_transaction_count = count($draft_actions);
+      $review_request_transaction_count = count($request_actions);
+      $draft_transaction_count = count($draft_actions);
 
-    $request_review_from_draft_state = $draft_transaction_count === 1;
+      $request_review_from_draft_state = $draft_transaction_count === 1;
 
-    // revisions created from `--draft` flag have no review request transaction
-    // meanwhile, revisions created with `--only` have one review request transaction
-    // i.e.
-    // it's not valid if it's a draft that's being published
-    // it's valid if it's a revision being created for the first time
-    if ($review_request_transaction_count === 1) {
-        return !$request_review_from_draft_state;
+      // revisions created from `--draft` flag have no review request transaction
+      // meanwhile, revisions created with `--only` have one review request transaction
+      // i.e.
+      // it's not valid if it's a draft that's being published
+      // it's valid if it's a revision being created for the first time
+      if ($review_request_transaction_count === 1) {
+          return !$request_review_from_draft_state;
+      }
     }
 
     foreach ($xactions as $xaction) {
