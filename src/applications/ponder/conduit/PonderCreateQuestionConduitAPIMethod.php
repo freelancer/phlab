@@ -16,6 +16,7 @@ final class PonderCreateQuestionConduitAPIMethod extends PonderConduitAPIMethod 
   protected function defineCustomParamTypes(): array {
     return [
       'title'  => 'required string',
+      'user' => 'optional string',
       'content' => 'optional string',
       'subscribers' => 'optional list<string>',
     ];
@@ -34,14 +35,41 @@ final class PonderCreateQuestionConduitAPIMethod extends PonderConduitAPIMethod 
       'Create a question on ponder.');
   }
 
+  private function subscribeUser($user, $viewer, $question, $request) {
+    $xactions = array();
+    $xactions[] = id(new PonderQuestionTransaction())
+      ->setTransactionType(PhabricatorTransactions::TYPE_COMMENT)
+      ->attachComment(
+        id(new PonderQuestionTransactionComment())
+          ->setContent("Question created by @{$user}"));
+
+    $editor = id(new PonderQuestionEditor())
+      ->setActor($viewer)
+      ->setContinueOnNoEffect(true)
+      ->setContentSourceFromRequest(new AphrontRequest('example.com', '/'))
+      ->setIsPreview(false);
+
+    try {
+      $xactions = $editor->applyTransactions($question, $xactions);
+    } catch (PhabricatorApplicationTransactionNoEffectException $ex) {
+      return id(new PhabricatorApplicationTransactionNoEffectResponse())
+        ->setCancelURI($view_uri)
+        ->setException($ex);
+    }
+  }
   protected function execute(ConduitAPIRequest $request) {
-    $question = PonderQuestion::initializeNewQuestion($request->getUser());
+    $viewer = $request->getUser();
+    $question = PonderQuestion::initializeNewQuestion($viewer);
 
     $params = $this->arrayFlatten($request->getAllParameters());
     $question->setTitle($params['title']);
-    $question->setContent(idx($params, 'content', ''));
+    $question->setContent($params['content'] ?? '');
 
     $question = $question->save();
+
+    if ($params['user']) {
+      $this->subscribeUser($params['user'], $viewer, $question, $request);
+    }
 
     return [
       'id' => $question->getID(),
