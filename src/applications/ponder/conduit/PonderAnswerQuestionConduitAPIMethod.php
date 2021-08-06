@@ -55,7 +55,7 @@ final class PonderAnswerQuestionConduitAPIMethod extends PonderConduitAPIMethod 
     $answer->setContent($params['answer']);
 
     $answer = $answer->save();
-    throw new Exception(var_export($answer, true));
+
     return [
       'id' => $question->getID(),
       'title' => $question->getTitle(),
