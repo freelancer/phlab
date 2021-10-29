@@ -55,11 +55,11 @@ final class DifferentialMakeDraftHeraldAction
         return;
     }
 
-    // $object
-    //   ->setModernRevisionStatus(DifferentialRevisionStatus::DRAFT)
-    //   ->setShouldBroadcast(false)
-    //   ->setHoldAsDraft(true)
-    //   ->save();
+    $object
+      ->setModernRevisionStatus(DifferentialRevisionStatus::DRAFT)
+      ->setShouldBroadcast(false)
+      ->setHoldAsDraft(true)
+      ->save();
   }
 
 
@@ -96,7 +96,7 @@ final class DifferentialMakeDraftHeraldAction
       // it's not valid if it's a draft that's being published
       // it's valid if it's a revision being created for the first time
       if ($review_request_transaction_count === 1) {
-          return false;
+          return !$request_review_from_draft_state;
       }
     }
 
