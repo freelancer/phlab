@@ -71,12 +71,12 @@ final class DifferentialMakeDraftHeraldAction
         ->setViewer($viewer)
         ->withObjectPHIDs(array($revision->getPHID()))
         ->setOrder('newest')
-        ->setLimit(20)
+        ->setLimit(10)
         ->execute();
 
     // the logic below is for new diffs and we should ignore it if
     // the transaction query returned 20 transactions which is our set limit
-    if (count($xactions) < 20) {
+    if (count($xactions) < 10) {
       $request_actions = array_filter($xactions, function ($xaction) {
           return ($xaction->getTransactionType() == DifferentialRevisionRequestReviewTransaction::TRANSACTIONTYPE);
       });
