@@ -10,3 +10,16 @@ The best way to develop Phlab is to use [Docker Compose](https://docs.docker.com
 Phabricator requires that it is accessed with a `Host` header containing a period (see [T2433: Move the "no dots in domain" setup check to pre-install](https://secure.phabricator.com/T2433)) and so you will not be able to access Phabricator via http://localhost. Instead, you should add `127.0.0.1 phabricator.local` to `/etc/hosts` and access Phabricator via http://phabricator.local.
 
 Nginx has been configured to bind to port `80` by default. You can bind to an alternative port by setting the `HTTP_PORT` environment variable.
+
+== Unit tests ==
+Unit tests can only be ran inside the container that docker spins up.
+Because of this, you will need to run --nounit when `arc diff`'ing
+To run unit tests:
+```
+~/freelancer-dev/phlab > docker-compose up
+
+# in a separate shell
+~/freelancer-dev/phlab > docker exec -it phlab_worker_1 /bin/bash
+root@ff02e67a5471:/# cd /usr/local/src/phlab/
+root@ff02e67a5471:/usr/local/src/phlab# ../arcanist/bin/arc unit src/*
+```
