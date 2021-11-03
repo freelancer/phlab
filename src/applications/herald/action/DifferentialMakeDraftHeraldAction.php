@@ -54,7 +54,7 @@ final class DifferentialMakeDraftHeraldAction
     ) {
         return;
     }
-
+    phlog('test log');
     $object
       ->setModernRevisionStatus(DifferentialRevisionStatus::DRAFT)
       ->setShouldBroadcast(false)
