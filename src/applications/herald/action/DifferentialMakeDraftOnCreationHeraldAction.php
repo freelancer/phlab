@@ -1,18 +1,18 @@
 <?php
 
-final class DifferentialMakeDraftHeraldAction
+final class DifferentialMakeDraftOnCreationHeraldAction
   extends HeraldAction {
 
-  const ACTIONCONST = 'differential.revision.make-draft';
-  const DO_MAKE_DRAFT = 'revision.make-draft';
+  const ACTIONCONST = 'differential.revision.make-draft-on-creation';
+  const DO_MAKE_DRAFT = 'revision.make-draft-on-creation';
 
   public function getHeraldActionName() {
-    return pht('Make revision draft');
+    return pht('Make revision draft on creation');
   }
 
   public function renderActionDescription($value) {
     return pht(
-      'Put revision in draft state.');
+      'Put revision in draft state on creation.');
   }
 
   protected function getActionEffectMap() {
@@ -20,7 +20,7 @@ final class DifferentialMakeDraftHeraldAction
       self::DO_MAKE_DRAFT => array(
         'icon' => 'fa-headphones',
         'color' => 'red',
-        'name' => pht('Make draft'),
+        'name' => pht('Make draft on creation'),
       ),
     );
   }
@@ -29,7 +29,7 @@ final class DifferentialMakeDraftHeraldAction
     switch ($type) {
       case self::DO_MAKE_DRAFT:
         return pht(
-          'Put revision in draft state.');
+          'Put revision in draft state on creation.');
     }
   }
 
@@ -66,42 +66,17 @@ final class DifferentialMakeDraftHeraldAction
   public function isValidEffect($revision) {
     $adapter = $this->getAdapter();
     $viewer = $adapter->getViewer();
-    $xactions = $adapter->getAppliedTransactions();
-
-    if (count($xactions) > 1) {
-      // if it entered this block, it means that there are more than one transaction
-      // done to the object with one click/command
-      // i.e.
-      // comment + request review
-      // comment + request review + change reviewers
-      $request_actions = array_filter($xactions, function ($xaction) {
-          return ($xaction->getTransactionType() == DifferentialRevisionRequestReviewTransaction::TRANSACTIONTYPE);
-      });
-
-      if ($request_actions) {
-          return false;
-      }
-
-      // or maybe we're updating a diff which is update + comment
-      $update_actions = array_filter($xactions, function ($xaction) {
-          return ($xaction->getTransactionType() == DifferentialRevisionUpdateTransaction::TRANSACTIONTYPE);
-      });
-
-      if ($update_actions) {
-        return true;
-      }
-    }
 
     $xactions = id(new DifferentialTransactionQuery())
         ->setViewer($viewer)
         ->withObjectPHIDs(array($revision->getPHID()))
         ->setOrder('newest')
-        ->setLimit(20)
+        ->setLimit(10)
         ->execute();
 
     // the logic below is for new diffs and we should ignore it if
     // the transaction query returned 20 transactions which is our set limit
-    if (count($xactions) < 20) {
+    if (count($xactions) < 10) {
       $request_actions = array_filter($xactions, function ($xaction) {
           return ($xaction->getTransactionType() == DifferentialRevisionRequestReviewTransaction::TRANSACTIONTYPE);
       });
@@ -123,18 +98,6 @@ final class DifferentialMakeDraftHeraldAction
       if ($review_request_transaction_count === 1) {
           return !$request_review_from_draft_state;
       }
-    }
-
-    foreach ($xactions as $xaction) {
-        // we need to check if there's a transaction like `request-review`
-        // that caused the diff to be in `needs-review` status.
-        if ($xaction->getTransactionType() == DifferentialRevisionRequestReviewTransaction::TRANSACTIONTYPE) {
-            return false;
-        }
-        // however, if there's a more recent update, allow `draft` to take effect
-        if ($xaction->getTransactionType() == DifferentialRevisionUpdateTransaction::TRANSACTIONTYPE) {
-            return true;
-        }
     }
 
     return false;
