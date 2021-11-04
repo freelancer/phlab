@@ -1,6 +1,6 @@
 <?php
 
-final class DifferentialMakeDraftHeraldActionTestCase
+final class DifferentialMakeDraftOnCreationHeraldActionTestCase
   extends PhabricatorTestCase {
 
   protected function getPhabricatorTestCaseConfiguration(): array {
@@ -12,7 +12,7 @@ final class DifferentialMakeDraftHeraldActionTestCase
   public function testIsValidEffect(): void {
     $user = $this->generateNewTestUser();
     $revision = $this->generateNewTestRevision($user);
-    $herald_action = new DifferentialMakeDraftHeraldAction();
+    $herald_action = new DifferentialMakeDraftOnCreationHeraldAction();
     $herald_action->setAdapter(new HeraldDifferentialRevisionAdapter());
 
     // new revision is not a valid case

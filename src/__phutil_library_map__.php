@@ -10,8 +10,8 @@ phutil_register_library_map(array(
   '__library_version__' => 2,
   'class' => array(
     'AphrontFormDateRangeControl' => 'view/form/control/AphrontFormDateRangeControl.php',
-    'DifferentialMakeDraftHeraldActionTestCase' => 'applications/herald/action/__tests__/DifferentialMakeDraftOnCreationHeraldActionTestCase.php',
     'DifferentialMakeDraftOnCreationHeraldAction' => 'applications/herald/action/DifferentialMakeDraftOnCreationHeraldAction.php',
+    'DifferentialMakeDraftOnCreationHeraldActionTestCase' => 'applications/herald/action/__tests__/DifferentialMakeDraftOnCreationHeraldActionTestCase.php',
     'DiffusionChangesConduitAPIMethod' => 'applications/diffusion/conduit/DiffusionChangesConduitAPIMethod.php',
     'DiffusionChangesConduitAPIMethodTestCase' => 'applications/diffusion/conduit/__tests__/DiffusionChangesConduitAPIMethodTestCase.php',
     'DiffusionCommitHostedRepositoryHeraldField' => 'applications/diffusion/herald/DiffusionCommitHostedRepositoryHeraldField.php',
@@ -73,8 +73,8 @@ phutil_register_library_map(array(
   ),
   'xmap' => array(
     'AphrontFormDateRangeControl' => 'AphrontFormControl',
-    'DifferentialMakeDraftHeraldActionTestCase' => 'PhabricatorTestCase',
     'DifferentialMakeDraftOnCreationHeraldAction' => 'HeraldAction',
+    'DifferentialMakeDraftOnCreationHeraldActionTestCase' => 'PhabricatorTestCase',
     'DiffusionChangesConduitAPIMethod' => 'DiffusionQueryConduitAPIMethod',
     'DiffusionChangesConduitAPIMethodTestCase' => 'PhutilTestCase',
     'DiffusionCommitHostedRepositoryHeraldField' => 'DiffusionCommitHeraldField',
