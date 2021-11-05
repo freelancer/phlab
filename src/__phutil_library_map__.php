@@ -10,6 +10,7 @@ phutil_register_library_map(array(
   '__library_version__' => 2,
   'class' => array(
     'AphrontFormDateRangeControl' => 'view/form/control/AphrontFormDateRangeControl.php',
+    'DifferentialMakeDraftHeraldAction' => 'applications/herald/action/DifferentialMakeDraftHeraldAction.php',
     'DifferentialMakeDraftOnCreationHeraldAction' => 'applications/herald/action/DifferentialMakeDraftOnCreationHeraldAction.php',
     'DifferentialMakeDraftOnCreationHeraldActionTestCase' => 'applications/herald/action/__tests__/DifferentialMakeDraftOnCreationHeraldActionTestCase.php',
     'DiffusionChangesConduitAPIMethod' => 'applications/diffusion/conduit/DiffusionChangesConduitAPIMethod.php',
@@ -73,6 +74,7 @@ phutil_register_library_map(array(
   ),
   'xmap' => array(
     'AphrontFormDateRangeControl' => 'AphrontFormControl',
+    'DifferentialMakeDraftHeraldAction' => 'HeraldAction',
     'DifferentialMakeDraftOnCreationHeraldAction' => 'HeraldAction',
     'DifferentialMakeDraftOnCreationHeraldActionTestCase' => 'PhabricatorTestCase',
     'DiffusionChangesConduitAPIMethod' => 'DiffusionQueryConduitAPIMethod',
