@@ -11,6 +11,7 @@ phutil_register_library_map(array(
   'class' => array(
     'AphrontFormDateRangeControl' => 'view/form/control/AphrontFormDateRangeControl.php',
     'DifferentialMakeDraftHeraldAction' => 'applications/herald/action/DifferentialMakeDraftHeraldAction.php',
+    'DifferentialMakeDraftHeraldActionTestCase' => 'applications/herald/action/__tests__/DifferentialMakeDraftHeraldActionTestCase.php',
     'DifferentialMakeDraftOnCreationHeraldAction' => 'applications/herald/action/DifferentialMakeDraftOnCreationHeraldAction.php',
     'DifferentialMakeDraftOnCreationHeraldActionTestCase' => 'applications/herald/action/__tests__/DifferentialMakeDraftOnCreationHeraldActionTestCase.php',
     'DiffusionChangesConduitAPIMethod' => 'applications/diffusion/conduit/DiffusionChangesConduitAPIMethod.php',
@@ -75,6 +76,7 @@ phutil_register_library_map(array(
   'xmap' => array(
     'AphrontFormDateRangeControl' => 'AphrontFormControl',
     'DifferentialMakeDraftHeraldAction' => 'HeraldAction',
+    'DifferentialMakeDraftHeraldActionTestCase' => 'PhabricatorTestCase',
     'DifferentialMakeDraftOnCreationHeraldAction' => 'HeraldAction',
     'DifferentialMakeDraftOnCreationHeraldActionTestCase' => 'PhabricatorTestCase',
     'DiffusionChangesConduitAPIMethod' => 'DiffusionQueryConduitAPIMethod',
