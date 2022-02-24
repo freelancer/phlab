@@ -18,6 +18,9 @@ final class HeraldRocketChatNotificationAction extends HeraldAction {
     if (
       $object instanceof DifferentialRevision ||
       $object instanceof ManiphestTask ||
+      $object instanceof PhameBlog ||
+      $object instanceof PhamePost ||
+      $object instanceof PhrictionDocument ||
       $object instanceof PonderQuestion
     ) {
       return true;
