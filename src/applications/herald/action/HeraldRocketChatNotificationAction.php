@@ -15,9 +15,14 @@ final class HeraldRocketChatNotificationAction extends HeraldAction {
   }
 
   public function supportsObject($object) {
-    if ($object instanceof DifferentialRevision) {
-      return true;
-    } else if ($object instanceof ManiphestTask) {
+    if (
+      $object instanceof DifferentialRevision ||
+      $object instanceof ManiphestTask ||
+      $object instanceof PhameBlog ||
+      $object instanceof PhamePost ||
+      $object instanceof PhrictionDocument ||
+      $object instanceof PonderQuestion
+    ) {
       return true;
     } else {
       return false;
