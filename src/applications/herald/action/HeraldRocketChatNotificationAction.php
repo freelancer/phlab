@@ -44,10 +44,12 @@ final class HeraldRocketChatNotificationAction extends HeraldAction {
       : pht('Updated');
 
     try {
-      $text = sprintf('*%s*: <%s|%s>',
+      // Square brackets and backticks breaks the link formatting in Rocketchat
+      $escaped_title = preg_replace('/[[\]`]/g', '|', $object->getTitle());
+      $text = sprintf('*%s*: [%s](%s)',
         $action,
-        $this->getURI($handle),
-        $object->getMonogram().': '.$object->getTitle());
+        $object->getMonogram().': '.$escaped_title,
+        $this->getURI($handle));
 
       $this->getClient()->messageRoom(
         $effect->getTarget(),
