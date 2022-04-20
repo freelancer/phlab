@@ -45,7 +45,7 @@ final class HeraldRocketChatNotificationAction extends HeraldAction {
 
     try {
       // Square brackets and backticks breaks the link formatting in Rocketchat
-      $escaped_title = preg_replace('/[[\]`]/g', '|', $object->getTitle());
+      $escaped_title = preg_replace('/[[\]`]/', '|', $object->getTitle());
       $text = sprintf('*%s*: [%s](%s)',
         $action,
         $object->getMonogram().': '.$escaped_title,
