@@ -3,3 +3,7 @@
 
 # libphutil
 /src/.phutil_module_cache
+
+# Developer files
+.idea/
+.vscode/
