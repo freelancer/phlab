@@ -50,4 +50,11 @@ final class PhabricatorOwnedProjectsCustomField
     return true;
   }
 
+  public function shouldAppearInConduitDictionary(): bool {
+    return true;
+  }
+
+  public function getConduitDictionaryValue() {
+    return $this->getValue();
+  }
 }
