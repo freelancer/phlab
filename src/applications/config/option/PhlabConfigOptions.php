@@ -16,6 +16,7 @@ final class PhlabConfigOptions extends PhabricatorApplicationConfigOptions {
 
   public function getOptions(): array {
     $owned_projects_field = new PhabricatorOwnedProjectsCustomField();
+    $component_projects_field = new ManiphestComponentProjectsCustomField();
 
     return [
       $this->newOption('phlab.projects.ownable-subtypes', 'list<string>', [])
@@ -24,6 +25,12 @@ final class PhlabConfigOptions extends PhabricatorApplicationConfigOptions {
           pht(
             'Project subtypes that can be "owned" using the `%s` field.',
             $owned_projects_field->getFieldKey())),
+      $this->newOption('phlab.projects.component-subtypes', 'list<string>', ['component'])
+        ->setSummary(pht('Component project subtypes.'))
+        ->setDescription(
+          pht(
+            'Project subtypes that can be selected as components using the `%s` field.',
+            $component_projects_field->getFieldKey())),
     ];
   }
 
@@ -38,6 +45,19 @@ final class PhlabConfigOptions extends PhabricatorApplicationConfigOptions {
   protected function didValidateOption(PhabricatorConfigOption $option, $value): void {
     switch ($option->getKey()) {
       case 'phlab.projects.ownable-subtypes':
+        $subtype_map = (new PhabricatorProject())->newEditEngineSubtypeMap();
+
+        $config_option = (new PhabricatorConfigOption())
+          ->setKey($option->getKey())
+          ->setEnumOptions($subtype_map->getSubtypes());
+        $config_type = new PhabricatorEnumConfigType();
+
+        foreach ($value as $subtype) {
+          $config_type->validateStoredValue($config_option, $subtype);
+        }
+
+        break;
+      case 'phlab.projects.component-subtypes':
         $subtype_map = (new PhabricatorProject())->newEditEngineSubtypeMap();
 
         $config_option = (new PhabricatorConfigOption())

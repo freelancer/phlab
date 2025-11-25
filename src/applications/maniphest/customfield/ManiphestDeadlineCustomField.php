@@ -350,4 +350,27 @@ final class ManiphestDeadlineCustomField extends ManiphestCustomField {
       ->setIsTimeDisabled(true);
   }
 
+  public function getValue(): array {
+    return [
+      'epoch' => $this->epoch,
+      'triggerPHID' => $this->triggerPHID,
+    ];
+  }
+
+  public function shouldAppearInConduit(): bool {
+    return true;
+  }
+
+  public function shouldAppearInConduitDictionary(): bool {
+    return true;
+  }
+
+  public function getConduitDictionaryValue(): array {
+    return $this->getValue();
+  }
+
+  public function getConduitKey(): string {
+    return 'components';
+  }
+
 }

@@ -1,20 +1,24 @@
-FROM php:7-fpm-stretch
+FROM php:7.4-fpm-bullseye
 
-RUN \
-  pecl channel-update pecl.php.net && \
-  pecl install apcu && \
-  docker-php-ext-enable apcu && \
+# APCu compatible with 7.4
+RUN set -eux; \
+  pecl channel-update pecl.php.net; \
+  pecl install apcu; \
+  docker-php-ext-enable apcu; \
   pecl clear-cache
-RUN \
-  apt-get update && \
-  apt-get install --no-install-recommends --yes libfreetype6-dev libjpeg62-turbo-dev libpng-dev && \
-  docker-php-ext-configure gd --with-freetype-dir=/usr/include --with-jpeg-dir=/usr/include && \
-  docker-php-ext-install -j$(nproc) gd && \
-  rm --force --recursive /var/lib/apt/lists/*
-RUN docker-php-ext-install -j$(nproc) mysqli
-RUN docker-php-ext-install -j$(nproc) opcache
 
-RUN \
-  apt-get update && \
-  apt-get install --no-install-recommends --yes git imagemagick python-pygments && \
-  rm --force --recursive /var/lib/apt/lists/*
+# build deps for gd
+RUN set -eux; \
+  apt-get update; \
+  apt-get install --no-install-recommends -y \
+    libfreetype6-dev libjpeg62-turbo-dev libpng-dev; \
+  # Note: flags changed in newer PHP: no "-dir" suffixes
+  docker-php-ext-configure gd --with-freetype --with-jpeg; \
+  docker-php-ext-install -j"$(nproc)" gd mysqli opcache; \
+  rm -rf /var/lib/apt/lists/*
+
+# tools (name change: python3-pygments)
+RUN set -eux; \
+  apt-get update; \
+  apt-get install --no-install-recommends -y git imagemagick python3-pygments; \
+  rm -rf /var/lib/apt/lists/*
