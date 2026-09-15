@@ -5,8 +5,8 @@ final class PhlabProjectTriggerManiphestSubstatusRule
 
   const TRIGGERTYPE = 'task.substatus';
 
-  const FIELD_KEY = 'std:maniphest:general.sub-status.type';
-  const RAW_FIELD_KEY = 'general.sub-status.type';
+  const FIELD_KEY = PhlabManiphestSubstatusCustomField::FIELD_KEY;
+  const RAW_FIELD_KEY = PhlabManiphestSubstatusCustomField::RAW_FIELD_KEY;
 
   public function getSelectControlName() {
     return pht('Change Substatus to');
@@ -113,11 +113,7 @@ final class PhlabProjectTriggerManiphestSubstatusRule
   }
 
   private function getOptions() {
-    $definitions = PhabricatorEnv::getEnvConfig(
-      'maniphest.custom-field-definitions');
-    $definition = idx($definitions, self::RAW_FIELD_KEY, array());
-
-    return idx($definition, 'options', array());
+    return PhlabManiphestSubstatusCustomField::getOptions();
   }
 
 }

@@ -31,6 +31,12 @@ final class PhlabConfigOptions extends PhabricatorApplicationConfigOptions {
           pht(
             'Project subtypes that can be selected as components using the `%s` field.',
             $component_projects_field->getFieldKey())),
+      $this->newOption('phlab.maniphest.substatus', 'wild', [])
+        ->setSummary(pht('Maniphest Substatus field definition.'))
+        ->setDescription(
+          pht(
+            'Definition for the Maniphest Substatus field: a `name` and a '.
+            'map of `options`.')),
     ];
   }
 
@@ -68,6 +74,19 @@ final class PhlabConfigOptions extends PhabricatorApplicationConfigOptions {
         foreach ($value as $subtype) {
           $config_type->validateStoredValue($config_option, $subtype);
         }
+
+        break;
+      case 'phlab.maniphest.substatus':
+        if (!$value) {
+          break;
+        }
+
+        PhutilTypeSpec::checkMap(
+          $value,
+          [
+            'name' => 'optional string',
+            'options' => 'map<string, wild>',
+          ]);
 
         break;
     }
