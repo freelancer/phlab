@@ -16,6 +16,10 @@ return [
   'phabricator.show-prototypes'   => true,
   'phabricator.timezone'          => 'Etc/UTC',
   'phd.log-directory'             => '/var/log',
+  'phlab.maniphest.status-notes'  => [
+    'name' => 'Status Notes',
+    'placeholder' => 'Add more context on the status of the ticket',
+  ],
   'phlab.maniphest.substatus'     => [
     'name' => 'Substatus',
     'options' => [

@@ -37,6 +37,12 @@ final class PhlabConfigOptions extends PhabricatorApplicationConfigOptions {
           pht(
             'Definition for the Maniphest Substatus field: a `name` and a '.
             'map of `options`.')),
+      $this->newOption('phlab.maniphest.status-notes', 'wild', [])
+        ->setSummary(pht('Maniphest Status Notes field definition.'))
+        ->setDescription(
+          pht(
+            'Definition for the Maniphest Status Notes field: a `name` and '.
+            'an optional `placeholder`.')),
     ];
   }
 
@@ -86,6 +92,19 @@ final class PhlabConfigOptions extends PhabricatorApplicationConfigOptions {
           [
             'name' => 'optional string',
             'options' => 'map<string, wild>',
+          ]);
+
+        break;
+      case 'phlab.maniphest.status-notes':
+        if (!$value) {
+          break;
+        }
+
+        PhutilTypeSpec::checkMap(
+          $value,
+          [
+            'name' => 'optional string',
+            'placeholder' => 'optional string',
           ]);
 
         break;
