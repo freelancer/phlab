@@ -12,16 +12,18 @@ Phabricator requires that it is accessed with a `Host` header containing a perio
 Nginx has been configured to bind to port `80` by default. You can bind to an alternative port by setting the `HTTP_PORT` environment variable.
 
 == Unit tests ==
-`arc unit`, and so `arc diff`, runs the unit tests through `bin/unit`, which runs them in Docker with PHP 7.2, MySQL 5.7 and the Arcanist and Phabricator versions that production runs. It needs Docker with Compose v2. The first run fetches those versions into `~/.cache/phlab` (or `$XDG_CACHE_HOME/phlab`) and builds an image, which takes a couple of minutes.
+`arc unit`, and so `arc diff`, runs the unit tests through `bin/unit`, which runs them in Docker with PHP 7.2, MySQL 5.7 and the Arcanist and Phabricator commits that `bin/production-versions` prints, and shows those commits before the results. It needs Docker with Compose v2. The first run of each version fetches it into `~/.cache/phlab` (or `$XDG_CACHE_HOME/phlab`), and the first run overall builds an image, which takes a couple of minutes.
+
+`PHLAB_ARCANIST_COMMIT` and `PHLAB_PHABRICATOR_COMMIT` set other commits.
 
 ```
 bin/unit                       # tests for files changed on this branch
 bin/unit --everything          # every test
 bin/unit src/infrastructure/__tests__/RocketChatClientTestCase.php
-bin/unit --down                # stop the test database
+bin/unit --down                # stop the test databases
 ```
 
-Every checkout shares one test database. It is held in memory and keeps running between runs, so that later runs are quicker.
+Every checkout shares one test database per Phabricator version, and `bin/unit --down` stops them all. It is held in memory and keeps running between runs, so that later runs are quicker.
 
   - In a new checkout, run `bin/unit` (or `composer install`) once before using `arc`, which loads Phlab and so needs its Composer dependencies.
   - Without Docker, `arc diff --nounit` skips the tests.
@@ -31,9 +33,4 @@ Every checkout shares one test database. It is held in memory and keeps running 
 During local development, the db can get corrupted. When this happens, you can run `docker-compose down --volumes` to stop and remove containers, networks and volumes created by `docker-compose up`.
 
 = Deployment =
-Production hosts pin Phlab to an explicit commit SHA via Consul KV, evaluated during Puppet runs. For full operational context and background, see the [Phlab wiki documentation](https://phabricator.tools.flnltd.com/w/team/developer-experience/developer-tooling/phlab/).
-
-To roll out changes after landing them on `master`:
-
-  1. Update the `phabricator` / `phlab` commit SHA in [Consul KV](https://consul.phabricator.tools.flnltd.com/ui/us-west-2/) using the ACL token from Phabricator Keystore `K542`.
-  2. Deploy the changes to `phabricator_web` hosts by running `sudo muppet` on each host (requires the `phabricator_web` access tag) or by triggering an ASG instance refresh.
+See the [Phlab wiki page](https://phabricator.tools.flnltd.com/w/team/developer-experience/developer-tooling/phlab/).

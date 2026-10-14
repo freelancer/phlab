@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+#
+# Prints the Arcanist and Phabricator commits that production runs, one
+# "<repository> <commit>" line each:
+#
+#   arcanist <40-character commit hash>
+#   phabricator <40-character commit hash>
+#
+# Puppet installs the commits pinned in Consul KV (hiera/phabricator::*), not
+# the `stable` default in puppet's `phabricator` module, so they are read from
+# there, and `bin/unit` tests against them. When Consul cannot be reached, e.g.
+# off the VPN, the commits it gave last time are used, with a warning.
+#
+# PHLAB_ARCANIST_COMMIT and PHLAB_PHABRICATOR_COMMIT override either, e.g. to
+# test against another version on purpose.
+
+set -euo pipefail
+
+readonly CONSUL='https://consul.phabricator.tools.flnltd.com/v1/kv/hiera'
+readonly LAST_READ="${XDG_CACHE_HOME:-$HOME/.cache}/phlab/production"
+
+die() {
+  echo "bin/production-versions: $*" >&2
+  exit 1
+}
+
+# Why Consul could not be read, once it could not, so that the second read
+# does not wait for it as well.
+unreachable=''
+
+# Prints the override if there is one, else the pin from Consul, else the pin
+# Consul gave last time.
+commit() {
+  local repo="$1" variable="$2"
+  local value="${!variable:-}" from_consul=''
+
+  if [[ -z "$value" && -z "$unreachable" ]]; then
+    if value=$(curl --silent --show-error --fail --connect-timeout 2 \
+      --max-time 10 "$CONSUL/phabricator::${repo}_revision?raw" 2>&1); then
+      from_consul=1
+    else
+      unreachable="$value"
+      value=''
+    fi
+  fi
+
+  if [[ -z "$value" ]]; then
+    value=$(cat "$LAST_READ-$repo" 2>/dev/null) ||
+      die "Cannot read the production $repo commit from Consul KV" \
+        "($unreachable). Connect to the VPN, or set both" \
+        'PHLAB_ARCANIST_COMMIT and PHLAB_PHABRICATOR_COMMIT.'
+    echo "bin/production-versions: Cannot read Consul KV ($unreachable), so" \
+      "using the $repo commit it gave last time." >&2
+  fi
+
+  [[ "$value" =~ ^[0-9a-f]{40}$ ]] ||
+    die "Expected a full commit hash for $repo, got \"$value\"."
+
+  if [[ -n "$from_consul" ]]; then
+    mkdir -p "$(dirname "$LAST_READ")"
+    echo "$value" > "$LAST_READ-$repo"
+  fi
+
+  echo "$repo $value"
+}
+
+commit arcanist PHLAB_ARCANIST_COMMIT
+commit phabricator PHLAB_PHABRICATOR_COMMIT

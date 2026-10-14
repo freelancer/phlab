@@ -1,27 +1,23 @@
 #!/usr/bin/env bash
 #
 # Runs the unit tests in Docker, with the Arcanist and Phabricator versions that
-# production runs. `arc unit` and `arc diff` run this too (see
-# `PhlabDockerUnitTestEngine`). Arguments are passed through to `arc unit`:
+# production runs (see `bin/production-versions`). `arc unit` and `arc diff` run
+# this too (see `PhlabDockerUnitTestEngine`). Arguments are passed through to
+# `arc unit`:
 #
 #   bin/unit                    # tests for files changed on this branch
 #   bin/unit --everything       # every test
 #   bin/unit src/infrastructure/__tests__/RocketChatClientTestCase.php
 #
-# `bin/unit --down` stops the test database.
+# `bin/unit --down` stops the test databases.
 #
 # Messages go to stderr, and `arc unit`'s output to stdout.
 
 set -euo pipefail
 
-# Production installs upstream `stable` from Phacility, which has since archived
-# both repositories (see `ext_modules/phabricator/manifests/install.pp` in
-# puppet).
-readonly ARCANIST_COMMIT='60446ec65cfa5bbd528f9296c5a2ba5d048955e3'
-readonly PHABRICATOR_COMMIT='f2a7db1b1a1c3867f4a7b780a830608565caf3a2'
-
-# One database for every checkout: each test run creates its own fixtures in it.
-readonly PROJECT='phlab-unit'
+# Each Phabricator version gets its own test database, shared by every checkout:
+# each test run creates its own fixtures in it.
+readonly PROJECT_PREFIX='phlab-unit'
 
 die() {
   echo "bin/unit: $*" >&2
@@ -36,10 +32,8 @@ docker compose version >/dev/null 2>&1 ||
 security=$(docker info --format '{{.SecurityOptions}}' 2>/dev/null) ||
   die 'Cannot connect to Docker. Is it running, and can you use it?'
 
-compose_args=(
-  --file "$root/support/docker/unit/docker-compose.yaml"
-  --project-name "$PROJECT"
-)
+compose_file="$root/support/docker/unit/docker-compose.yaml"
+compose_args=(--file "$compose_file")
 
 # Hide Compose's own progress ("Container ... Created") where it can.
 if docker compose --progress quiet version >/dev/null 2>&1; then
@@ -59,11 +53,26 @@ compose_quietly() {
   }
 }
 
+# Stops the test database of every Phabricator version, and the one from before
+# there was one per version.
 if [[ "${1:-}" == '--down' ]]; then
-  compose_quietly down --volumes --remove-orphans
-  echo 'Stopped the test database.' >&2
+  pattern="^$PROJECT_PREFIX(-[0-9a-f]{12})?\$"
+  for project in $(docker compose ls --all --quiet); do
+    if [[ "$project" =~ $pattern ]]; then
+      output=$(docker compose --file "$compose_file" --project-name "$project" \
+        down --volumes --remove-orphans 2>&1) ||
+        die "Stopping the test database $project failed: $output"
+    fi
+  done
+  echo 'Stopped the test databases.' >&2
   exit
 fi
+
+versions=$("$root/bin/production-versions")
+{ read -r _ arcanist_commit; read -r _ phabricator_commit; } <<< "$versions"
+echo "Testing with Arcanist ${arcanist_commit:0:12} and Phabricator" \
+  "${phabricator_commit:0:12}." >&2
+compose_args+=(--project-name "$PROJECT_PREFIX-${phabricator_commit:0:12}")
 
 # Prints the path of a Phacility repository at a commit, fetching it into a
 # cache that every checkout shares. Each commit gets its own directory, which a
@@ -91,8 +100,8 @@ fetch() {
   echo "$dir"
 }
 
-arcanist=$(fetch arcanist "$ARCANIST_COMMIT")
-phabricator=$(fetch phabricator "$PHABRICATOR_COMMIT")
+arcanist=$(fetch arcanist "$arcanist_commit")
+phabricator=$(fetch phabricator "$phabricator_commit")
 
 if ! docker image inspect phlab-unit >/dev/null 2>&1; then
   echo 'Building the test image (first run only)...' >&2
