@@ -10,6 +10,8 @@ phutil_register_library_map(array(
   '__library_version__' => 2,
   'class' => array(
     'AphrontFormDateRangeControl' => 'view/form/control/AphrontFormDateRangeControl.php',
+    'DifferentialHideLintInlinesUIEventListener' => 'infrastructure/events/DifferentialHideLintInlinesUIEventListener.php',
+    'DifferentialHideLintInlinesUIEventListenerTestCase' => 'infrastructure/events/__tests__/DifferentialHideLintInlinesUIEventListenerTestCase.php',
     'DifferentialInlineCommentRules' => 'applications/differential/conduit/DifferentialInlineCommentRules.php',
     'DifferentialInlineCommentRulesTestCase' => 'applications/differential/conduit/__tests__/DifferentialInlineCommentRulesTestCase.php',
     'DifferentialInlineConduitAPIMethod' => 'applications/differential/conduit/DifferentialInlineConduitAPIMethod.php',
@@ -96,6 +98,8 @@ phutil_register_library_map(array(
   ),
   'xmap' => array(
     'AphrontFormDateRangeControl' => 'AphrontFormControl',
+    'DifferentialHideLintInlinesUIEventListener' => 'PhabricatorAutoEventListener',
+    'DifferentialHideLintInlinesUIEventListenerTestCase' => 'PhabricatorTestCase',
     'DifferentialInlineCommentRules' => 'Phobject',
     'DifferentialInlineCommentRulesTestCase' => 'PhutilTestCase',
     'DifferentialInlineConduitAPIMethod' => 'DifferentialConduitAPIMethod',

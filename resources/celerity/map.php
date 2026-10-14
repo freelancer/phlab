@@ -8,8 +8,10 @@
 return array(
   'names' => array(
     'css/phui/phui-form.css' => 'daa52323',
+    'js/differential-hide-lint-inlines.js' => 'f34629ec',
   ),
   'symbols' => array(
+    'javelin-behavior-differential-hide-lint-inlines' => 'f34629ec',
     'phui-form-css' => 'daa52323',
   ),
   'requires' => array(),
