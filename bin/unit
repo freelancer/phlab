@@ -1,0 +1,194 @@
+#!/usr/bin/env bash
+#
+# Runs the unit tests in Docker, with the Arcanist and Phabricator versions that
+# production runs. `arc unit` and `arc diff` run this too (see
+# `PhlabDockerUnitTestEngine`). Arguments are passed through to `arc unit`:
+#
+#   bin/unit                    # tests for files changed on this branch
+#   bin/unit --everything       # every test
+#   bin/unit src/infrastructure/__tests__/RocketChatClientTestCase.php
+#
+# `bin/unit --down` stops the test database.
+#
+# Messages go to stderr, and `arc unit`'s output to stdout.
+
+set -euo pipefail
+
+# Production installs upstream `stable` from Phacility, which has since archived
+# both repositories (see `ext_modules/phabricator/manifests/install.pp` in
+# puppet).
+readonly ARCANIST_COMMIT='60446ec65cfa5bbd528f9296c5a2ba5d048955e3'
+readonly PHABRICATOR_COMMIT='f2a7db1b1a1c3867f4a7b780a830608565caf3a2'
+
+# One database for every checkout: each test run creates its own fixtures in it.
+readonly PROJECT='phlab-unit'
+
+die() {
+  echo "bin/unit: $*" >&2
+  exit 1
+}
+
+root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)
+
+command -v docker >/dev/null || die 'Docker is not installed.'
+docker compose version >/dev/null 2>&1 ||
+  die 'Docker Compose v2 (the "docker compose" plugin) is required.'
+security=$(docker info --format '{{.SecurityOptions}}' 2>/dev/null) ||
+  die 'Cannot connect to Docker. Is it running, and can you use it?'
+
+compose_args=(
+  --file "$root/support/docker/unit/docker-compose.yaml"
+  --project-name "$PROJECT"
+)
+
+# Hide Compose's own progress ("Container ... Created") where it can.
+if docker compose --progress quiet version >/dev/null 2>&1; then
+  compose_args+=(--progress quiet)
+fi
+
+compose() {
+  docker compose "${compose_args[@]}" "$@"
+}
+
+# Runs Compose, showing its output only if it fails.
+compose_quietly() {
+  local output
+  output=$(compose "$@" 2>&1) || {
+    printf '%s\n' "$output" >&2
+    die "\`docker compose $1\` failed."
+  }
+}
+
+if [[ "${1:-}" == '--down' ]]; then
+  compose_quietly down --volumes --remove-orphans
+  echo 'Stopped the test database.' >&2
+  exit
+fi
+
+# Prints the path of a Phacility repository at a commit, fetching it into a
+# cache that every checkout shares. Each commit gets its own directory, which a
+# fetch only moves into place once complete. Always run in a subshell, for the
+# trap.
+fetch() {
+  local repo="$1" commit="$2"
+  local cache="${XDG_CACHE_HOME:-$HOME/.cache}/phlab"
+  local dir="$cache/$repo-$commit"
+
+  if [[ ! -d "$dir" ]]; then
+    echo "Fetching $repo ${commit:0:12} (first run only)..." >&2
+    mkdir -p "$cache"
+    partial=$(mktemp -d "$cache/.$repo-XXXXXX")
+    trap 'rm -rf "$partial"' EXIT
+    git init --quiet "$partial"
+    git -C "$partial" fetch --quiet --depth 1 \
+      "https://github.com/phacility/$repo.git" "$commit"
+    git -C "$partial" -c advice.detachedHead=false \
+      checkout --quiet FETCH_HEAD
+    # If another run moved its fetch into place first, the trap removes this.
+    [[ -e "$dir" ]] || mv "$partial" "$dir"
+  fi
+
+  echo "$dir"
+}
+
+arcanist=$(fetch arcanist "$ARCANIST_COMMIT")
+phabricator=$(fetch phabricator "$PHABRICATOR_COMMIT")
+
+if ! docker image inspect phlab-unit >/dev/null 2>&1; then
+  echo 'Building the test image (first run only)...' >&2
+fi
+# Once built, cached layers make this quick, and it picks up changes to the
+# Dockerfile.
+compose_quietly build unit
+
+run_args=(
+  --rm
+  --no-deps
+  --volume "$root:/usr/local/src/phlab"
+  --volume "$arcanist:/usr/local/src/arcanist"
+  --volume "$phabricator:/usr/local/src/phabricator"
+)
+
+database=$(compose ps --quiet --status running unit-database)
+# Other runs, from any checkout, that are using the database.
+busy=$(compose ps --quiet --status running unit)
+
+# MySQL keeps 10-20MB more memory after every full run, as Phabricator
+# creates and drops dozens of databases each time, so start afresh past 1GB.
+if [[ -n "$database" && -z "$busy" ]]; then
+  rss=$(docker exec "$database" \
+    awk '/^VmRSS/ { print int($2 / 1024) }' /proc/1/status 2>/dev/null ||
+    echo 0)
+  if (( rss > 1024 )); then
+    echo 'Restarting the test database to free memory...' >&2
+    compose_quietly rm --stop --force unit-database
+    database=''
+  fi
+fi
+
+if [[ -z "$database" ]]; then
+  echo 'Starting the test database...' >&2
+fi
+# This also recreates the database if its configuration has changed. Runs that
+# start it at once race to create it, and the losers fail; once the winner's
+# container exists, a retry waits for it instead.
+compose up --detach --wait unit-database >/dev/null 2>&1 || {
+  sleep 2
+  compose_quietly up --detach --wait unit-database
+}
+if [[ "$(compose ps --quiet unit-database)" != "$database" ]]; then
+  run_args+=(--env PHLAB_UNIT_NEW_DATABASE=1)
+fi
+
+if [[ -n "${PHLAB_UNIT_REPORT:-}" ]]; then
+  run_args+=(--env "PHLAB_UNIT_REPORT=$PHLAB_UNIT_REPORT")
+fi
+
+# Write files (e.g. `vendor/`) as the host user rather than as root, except
+# with rootless Docker, where root in the container is the host user.
+if [[ "$security" == *rootless* ]]; then
+  run_args+=(--user 0:0)
+else
+  run_args+=(--user "$(id -u):$(id -g)")
+fi
+
+# Run from the same directory inside the container, so that relative paths
+# work from anywhere in the checkout.
+here=$(pwd -P)
+case "$here/" in
+  "$root"/*) run_args+=(--workdir "/usr/local/src/phlab${here#"$root"}") ;;
+  *) run_args+=(--workdir /usr/local/src/phlab) ;;
+esac
+
+# In a git worktree, `.git` points at the main checkout's repository, which
+# `arc` reads to find what changed. Mount it at the same path.
+git_dir=$(git -C "$root" rev-parse --git-common-dir)
+if [[ "$git_dir" == /* && "$git_dir/" != "$root"/* ]]; then
+  run_args+=(--volume "$git_dir:$git_dir:ro")
+fi
+
+command=(/usr/local/src/phlab/support/docker/unit/run.sh "$@")
+
+# With a TTY, Ctrl-C reaches `arc` in the container.
+if [[ -t 0 && -t 1 ]]; then
+  compose run "${run_args[@]}" unit "${command[@]}"
+  exit
+fi
+
+# Without one, a signal stops Compose but not the container, which would run
+# the tests to the end, so stop that too. Compose runs in the background so that
+# `wait` returns as soon as a signal arrives.
+container="phlab-unit-run-$$"
+# shellcheck disable=SC2317 # Called from the traps below.
+stop() {
+  docker kill "$container" >/dev/null 2>&1
+  exit "$1"
+}
+trap 'stop 129' HUP
+trap 'stop 130' INT
+trap 'stop 143' TERM
+compose run "${run_args[@]}" --no-TTY --name "$container" unit \
+  "${command[@]}" < /dev/null &
+status=0
+wait $! || status=$?
+exit "$status"

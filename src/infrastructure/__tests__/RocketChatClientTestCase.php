@@ -32,6 +32,10 @@ final class RocketChatClientTestCase extends PhutilTestCase {
   }
 
   protected function willRunOneTest($name): void {
+    // The server keeps requests in files named after its PID, which repeat
+    // across containers, so a previous run's requests can still be there.
+    $this->server->clean();
+
     $this->mock = new MockBuilder(
       new MatcherFactory(),
       new ExtractorFactory());

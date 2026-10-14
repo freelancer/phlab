@@ -1,0 +1,64 @@
+---
+# The unit tests' containers, apart from the development stack in the root
+# `docker-compose.yaml`. Use `bin/unit`, which runs these as their own project.
+
+services:
+  # Runs the unit tests with the Arcanist and Phabricator versions that
+  # production runs. `bin/unit` mounts those versions and the checkout, and
+  # passes the settings that differ between runs.
+  unit:
+    build: '.'
+    # Shared by every checkout, rather than built once per checkout.
+    image: 'phlab-unit'
+    environment:
+      COMPOSER_HOME: '/tmp/composer'
+      HOME: '/tmp'
+      PHABRICATOR_DOMAIN: 'phabricator.local'
+      PHABRICATOR_ENV: 'custom/docker'
+      PHABRICATOR_HTTP_PORT: '80'
+      PHABRICATOR_MYSQL_HOST: 'unit-database'
+      PHABRICATOR_MYSQL_USER: 'root'
+      PHLAB_UNIT_IN_CONTAINER: '1'
+    # Without this, most connections to `unit-database` stalled for the
+    # resolver's 5 second timeout. glibc sends the A and AAAA lookups in
+    # parallel, a known cause of that on Docker networks; this sends them one
+    # at a time.
+    dns_opt:
+      - 'single-request'
+    volumes:
+      - '../config.php:/usr/local/src/phabricator/conf/custom/docker.conf.php'
+      - '/usr/local/src/phabricator/conf/custom'
+      - '/usr/local/src/phabricator/conf/local'
+
+  # The test database for `unit`, shared by every checkout. Phabricator creates
+  # and drops a fresh set of databases on every test run, which is quicker in
+  # memory and without durability. The performance schema and default buffer
+  # sizes would add about 300MB, and more malloc arenas would double how much
+  # memory each run leaves behind (see `bin/unit`).
+  unit-database:
+    image: 'mysql:5.7'
+    # There is no arm64 build of MySQL 5.7, so arm64 hosts emulate it.
+    platform: 'linux/amd64'
+    command:
+      - '--local_infile=0'
+      - '--log-error-verbosity=1'
+      - '--max-allowed-packet=32M'
+      - '--sql-mode=STRICT_ALL_TABLES'
+      - '--innodb-buffer-pool-size=32M'
+      - '--innodb-doublewrite=0'
+      - '--innodb-file-per-table=0'
+      - '--innodb-flush-log-at-trx-commit=0'
+      - '--innodb-log-file-size=8M'
+      - '--performance-schema=0'
+    environment:
+      MALLOC_ARENA_MAX: '1'
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+    # The entrypoint runs a socket-only server while it initialises, so this
+    # only passes once the real server accepts TCP connections.
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '--host=127.0.0.1', '--silent']
+      interval: '2s'
+      timeout: '5s'
+      retries: 60
+    tmpfs:
+      - '/var/lib/mysql'

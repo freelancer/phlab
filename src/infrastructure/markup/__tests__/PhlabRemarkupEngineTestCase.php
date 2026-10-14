@@ -47,65 +47,34 @@ final class PhlabRemarkupEngineTestCase extends PhutilTestCase {
   }
 
   /**
-   * Build a Remarkup engine.
+   * Build a Remarkup engine with the core rules and Phlab's own.
    */
   private function buildNewTestEngine(): PhutilRemarkupEngine {
     $engine = new PhutilRemarkupEngine();
     $engine->setConfig('preserve-linebreaks', true);
 
-    // NOTE: We have to use `PhutilSymbolLoader` instead of
-    // `PhutilClassMapQuery` because the latter doesn't have a
-    // `setLibrary` method.
-    $current_library = phutil_get_current_library_name();
+    $rules = array_merge(
+      $this->loadRules(
+        'phabricator',
+        'infrastructure/markup/markuprule/',
+        PhutilRemarkupRule::class),
+      $this->loadRules(
+        phutil_get_current_library_name(),
+        null,
+        PhutilRemarkupRule::class));
 
-    $phutil_rules = (new PhutilSymbolLoader())
-      ->setType('class')
-      ->setLibrary('phutil')
-      ->setAncestorClass(PhutilRemarkupRule::class)
-      ->setConcreteOnly(true)
-      ->loadObjects();
-    $phlab_rules = (new PhutilSymbolLoader())
-      ->setType('class')
-      ->setLibrary($current_library)
-      ->setAncestorClass(PhutilRemarkupRule::class)
-      ->setConcreteOnly(true)
-      ->loadObjects();
-
-    // Merge rules from `phutil` and `phlab`.
-    $rules = array_merge($phutil_rules, $phlab_rules);
-
-    // Order `$rules` by priority.
-    usort(
-      $rules,
-      function (PhutilRemarkupRule $a, PhutilRemarkupRule $b): bool {
-        return $a->getPriority() <=> $b->getPriority();
-      });
-
-    $phutil_blocks = (new PhutilSymbolLoader())
-      ->setType('class')
-      ->setLibrary('phutil')
-      ->setAncestorClass(PhutilRemarkupBlockRule::class)
-      ->setConcreteOnly(true)
-      ->loadObjects();
-    $phlab_blocks = (new PhutilSymbolLoader())
-      ->setType('class')
-      ->setLibrary($current_library)
-      ->setAncestorClass(PhutilRemarkupBlockRule::class)
-      ->setConcreteOnly(true)
-      ->loadObjects();
-
-    // Merge block rules from `phutil` and `phlab`.
-    $blocks = array_merge($phutil_blocks, $phlab_blocks);
-
-    // Order `$blocks` by priority.
-    usort(
-      $blocks,
-      function (PhutilRemarkupBlockRule $a, PhutilRemarkupBlockRule $b): bool {
-        return $a->getPriority() <=> $b->getPriority();
-      });
+    $blocks = array_merge(
+      $this->loadRules(
+        'phabricator',
+        'infrastructure/markup/blockrule/',
+        PhutilRemarkupBlockRule::class),
+      $this->loadRules(
+        phutil_get_current_library_name(),
+        null,
+        PhutilRemarkupBlockRule::class));
 
     foreach ($blocks as $block) {
-      // TODO: Why do we need this?
+      // Code blocks are rendered literally, with no markup rules.
       if (!$block instanceof PhutilRemarkupCodeBlockRule) {
         $block->setMarkupRules($rules);
       }
@@ -113,6 +82,29 @@ final class PhlabRemarkupEngineTestCase extends PhutilTestCase {
 
     $engine->setBlockRules($blocks);
     return $engine;
+  }
+
+  /**
+   * Load the concrete subclasses of `$ancestor` in `$library`.
+   *
+   * The core rules, once in libphutil, are now in Phabricator under
+   * `infrastructure/markup/`, beside Phabricator's own rules, which this test
+   * leaves out. We have to use `PhutilSymbolLoader` instead of
+   * `PhutilClassMapQuery` because the latter can't filter by library or path.
+   * The engine sorts the rules by priority.
+   */
+  private function loadRules(
+    string $library,
+    ?string $path_prefix,
+    string $ancestor): array {
+
+    return (new PhutilSymbolLoader())
+      ->setType('class')
+      ->setLibrary($library)
+      ->setPathPrefix($path_prefix)
+      ->setAncestorClass($ancestor)
+      ->setConcreteOnly(true)
+      ->loadObjects();
   }
 
 }

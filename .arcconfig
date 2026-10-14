@@ -1,7 +1,10 @@
 {
   "phabricator.uri": "https://phabricator.tools.flnltd.com",
+  "base": "git:merge-base(origin/master), arc:upstream, arc:prompt",
   "load": [
     "src/",
-    "phabricator/src/"
-  ]
+    "phabricator/src/",
+    "support/arc/src/"
+  ],
+  "unit.engine": "PhlabDockerUnitTestEngine"
 }

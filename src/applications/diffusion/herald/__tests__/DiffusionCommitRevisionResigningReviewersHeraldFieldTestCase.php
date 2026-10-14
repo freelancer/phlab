@@ -44,7 +44,10 @@ final class DiffusionCommitRevisionResigningReviewersHeraldFieldTestCase
     ]);
 
     $commit = $this->generateNewTestCommit($author);
-    $commit->getCommitData()->setCommitDetail('differential.revisionID', $revision->getID());
+    // Saved, because `HeraldCommitAdapter::setObject()` reloads the commit.
+    $commit->getCommitData()
+      ->setCommitDetail('differential.revisionID', $revision->getID())
+      ->save();
 
     $adapter = (new HeraldCommitAdapter())
       ->setObject($commit);

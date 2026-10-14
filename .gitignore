@@ -2,7 +2,10 @@
 /vendor/
 
 # libphutil
-/src/.phutil_module_cache
+.phutil_module_cache
+
+# Arcanist (see `PhlabDockerUnitTestEngine`)
+/.arcunit-*.json
 
 # Developer files
 .idea/
