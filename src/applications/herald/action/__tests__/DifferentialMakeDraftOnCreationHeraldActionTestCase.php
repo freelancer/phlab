@@ -18,30 +18,32 @@ final class DifferentialMakeDraftOnCreationHeraldActionTestCase
     // new revision is not a valid case
     $this->assertFalse($herald_action->isValidEffect($revision));
 
-    $params = array();
-    $params['transactions'] = [
-      ['type' => 'request-review', 'value' => true],
-    ];
-    $params['objectIdentifier'] = $revision->getPHID();
-
-    $call = new ConduitCall('differential.revision.edit', $params, true);
-    try {
-      $call
-        ->setUser($user)
-        ->execute();
-    } catch (Error $e) {
-      // for some reason, the revision isn't attached to a diff which leads to an error
-      // `(Error) Call to a member function getPHID() on null`
-      // however, we don't care about that since the `differential.revision.request`
-      // transaction is written at that point so we just proceed
-    }
-
     // request review should make it valid
+    $this->saveRequestReviewTransaction($user, $revision);
     $this->assertTrue($herald_action->isValidEffect($revision));
+  }
 
-    // kill open transactions and locks
-    $revision->killTransaction();
-    $revision->endReadLocking();
+  /**
+   * Store the transaction that requesting review leaves on a revision, which
+   * is all `isValidEffect()` reads. Applying it through the editor needs a
+   * revision with a complete diff, and fails differently across Phabricator
+   * versions without one.
+   */
+  private function saveRequestReviewTransaction(
+    PhabricatorUser $actor,
+    DifferentialRevision $revision): void {
+
+    id(new DifferentialTransaction())
+      ->setObjectPHID($revision->getPHID())
+      ->setAuthorPHID($actor->getPHID())
+      ->setViewPolicy(PhabricatorPolicies::getMostOpenPolicy())
+      ->setEditPolicy($actor->getPHID())
+      ->setTransactionType(
+        DifferentialRevisionRequestReviewTransaction::TRANSACTIONTYPE)
+      ->setOldValue(false)
+      ->setNewValue(true)
+      ->setContentSource($this->newContentSource())
+      ->save();
   }
 
   private function generateNewTestRevision(PhabricatorUser $actor): DifferentialRevision {
