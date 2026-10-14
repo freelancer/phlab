@@ -29,3 +29,11 @@ Every checkout shares one test database. It is held in memory and keeps running 
 
 == Troubleshooting ==
 During local development, the db can get corrupted. When this happens, you can run `docker-compose down --volumes` to stop and remove containers, networks and volumes created by `docker-compose up`.
+
+= Deployment =
+Production hosts pin Phlab to an explicit commit SHA via Consul KV, evaluated during Puppet runs. For full operational context and background, see the [Phlab wiki documentation](https://phabricator.tools.flnltd.com/w/team/developer-experience/developer-tooling/phlab/).
+
+To roll out changes after landing them on `master`:
+
+  1. Update the `phabricator` / `phlab` commit SHA in [Consul KV](https://consul.phabricator.tools.flnltd.com/ui/us-west-2/) using the ACL token from Phabricator Keystore `K542`.
+  2. Deploy the changes to `phabricator_web` hosts by running `sudo muppet` on each host (requires the `phabricator_web` access tag) or by triggering an ASG instance refresh.
