@@ -645,6 +645,44 @@ EODIFF;
       $created['fields']['suggestionText']);
   }
 
+  public function testCreateStoresWhatTheWebUIStores(): void {
+    list($author, $bot) = $this->newUsers(2);
+    $revision = $this->newRevision($author, self::FULL_DIFF, [$bot]);
+
+    $created = $this->call($bot, 'differential.inline.create', [
+      'revisionID' => (int)$revision->getID(),
+      'filePath' => 'src/Example.php',
+      'isNewFile' => true,
+      'lineNumber' => 4,
+      'content' => 'Compare strictly.',
+      'suggestionText' => "    if (\$x === \$y) {\n",
+    ]);
+
+    $inline = id(new DifferentialTransactionComment())
+      ->load($created['id'])
+      ->newInlineCommentObject();
+
+    $state = $inline->getContentState();
+    $this->assertEqual('Compare strictly.', $state->getContentText());
+    $this->assertEqual(
+      "    if (\$x === \$y) {\n",
+      $state->getContentSuggestionText());
+
+    // Phabricator from upstream rP6fd55d692f on also keeps the state the web
+    // UI starts editing from, with the commented lines as the suggestion, and
+    // the last saved one. Older versions have neither.
+    if (!method_exists($inline, 'getInitialContentState')) {
+      return;
+    }
+
+    $this->assertEqual(
+      "    if (\$x == \$y) {\n",
+      $inline->getInitialContentState()->getContentSuggestionText());
+    $this->assertEqual(
+      'Compare strictly.',
+      $inline->getCommittedContentState()->getContentText());
+  }
+
   public function testSearchCursorMustBeVisible(): void {
     list($author, $bot, $other) = $this->newUsers(3);
     $revision = $this->newRevision($author, self::FULL_DIFF, [$bot, $other]);

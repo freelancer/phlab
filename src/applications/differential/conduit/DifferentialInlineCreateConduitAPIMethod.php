@@ -166,9 +166,16 @@ final class DifferentialInlineCreateConduitAPIMethod
       ->setLineLength($length)
       ->setStartOffset($start_offset)
       ->setEndOffset($end_offset)
-      ->setInitialContentState($initial_state)
-      ->setContentState($state)
-      ->setCommittedContentState($state);
+      ->setContentState($state);
+
+    // Phabricator before upstream rP6fd55d692f has no initial or committed
+    // state, and its web UI writes only the content state. Production may run
+    // such a version (see `bin/production-versions`), so check.
+    if (method_exists($inline, 'setInitialContentState')) {
+      $inline
+        ->setInitialContentState($initial_state)
+        ->setCommittedContentState($state);
+    }
 
     // As the web UI does for a new inline: the revision author's own
     // comments start out checked "Done", pending until they submit.
