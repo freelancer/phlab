@@ -45,7 +45,7 @@ final class PhlabS3FileStorageEngine extends PhabricatorFileStorageEngine {
       $this->getClient();
       $this->getBucketName();
       return true;
-    } catch (Exception $ex) {
+    } catch (Throwable $ex) {
       return false;
     }
   }

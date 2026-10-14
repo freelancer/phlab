@@ -48,7 +48,7 @@ final class PhabricatorPeopleCreateWorkflow
     if ($admin === null) {
       throw new PhutilArgumentUsageException(
         pht(
-          'Admin user must be the username of a valid Phabricator account, '.
+          'Admin user must be the username of a valid account, '.
           'used to send the new user a welcome email.'));
     }
 

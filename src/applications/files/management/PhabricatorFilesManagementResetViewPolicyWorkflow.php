@@ -82,7 +82,7 @@ final class PhabricatorFilesManagementResetViewPolicyWorkflow
         $this->logOkay(
           pht('MODIFIED'),
           pht('View policy for %s has been reset.', $file->getMonogram()));
-      } catch (Exception $ex) {
+      } catch (Throwable $ex) {
         $this->logWarn(
           pht('WARN'),
           pht(
