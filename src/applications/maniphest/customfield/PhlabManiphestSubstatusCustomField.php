@@ -66,6 +66,8 @@ final class PhlabManiphestSubstatusCustomField
     }
 
     $definition['type'] = 'select';
+    // Filterable in Maniphest search, saved queries and `maniphest.search`.
+    $definition['search'] = true;
 
     return $definition;
   }

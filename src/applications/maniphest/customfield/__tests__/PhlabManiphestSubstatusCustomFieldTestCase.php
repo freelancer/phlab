@@ -26,6 +26,18 @@ final class PhlabManiphestSubstatusCustomFieldTestCase
     unset($env);
   }
 
+  public function testFieldIsSearchable(): void {
+    $env = $this->newScopedEnv([], $this->newDefinition());
+
+    $field = head(
+      (new PhlabManiphestSubstatusCustomField())
+        ->createFields(new ManiphestTask()));
+
+    $this->assertTrue($field->shouldAppearInApplicationSearch());
+
+    unset($env);
+  }
+
   public function testFieldStandsDownWhileConfiguredInManiphest(): void {
     // Both sources defining the field would collide on the field key, so the
     // configured definition wins until it is removed.
