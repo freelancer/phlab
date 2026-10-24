@@ -50,33 +50,9 @@ final class DifferentialInlineSetDoneConduitAPIMethod
       $request,
       'isDone');
 
-    $bad_inline = id(new ConduitException('ERR-BAD-INLINE'))
-      ->setErrorDescription(
-        pht(
-          'Inline comment %d does not exist, or you cannot see it.',
-          $inline_id));
-
-    $comment = self::loadVisibleObject(
-      self::newVisibleInlineQuery($viewer)
-        ->withIDs(array($inline_id)));
-    if (!$comment) {
-      throw $bad_inline;
-    }
-
-    // Comment storage is world-readable, so the revision must be visible
-    // before anything about the comment is revealed. The changeset query
-    // loads its diff and revision as the viewer, and drops the changeset if
-    // the viewer cannot see them.
-    $changeset = self::loadVisibleObject(
-      id(new DifferentialChangesetQuery())
-        ->setViewer($viewer)
-        ->withIDs(array($comment->getChangesetID())));
-    $revision = $changeset ? $changeset->getDiff()->getRevision() : null;
-    if (!$revision || $revision->getPHID() !== $comment->getRevisionPHID()) {
-      throw $bad_inline;
-    }
-
-    $inline = $comment->newInlineCommentObject();
+    list($revision, $changeset, $inline) = self::loadVisibleInline(
+      $viewer,
+      $inline_id);
 
     $viewer_phid = $viewer->getPHID();
     $is_owner = ($viewer_phid === $revision->getAuthorPHID());

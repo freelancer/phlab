@@ -103,26 +103,7 @@ final class DifferentialInlineCreateConduitAPIMethod
       0);
     $start_offset = self::getTypedParameter($int_type, $request, 'startOffset');
     $end_offset = self::getTypedParameter($int_type, $request, 'endOffset');
-    $content = self::getRequiredTypedParameter(
-      $string_type,
-      $request,
-      'content');
-    $suggestion_text = self::getTypedParameter(
-      $string_type,
-      $request,
-      'suggestionText');
-
-    // Without text or replacement lines the inline is "void": upstream
-    // hides it everywhere and never publishes it.
-    if (!strlen(trim($content)) && !strlen($suggestion_text)) {
-      throw new ConduitException('ERR-EMPTY-COMMENT');
-    }
-
-    // A suggestion replaces whole lines. Without a final newline the web
-    // UI joins it to the line after the comment.
-    if (strlen($suggestion_text) && substr($suggestion_text, -1) !== "\n") {
-      $suggestion_text .= "\n";
-    }
+    list($content, $suggestion_text) = self::readCommentContent($request);
 
     list($revision, $diff) = $this->loadRevisionAndDiff($request);
     $changeset = $this->loadChangeset($viewer, $diff, $path, $is_new);

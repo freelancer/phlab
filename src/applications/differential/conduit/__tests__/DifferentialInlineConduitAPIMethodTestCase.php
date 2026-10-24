@@ -57,6 +57,8 @@ EODIFF;
 
     $names = [
       'differential.inline.create',
+      'differential.inline.delete',
+      'differential.inline.edit',
       'differential.inline.publish',
       'differential.inline.search',
       'differential.inline.setdone',
@@ -600,6 +602,21 @@ EODIFF;
         ['inlineID' => $inline['id']],
         'isDone',
       ],
+      'edit without content' => [
+        'differential.inline.edit',
+        ['inlineID' => $inline['id']],
+        'content',
+      ],
+      'edit without inlineID' => [
+        'differential.inline.edit',
+        ['content' => 'Changed.'],
+        'inlineID',
+      ],
+      'delete without inlineID' => [
+        'differential.inline.delete',
+        [],
+        'inlineID',
+      ],
       'publish with inlineIDs not a list' => [
         'differential.inline.publish',
         ['revisionID' => (int)$revision->getID(), 'inlineIDs' => 'abc'],
@@ -767,10 +784,381 @@ EODIFF;
       'differential.inline.setdone',
       ['inlineID' => $inline['id'], 'isDone' => true]);
     $this->assertConduitError(
+      'ERR-BAD-INLINE',
+      $bot,
+      'differential.inline.edit',
+      ['inlineID' => $inline['id'], 'content' => 'Should not land.']);
+    $this->assertConduitError(
+      'ERR-BAD-INLINE',
+      $bot,
+      'differential.inline.delete',
+      ['inlineID' => $inline['id']]);
+    $this->assertConduitError(
       'ERR-BAD-REVISION',
       $bot,
       'differential.inline.publish',
       ['revisionID' => (int)$revision->getID()]);
+  }
+
+  public function testEditReplacesTheDraft(): void {
+    list($author, $bot) = $this->newUsers(2);
+    $revision = $this->newRevision($author, self::FULL_DIFF, [$bot]);
+
+    $created = $this->call($bot, 'differential.inline.create', [
+      'revisionID' => (int)$revision->getID(),
+      'filePath' => 'src/Example.php',
+      'isNewFile' => true,
+      'lineNumber' => 4,
+      'startOffset' => 4,
+      'endOffset' => 19,
+      'content' => 'A long explanation of why this should be strict.',
+      'suggestionText' => "    if (\$x === \$y) {\n",
+    ]);
+    $id = $created['id'];
+
+    // A new suggestion with no text, and no final newline.
+    $edited = $this->call($bot, 'differential.inline.edit', [
+      'inlineID' => $id,
+      'content' => '',
+      'suggestionText' => '    if ($x === $y) { // strict',
+    ]);
+    $this->assertEqual($id, $edited['id']);
+    $this->assertEqual('', $edited['fields']['content']);
+    $this->assertEqual(
+      "    if (\$x === \$y) { // strict\n",
+      $edited['fields']['suggestionText']);
+    $this->assertEqual(true, $edited['fields']['isDraft']);
+
+    // Its place in the diff stays put.
+    foreach (['lineNumber', 'lineLength', 'startOffset', 'endOffset'] as $key) {
+      $this->assertEqual(
+        $created['fields'][$key],
+        $edited['fields'][$key],
+        $key);
+    }
+
+    // Leaving out "suggestionText" removes the suggested edit.
+    $plain = $this->call($bot, 'differential.inline.edit', [
+      'inlineID' => $id,
+      'content' => 'Compare strictly.',
+    ]);
+    $this->assertEqual('Compare strictly.', $plain['fields']['content']);
+    $this->assertEqual(null, $plain['fields']['suggestionText']);
+
+    // What search returns, and what publish sends, is the edited draft.
+    $this->assertEqual(
+      $plain['fields'],
+      idx(head($this->search($bot, $revision)), 'fields'));
+    $this->assertTrue($this->hasDraft($bot, $revision));
+
+    $this->call($bot, 'differential.inline.publish', [
+      'revisionID' => (int)$revision->getID(),
+    ]);
+    $seen = $this->search($author, $revision);
+    $this->assertEqual('Compare strictly.', $seen[0]['fields']['content']);
+  }
+
+  public function testEditRejectsWhatCreateRejects(): void {
+    list($author, $bot) = $this->newUsers(2);
+    $revision = $this->newRevision($author, self::FULL_DIFF, [$bot]);
+    $partial = $this->newRevision($author, self::PARTIAL_DIFF, [$bot]);
+
+    $id = idx($this->newInline($bot, $revision, 'Comment.'), 'id');
+    $old_side = $this->call($bot, 'differential.inline.create', [
+      'revisionID' => (int)$revision->getID(),
+      'filePath' => 'src/Example.php',
+      'isNewFile' => false,
+      'lineNumber' => 4,
+      'content' => 'Old side.',
+    ]);
+    $partial_inline = $this->call($bot, 'differential.inline.create', [
+      'revisionID' => (int)$partial->getID(),
+      'filePath' => 'src/Partial.php',
+      'isNewFile' => true,
+      'lineNumber' => 11,
+      'content' => 'Partial context.',
+    ]);
+
+    $cases = [
+      'empty comment' => [
+        'ERR-EMPTY-COMMENT',
+        ['inlineID' => $id, 'content' => ' '],
+      ],
+      'deletion suggestion with no content' => [
+        'ERR-EMPTY-COMMENT',
+        ['inlineID' => $id, 'content' => '', 'suggestionText' => ''],
+      ],
+      'suggestion on the old side' => [
+        'ERR-BAD-SUGGESTION',
+        [
+          'inlineID' => $old_side['id'],
+          'content' => 'x',
+          'suggestionText' => "x\n",
+        ],
+      ],
+      'suggestion on partial context' => [
+        'ERR-BAD-SUGGESTION',
+        [
+          'inlineID' => $partial_inline['id'],
+          'content' => 'x',
+          'suggestionText' => "E2\n",
+        ],
+      ],
+      'no such inline' => [
+        'ERR-BAD-INLINE',
+        ['inlineID' => 999999999, 'content' => 'x'],
+      ],
+    ];
+
+    foreach ($cases as $label => $case) {
+      list($code, $params) = $case;
+      $this->assertConduitError(
+        $code,
+        $bot,
+        'differential.inline.edit',
+        $params,
+        $label);
+    }
+
+    // The rejected calls changed nothing.
+    $this->assertEqual(
+      'Comment.',
+      idx(ipull($this->search($bot, $revision), 'fields', 'id'), $id)
+        ['content']);
+  }
+
+  public function testDeleteRemovesTheDraft(): void {
+    list($author, $bot) = $this->newUsers(2);
+    $revision = $this->newRevision($author, self::FULL_DIFF, [$bot]);
+
+    $keep = idx($this->newInline($bot, $revision, 'Keep.'), 'id');
+    $drop = idx($this->newInline($bot, $revision, 'Drop.'), 'id');
+
+    $deleted = $this->call($bot, 'differential.inline.delete', [
+      'inlineID' => $drop,
+    ]);
+    $this->assertEqual(
+      [
+        'id' => $drop,
+        'revisionID' => (int)$revision->getID(),
+        'isDeleted' => true,
+      ],
+      $deleted);
+    $this->assertEqual([$keep], $this->searchIDs($bot, $revision));
+
+    // A deleted draft is gone, so it cannot be deleted or edited again.
+    $this->assertConduitError(
+      'ERR-BAD-INLINE',
+      $bot,
+      'differential.inline.delete',
+      ['inlineID' => $drop]);
+    $this->assertConduitError(
+      'ERR-BAD-INLINE',
+      $bot,
+      'differential.inline.edit',
+      ['inlineID' => $drop, 'content' => 'Back?']);
+
+    // Publishing sends only what is left.
+    $published = $this->call($bot, 'differential.inline.publish', [
+      'revisionID' => (int)$revision->getID(),
+    ]);
+    $this->assertEqual([$keep], $published['inlineIDs']);
+    $this->assertEqual([$keep], $this->searchIDs($author, $revision));
+  }
+
+  public function testDeletingTheLastDraftClearsTheDraftMarker(): void {
+    list($author, $bot) = $this->newUsers(2);
+    $revision = $this->newRevision($author, self::FULL_DIFF, [$bot]);
+
+    $id = idx($this->newInline($bot, $revision, 'Only one.'), 'id');
+    $this->assertTrue($this->hasDraft($bot, $revision));
+
+    $this->call($bot, 'differential.inline.delete', ['inlineID' => $id]);
+    $this->assertFalse($this->hasDraft($bot, $revision));
+  }
+
+  public function testEditAndDeleteFollowTheWebRule(): void {
+    list($author, $bot, $other) = $this->newUsers(3);
+    $revision = $this->newRevision($author, self::FULL_DIFF, [$bot, $other]);
+
+    $id = idx($this->newInline($bot, $revision, 'Fix this.'), 'id');
+
+    // Nobody else can see the draft, so nobody else can change it.
+    foreach ([$author, $other] as $user) {
+      $this->assertConduitError(
+        'ERR-BAD-INLINE',
+        $user,
+        'differential.inline.edit',
+        ['inlineID' => $id, 'content' => 'Not mine.']);
+      $this->assertConduitError(
+        'ERR-BAD-INLINE',
+        $user,
+        'differential.inline.delete',
+        ['inlineID' => $id]);
+    }
+
+    $this->call($bot, 'differential.inline.publish', [
+      'revisionID' => (int)$revision->getID(),
+    ]);
+
+    // Once published, not even its author, nor the revision author, can.
+    foreach ([$bot, $author] as $user) {
+      $this->assertConduitError(
+        'ERR-NOT-EDITABLE',
+        $user,
+        'differential.inline.edit',
+        ['inlineID' => $id, 'content' => 'Too late.']);
+      $this->assertConduitError(
+        'ERR-NOT-EDITABLE',
+        $user,
+        'differential.inline.delete',
+        ['inlineID' => $id]);
+    }
+
+    $seen = $this->search($other, $revision);
+    $this->assertEqual('Fix this.', $seen[0]['fields']['content']);
+  }
+
+  public function testEditWinsOverTextLeftOpenInABrowser(): void {
+    list($author, $bot) = $this->newUsers(2);
+    $revision = $this->newRevision($author, self::FULL_DIFF, [$bot]);
+
+    $id = idx($this->newInline($bot, $revision, 'First draft.'), 'id');
+
+    // The author has the comment open in a browser tab, with unsaved text.
+    $inline = $this->loadInline($id);
+    $inline->setIsEditing(true)->save();
+    $this->saveBrowserText($bot, $inline, 'Unsaved browser text.');
+
+    $this->call($bot, 'differential.inline.edit', [
+      'inlineID' => $id,
+      'content' => 'Edited through Conduit.',
+    ]);
+
+    $edited = $this->loadInline($id);
+    $this->assertFalse($edited->getIsEditing());
+    $this->assertEqual(
+      null,
+      PhabricatorVersionedDraft::loadDraft(
+        $edited->getPHID(),
+        $bot->getPHID()));
+
+    // The stale tab saves its text again before the bot publishes.
+    $this->saveBrowserText($bot, $edited, 'Unsaved browser text.');
+
+    $this->call($bot, 'differential.inline.publish', [
+      'revisionID' => (int)$revision->getID(),
+    ]);
+    $seen = $this->search($author, $revision);
+    $this->assertEqual(
+      'Edited through Conduit.',
+      $seen[0]['fields']['content']);
+  }
+
+  public function testEditStoresWhatTheWebUIStores(): void {
+    list($author, $bot) = $this->newUsers(2);
+    $revision = $this->newRevision($author, self::FULL_DIFF, [$bot]);
+
+    $created = $this->call($bot, 'differential.inline.create', [
+      'revisionID' => (int)$revision->getID(),
+      'filePath' => 'src/Example.php',
+      'isNewFile' => true,
+      'lineNumber' => 4,
+      'content' => 'Compare strictly.',
+      'suggestionText' => "    if (\$x === \$y) {\n",
+    ]);
+    $this->call($bot, 'differential.inline.edit', [
+      'inlineID' => $created['id'],
+      'content' => 'No suggestion now.',
+    ]);
+
+    // The old suggestion stays behind the unchecked "Suggest Edit", as the
+    // web UI leaves it.
+    $inline = $this->loadInline($created['id']);
+    $state = $inline->getContentState();
+    $this->assertEqual('No suggestion now.', $state->getContentText());
+    $this->assertFalse($state->getContentHasSuggestion());
+    $this->assertEqual(
+      "    if (\$x === \$y) {\n",
+      $state->getContentSuggestionText());
+
+    // Phabricator from upstream rP6fd55d692f on also keeps the last saved
+    // state, which "Cancel" in the web UI goes back to.
+    if (!method_exists($inline, 'getCommittedContentState')) {
+      return;
+    }
+
+    $this->assertEqual(
+      'No suggestion now.',
+      $inline->getCommittedContentState()->getContentText());
+  }
+
+  public function testEditRejectsSuggestionsTheWebUIDoesNotOffer(): void {
+    list($author, $bot) = $this->newUsers(2);
+    $revision = $this->newRevision($author, self::FULL_DIFF, [$bot]);
+
+    $published = idx($this->newInline($author, $revision, 'Question?'), 'id');
+    $this->call($author, 'differential.inline.publish', [
+      'revisionID' => (int)$revision->getID(),
+    ]);
+
+    $reply_id = idx($this->newInline($bot, $revision, 'Answer.'), 'id');
+    $this->loadInline($reply_id)
+      ->setReplyToCommentPHID($this->loadInline($published)->getPHID())
+      ->save();
+
+    $document = $this->newInline($bot, $revision, 'On an image.');
+    $document_id = idx($document, 'id');
+    $this->loadInline($document_id)
+      ->setDocumentEngineKey('image')
+      ->save();
+
+    $drafts = ['reply' => $reply_id, 'document view' => $document_id];
+    foreach ($drafts as $label => $id) {
+      $this->assertConduitError(
+        'ERR-BAD-SUGGESTION',
+        $bot,
+        'differential.inline.edit',
+        [
+          'inlineID' => $id,
+          'content' => 'x',
+          'suggestionText' => "x\n",
+        ],
+        $label);
+
+      // Text alone is fine.
+      $plain = $this->call($bot, 'differential.inline.edit', [
+        'inlineID' => $id,
+        'content' => 'Edited.',
+      ]);
+      $this->assertEqual('Edited.', $plain['fields']['content'], $label);
+    }
+  }
+
+  private function loadInline(int $id): DifferentialInlineComment {
+    return id(new DifferentialTransactionComment())
+      ->load($id)
+      ->newInlineCommentObject();
+  }
+
+  /**
+   * What the web UI saves while the author types into an open comment
+   * (`PhabricatorInlineCommentController`, the "draft" operation).
+   */
+  private function saveBrowserText(
+    PhabricatorUser $user,
+    DifferentialInlineComment $inline,
+    string $text): void {
+
+    $state = id(new PhabricatorDiffInlineCommentContentState())
+      ->setContentText($text);
+
+    PhabricatorVersionedDraft::loadOrCreateDraft(
+      $inline->getPHID(),
+      $user->getPHID(),
+      $inline->getID())
+      ->setProperty('inline.state', $state->newStorageMap())
+      ->save();
   }
 
   private function newUsers(int $count): array {

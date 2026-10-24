@@ -140,6 +140,124 @@ abstract class DifferentialInlineConduitAPIMethod
   }
 
   /**
+   * The revision, changeset and inline comment for `$inline_id`, if the
+   * viewer can see the comment. One they cannot see fails exactly like one
+   * that does not exist.
+   */
+  final protected static function loadVisibleInline(
+    PhabricatorUser $viewer,
+    $inline_id) {
+
+    $bad_inline = id(new ConduitException('ERR-BAD-INLINE'))
+      ->setErrorDescription(
+        pht(
+          'Inline comment %d does not exist, or you cannot see it.',
+          $inline_id));
+
+    $comment = self::loadVisibleObject(
+      self::newVisibleInlineQuery($viewer)
+        ->withIDs(array($inline_id)));
+    if (!$comment) {
+      throw $bad_inline;
+    }
+
+    // Comment storage is world-readable, so the revision must be visible
+    // before anything about the comment is revealed. The changeset query
+    // loads its diff and revision as the viewer, and drops the changeset if
+    // the viewer cannot see them.
+    $changeset = self::loadVisibleObject(
+      id(new DifferentialChangesetQuery())
+        ->setViewer($viewer)
+        ->withIDs(array($comment->getChangesetID())));
+    $revision = $changeset ? $changeset->getDiff()->getRevision() : null;
+    if (!$revision || $revision->getPHID() !== $comment->getRevisionPHID()) {
+      throw $bad_inline;
+    }
+
+    return array($revision, $changeset, $comment->newInlineCommentObject());
+  }
+
+  /**
+   * The web UI's rule for changing or deleting an inline comment
+   * (`DifferentialInlineCommentEditController::canEditInlineComment()`):
+   * only its author may, and only while it is a draft.
+   */
+  final protected static function assertCanChangeDraft(
+    PhabricatorUser $viewer,
+    DifferentialInlineComment $inline) {
+
+    $is_author = ($inline->getAuthorPHID() === $viewer->getPHID());
+    if ($is_author && $inline->isDraft()) {
+      return;
+    }
+
+    throw id(new ConduitException('ERR-NOT-EDITABLE'))
+      ->setErrorDescription(
+        pht(
+          'Only the author of inline comment %d can change it, and only '.
+          'while it is a draft.',
+          $inline->getID()));
+  }
+
+  /**
+   * "content" and "suggestionText", as `differential.inline.create` and
+   * `differential.inline.edit` take them.
+   */
+  final protected static function readCommentContent(
+    ConduitAPIRequest $request) {
+
+    $string_type = new ConduitStringParameterType();
+
+    $content = self::getRequiredTypedParameter(
+      $string_type,
+      $request,
+      'content');
+    $suggestion_text = self::getTypedParameter(
+      $string_type,
+      $request,
+      'suggestionText');
+
+    // Without text or replacement lines the inline is "void": upstream
+    // hides it everywhere and never publishes it.
+    if (!strlen(trim($content)) && !strlen($suggestion_text)) {
+      throw new ConduitException('ERR-EMPTY-COMMENT');
+    }
+
+    // A suggestion replaces whole lines. Without a final newline the web
+    // UI joins it to the line after the comment.
+    if (strlen($suggestion_text) && substr($suggestion_text, -1) !== "\n") {
+      $suggestion_text .= "\n";
+    }
+
+    return array($content, $suggestion_text);
+  }
+
+  /**
+   * Save a change to an existing draft as the web UI does
+   * (`PhabricatorInlineCommentController::saveComment()`): discard the
+   * author's unsaved browser edits of it, and keep the revision's draft
+   * marker in step.
+   */
+  final protected static function saveDraftChange(
+    PhabricatorUser $viewer,
+    DifferentialRevision $revision,
+    DifferentialInlineComment $inline) {
+
+    // As the web UI's "save" does. While a comment is marked as being edited,
+    // the text a browser tab still holds for it is loaded over the saved text,
+    // including when it is published.
+    $inline->setIsEditing(false);
+
+    $inline->openTransaction();
+      $inline->save();
+      PhabricatorVersionedDraft::purgeDrafts(
+        $inline->getPHID(),
+        $viewer->getPHID());
+      self::synchronizeDraftFlag($viewer, $revision);
+    $inline->saveTransaction();
+  }
+
+  /**
    * As the web UI does after saving or submitting inlines: keep the
    * revision's "you have drafts" marker for this user in step, so it shows
    * in their revision lists and the "unsubmitted comments" prompt.
