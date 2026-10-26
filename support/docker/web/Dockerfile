@@ -1,5 +1,16 @@
 FROM php:7.4-fpm-bullseye
 
+# Bullseye is end-of-life, and its security updates are gone from
+# deb.debian.org, so its packages now come from archive.debian.org. Its Release
+# files have no Valid-Until, so apt needs no Check-Valid-Until override.
+RUN set -eux; \
+  echo 'deb http://archive.debian.org/debian bullseye main' \
+    > /etc/apt/sources.list; \
+  echo 'deb http://archive.debian.org/debian bullseye-updates main' \
+    >> /etc/apt/sources.list; \
+  echo 'deb http://archive.debian.org/debian-security bullseye-security main' \
+    >> /etc/apt/sources.list
+
 # APCu compatible with 7.4
 RUN set -eux; \
   pecl channel-update pecl.php.net; \

@@ -1,9 +1,10 @@
 ---
-version: '3.7'
-
 x-common: &phabricator
+  # Otherwise the daemons start before `bootstrap` has created the databases,
+  # fail, and leave nothing running.
   depends_on:
-    - 'bootstrap'
+    bootstrap:
+      condition: 'service_completed_successfully'
   environment:
     PHABRICATOR_DOMAIN: 'phabricator.local'
     PHABRICATOR_ENV: 'custom/docker'
@@ -41,14 +42,17 @@ services:
     <<: *phabricator
     build: './support/docker/worker'
     depends_on:
-      - 'database'
+      database:
+        condition: 'service_healthy'
     command:
       - '/usr/local/src/phabricator/bin/storage'
       - 'upgrade'
       - '--force'
 
   database:
-    image: 'mysql:5'
+    image: 'mysql:5.7'
+    # There is no arm64 build of MySQL 5.7, so arm64 hosts emulate it.
+    platform: 'linux/amd64'
     command:
       - '--local_infile=0'
       - '--log-error-verbosity=1'
@@ -56,6 +60,16 @@ services:
       - '--sql-mode=STRICT_ALL_TABLES'
     environment:
       MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+    # The entrypoint runs a socket-only server while it initialises, so this
+    # only passes once the real server accepts TCP connections.
+    # A first, emulated initialisation can take minutes, and failed checks
+    # during `start_period` do not count towards `retries`.
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '--host=127.0.0.1', '--silent']
+      interval: '2s'
+      timeout: '5s'
+      retries: 60
+      start_period: '300s'
     networks:
       - 'backend'
     volumes:
