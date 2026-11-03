@@ -94,6 +94,8 @@ phutil_register_library_map(array(
     'RocketChatClient' => 'infrastructure/RocketChatClient.php',
     'RocketChatClientTestCase' => 'infrastructure/__tests__/RocketChatClientTestCase.php',
     'RocketChatConfigOptions' => 'applications/config/option/RocketChatConfigOptions.php',
+    'TransactionCommentEditConduitAPIMethod' => 'applications/transactions/conduit/TransactionCommentEditConduitAPIMethod.php',
+    'TransactionCommentEditConduitAPIMethodTestCase' => 'applications/transactions/conduit/__tests__/TransactionCommentEditConduitAPIMethodTestCase.php',
   ),
   'function' => array(
     'varsprintf' => 'utils/utils.php',
@@ -193,5 +195,7 @@ phutil_register_library_map(array(
     'RocketChatClient' => 'Phobject',
     'RocketChatClientTestCase' => 'PhutilTestCase',
     'RocketChatConfigOptions' => 'PhabricatorApplicationConfigOptions',
+    'TransactionCommentEditConduitAPIMethod' => 'ConduitAPIMethod',
+    'TransactionCommentEditConduitAPIMethodTestCase' => 'PhabricatorTestCase',
   ),
 ));
