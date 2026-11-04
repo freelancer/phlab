@@ -98,13 +98,10 @@ final class DifferentialInlineEditConduitAPIMethod
           pht('Suggested edits can only be made on the new side.'));
     }
 
-    // The web UI never offers a suggestion on a reply, or on a comment made
-    // in a document view such as an image or a notebook
-    // (`PhabricatorInlineCommentController::newInlineResponse()`).
+    // The web UI never offers a suggestion on a comment made in a document
+    // view such as an image or a notebook, or on a reply.
     if ($inline->getReplyToCommentPHID()) {
-      throw id(new ConduitException('ERR-BAD-SUGGESTION'))
-        ->setErrorDescription(
-          pht('Suggested edits cannot be made on a reply.'));
+      throw self::newSuggestionOnReplyException();
     }
 
     if ($inline->getDocumentEngineKey() !== null) {

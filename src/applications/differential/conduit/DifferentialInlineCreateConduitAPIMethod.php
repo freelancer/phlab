@@ -27,21 +27,33 @@ final class DifferentialInlineCreateConduitAPIMethod
       '"suggestionText" replaces the commented lines on the new side (a '.
       'final newline is added if missing; "" deletes the lines and then '.
       'needs "content"). It needs a diff uploaded with full context, as '.
-      '"arc diff" does.');
+      '"arc diff" does.'.
+      "\n\n".
+      'To reply to a published inline comment, as "Reply" does in the web '.
+      'UI, pass its "replyToInlineID" or "replyToInlinePHID" (the "id" or '.
+      '"phid" from "differential.inline.search") and "content". The reply '.
+      'goes on the same diff, side and lines as that comment, so it stays '.
+      'threaded with it whichever diff is shown; "revisionID", "diffID", '.
+      '"filePath", "isNewFile", "lineNumber" and "lineLength" may be left '.
+      'out, and any given must match the comment. A reply cannot have '.
+      '"startOffset", "endOffset" or "suggestionText", as in the web UI. It '.
+      'is a draft like any other until published.');
   }
 
   protected function defineParamTypes() {
     return array(
       'revisionID' => 'optional revisionid',
       'diffID' => 'optional diffid',
-      'filePath' => 'required string',
-      'isNewFile' => 'required bool',
-      'lineNumber' => 'required int',
+      'filePath' => 'optional string (required unless replying)',
+      'isNewFile' => 'optional bool (required unless replying)',
+      'lineNumber' => 'optional int (required unless replying)',
       'lineLength' => 'optional int',
       'startOffset' => 'optional int',
       'endOffset' => 'optional int',
       'content' => 'required string',
       'suggestionText' => 'optional string',
+      'replyToInlineID' => 'optional int',
+      'replyToInlinePHID' => 'optional phid',
     );
   }
 
@@ -67,7 +79,11 @@ final class DifferentialInlineCreateConduitAPIMethod
         'first and last commented lines.'),
       'ERR-BAD-SUGGESTION' => pht(
         'A suggested edit needs the new side of a diff uploaded with full '.
-        'context.'),
+        'context, and cannot go on a reply.'),
+      'ERR-BAD-REPLY' => pht(
+        'The comment to reply to does not exist, you cannot see it, it is '.
+        'still a draft, or the reply names a different revision, diff, '.
+        'place or range from it.'),
       'ERR-EMPTY-COMMENT' => pht(
         'Provide non-empty "content" or "suggestionText". A suggestion that '.
         'deletes the lines ("suggestionText": "") needs "content".'),
@@ -81,6 +97,11 @@ final class DifferentialInlineCreateConduitAPIMethod
 
   protected function execute(ConduitAPIRequest $request) {
     $viewer = $request->getUser();
+
+    $parent = $this->loadReplyParent($request);
+    if ($parent) {
+      return $this->createReply($request, $parent);
+    }
 
     $bool_type = new ConduitBoolParameterType();
     $int_type = new ConduitIntParameterType();
@@ -120,14 +141,7 @@ final class DifferentialInlineCreateConduitAPIMethod
       $end_offset,
       $suggestion_text);
 
-    // The content states the web UI writes when an inline is created and
-    // then saved. The initial state carries the commented lines as the
-    // default suggestion, so "Suggest Edit" in the browser starts from them.
-    if (DifferentialInlineCommentRules::canRenderSuggestion($hunks)) {
-      $default_suggestion = implode('', $lines);
-    } else {
-      $default_suggestion = '';
-    }
+    $default_suggestion = self::getDefaultSuggestion($hunks, $lines);
 
     $initial_state = id(new PhabricatorDiffInlineCommentContentState())
       ->setContentSuggestionText($default_suggestion);
@@ -141,12 +155,49 @@ final class DifferentialInlineCreateConduitAPIMethod
     $inline = id(new DifferentialInlineComment())
       ->setRevision($revision)
       ->setChangesetID($changeset->getID())
-      ->setAuthorPHID($viewer->getPHID())
       ->setIsNewFile((int)$is_new)
       ->setLineNumber($line)
       ->setLineLength($length)
       ->setStartOffset($start_offset)
-      ->setEndOffset($end_offset)
+      ->setEndOffset($end_offset);
+
+    self::saveNewInline($viewer, $revision, $inline, $state, $initial_state);
+
+    return $this->buildInlineDictionary($revision, $inline, $changeset);
+  }
+
+  /**
+   * The content states the web UI writes when an inline is created and then
+   * saved carry the commented lines as the default suggestion, so "Suggest
+   * Edit" in the browser starts from them. `$lines` is null when the lines
+   * are not in the diff.
+   */
+  private static function getDefaultSuggestion(array $hunks, $lines) {
+    if ($lines === null) {
+      return '';
+    }
+
+    if (!DifferentialInlineCommentRules::canRenderSuggestion($hunks)) {
+      return '';
+    }
+
+    return implode('', $lines);
+  }
+
+  /**
+   * Save a new draft as the web UI's "new" and "reply" operations do
+   * (`PhabricatorInlineCommentController`), with its content states, Done
+   * state and the revision's draft marker.
+   */
+  private static function saveNewInline(
+    PhabricatorUser $viewer,
+    DifferentialRevision $revision,
+    DifferentialInlineComment $inline,
+    PhabricatorDiffInlineCommentContentState $state,
+    PhabricatorDiffInlineCommentContentState $initial_state) {
+
+    $inline
+      ->setAuthorPHID($viewer->getPHID())
       ->setContentState($state);
 
     // Phabricator before upstream rP6fd55d692f has no initial or committed
@@ -158,7 +209,7 @@ final class DifferentialInlineCreateConduitAPIMethod
         ->setCommittedContentState($state);
     }
 
-    // As the web UI does for a new inline: the revision author's own
+    // As the web UI does for a new inline or reply: the revision author's own
     // comments start out checked "Done", pending until they submit.
     if ($viewer->getPHID() === $revision->getAuthorPHID()) {
       $inline->setFixedState(PhabricatorInlineComment::STATE_DRAFT);
@@ -168,8 +219,212 @@ final class DifferentialInlineCreateConduitAPIMethod
       $inline->save();
       self::synchronizeDraftFlag($viewer, $revision);
     $inline->saveTransaction();
+  }
+
+  /**
+   * The revision, changeset and comment that "replyToInlineID" or
+   * "replyToInlinePHID" names, or null when neither is given.
+   *
+   * The web UI offers "Reply" only on a comment you cannot edit
+   * (`PHUIDiffInlineCommentDetailView`, `$can_reply`), so never on a draft:
+   * your own drafts show "Edit" instead, and nobody else's are visible.
+   */
+  private function loadReplyParent(ConduitAPIRequest $request) {
+    $viewer = $request->getUser();
+
+    $parent_id = self::getTypedParameter(
+      new ConduitIntParameterType(),
+      $request,
+      'replyToInlineID');
+    $parent_phid = self::getTypedParameter(
+      new ConduitPHIDParameterType(),
+      $request,
+      'replyToInlinePHID');
+
+    if ($parent_id === null && $parent_phid === null) {
+      return null;
+    }
+
+    if ($parent_id !== null && $parent_phid !== null) {
+      throw id(new ConduitException('ERR-BAD-REPLY'))
+        ->setErrorDescription(
+          pht('Pass "replyToInlineID" or "replyToInlinePHID", not both.'));
+    }
+
+    $query = self::newVisibleInlineQuery($viewer);
+    if ($parent_id !== null) {
+      $query->withIDs(array($parent_id));
+      $name = $parent_id;
+    } else {
+      $query->withPHIDs(array($parent_phid));
+      $name = $parent_phid;
+    }
+
+    $parent = self::findVisibleInline($viewer, $query);
+    if (!$parent) {
+      throw id(new ConduitException('ERR-BAD-REPLY'))
+        ->setErrorDescription(
+          pht(
+            'Inline comment "%s" does not exist, or you cannot see it.',
+            $name));
+    }
+
+    // The visible query has already left out deleted drafts and other users'
+    // drafts, and a published comment cannot be deleted.
+    list($revision, $changeset, $inline) = $parent;
+    if ($inline->isDraft()) {
+      throw id(new ConduitException('ERR-BAD-REPLY'))
+        ->setErrorDescription(
+          pht(
+            'Inline comment %d is your unpublished draft, which the web UI '.
+            'offers to edit rather than reply to. Change it with '.
+            '"differential.inline.edit", or publish it first.',
+            $inline->getID()));
+    }
+
+    return $parent;
+  }
+
+  /**
+   * A draft reply to `$parent`, as the web UI's "Reply" makes it
+   * (`PhabricatorInlineCommentController::readRequestParameters()`): on the
+   * parent's changeset, side and lines, even when that is an older diff, so
+   * the two stay together whichever diff is shown (upstream T10562).
+   */
+  private function createReply(ConduitAPIRequest $request, array $parent) {
+    $viewer = $request->getUser();
+    list($revision, $changeset, $parent_inline) = $parent;
+
+    list($content, $suggestion_text) = self::readCommentContent($request);
+
+    if ($suggestion_text !== null) {
+      throw self::newSuggestionOnReplyException();
+    }
+
+    $this->validateReplyPlacement(
+      $request,
+      $revision,
+      $changeset,
+      $parent_inline);
+
+    $inline = id(new DifferentialInlineComment())
+      ->setRevision($revision)
+      ->setChangesetID($changeset->getID())
+      ->setIsNewFile((int)$parent_inline->getIsNewFile())
+      ->setLineNumber($parent_inline->getLineNumber())
+      ->setLineLength($parent_inline->getLineLength())
+      ->setStartOffset(null)
+      ->setEndOffset(null)
+      ->setReplyToCommentPHID($parent_inline->getPHID());
+
+    // A reply to a comment made in a document view (an image, a notebook)
+    // is made in that view too.
+    $engine_key = $parent_inline->getDocumentEngineKey();
+    if ($engine_key !== null) {
+      $inline->setDocumentEngineKey($engine_key);
+    }
+
+    // The states upstream's web reply stores, which are those of any new
+    // inline: no suggestion, with the commented lines as its default text.
+    $hunks = id(new DifferentialHunkQuery())
+      ->setViewer($viewer)
+      ->withChangesets(array($changeset))
+      ->execute();
+    $lines = DifferentialInlineCommentRules::getCommentedLines(
+      $hunks,
+      (bool)$parent_inline->getIsNewFile(),
+      $parent_inline->getLineNumber(),
+      $parent_inline->getLineLength());
+    $default_suggestion = self::getDefaultSuggestion($hunks, $lines);
+
+    $initial_state = id(new PhabricatorDiffInlineCommentContentState())
+      ->setContentSuggestionText($default_suggestion);
+
+    $state = id(new PhabricatorDiffInlineCommentContentState())
+      ->setContentText($content)
+      ->setContentSuggestionText($default_suggestion);
+
+    self::saveNewInline(
+      $viewer,
+      $revision,
+      $inline,
+      $state,
+      $initial_state);
 
     return $this->buildInlineDictionary($revision, $inline, $changeset);
+  }
+
+  /**
+   * A reply's place comes from its parent. Placement parameters may still be
+   * sent, e.g. copied from the parent's search result, but must agree with
+   * it, so a caller who meant somewhere else finds out.
+   */
+  private function validateReplyPlacement(
+    ConduitAPIRequest $request,
+    DifferentialRevision $revision,
+    DifferentialChangeset $changeset,
+    DifferentialInlineComment $parent) {
+
+    $int_type = new ConduitIntParameterType();
+    $is_new = (bool)$parent->getIsNewFile();
+
+    $expected = array(
+      'revisionID' => array($int_type, (int)$revision->getID()),
+      'diffID' => array($int_type, (int)$changeset->getDiffID()),
+      'filePath' => array(
+        new ConduitStringParameterType(),
+        self::getChangesetSidePath($changeset, $is_new),
+      ),
+      'isNewFile' => array(new ConduitBoolParameterType(), $is_new),
+      'lineNumber' => array($int_type, (int)$parent->getLineNumber()),
+      'lineLength' => array($int_type, (int)$parent->getLineLength()),
+    );
+
+    // The old side of a moved file goes by its old path, but a new comment
+    // there may also name it by its current one (`getPathCandidates()`).
+    $also_accepted = array(
+      'filePath' => $changeset->getFilename(),
+    );
+
+    foreach ($expected as $key => $spec) {
+      list($type, $value) = $spec;
+      $given = self::getTypedParameter($type, $request, $key);
+      if ($given === null || $given === $value) {
+        continue;
+      }
+      if (!$is_new && $given === idx($also_accepted, $key)) {
+        continue;
+      }
+
+      throw id(new ConduitException('ERR-BAD-REPLY'))
+        ->setErrorDescription(
+          pht(
+            'A reply goes where inline comment %d is: line %d (+%d) on the '.
+            '%s side of "%s", in diff %d of D%d. "%s" there is %s, not %s; '.
+            'leave it out.',
+            $parent->getID(),
+            $parent->getLineNumber(),
+            $parent->getLineLength(),
+            $is_new ? pht('new') : pht('old'),
+            self::getChangesetSidePath($changeset, $is_new),
+            $changeset->getDiffID(),
+            $revision->getID(),
+            $key,
+            phutil_var_export($value),
+            phutil_var_export($given)));
+    }
+
+    // The web UI's reply carries no character range (`DiffInline.js`,
+    // `bindToReply()` copies none).
+    foreach (array('startOffset', 'endOffset') as $key) {
+      if (self::getTypedParameter($int_type, $request, $key) !== null) {
+        throw id(new ConduitException('ERR-BAD-REPLY'))
+          ->setErrorDescription(
+            pht(
+              'A reply cannot highlight a character range; leave out "%s".',
+              $key));
+      }
+    }
   }
 
   /**

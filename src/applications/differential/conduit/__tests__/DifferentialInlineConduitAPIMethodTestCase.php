@@ -473,6 +473,31 @@ EODIFF;
     ]);
     $this->assertTrue(
       $old['fields']['changesetID'] !== $new['fields']['changesetID']);
+
+    // A reply on the old side of the moved file may name it by either path,
+    // as a new comment there may, but not by another file's.
+    $this->publish($bot, $revision, [$old['id']]);
+    foreach (['src/A.php', 'src/B.php'] as $path) {
+      $reply = $this->call($author, 'differential.inline.create', [
+        'replyToInlineID' => $old['id'],
+        'filePath' => $path,
+        'isNewFile' => false,
+        'content' => 'Reply naming '.$path,
+      ]);
+      $this->assertEqual(
+        $old['fields']['changesetID'],
+        $reply['fields']['changesetID'],
+        $path);
+    }
+    $this->assertConduitError(
+      'ERR-BAD-REPLY',
+      $author,
+      'differential.inline.create',
+      [
+        'replyToInlineID' => $old['id'],
+        'filePath' => 'src/C.php',
+        'content' => 'Wrong file.',
+      ]);
   }
 
   public function testOldSideOfACopiedFileIsTheFileItself(): void {
@@ -596,6 +621,11 @@ EODIFF;
         'differential.inline.create',
         ['suggestionText' => ['x']] + $base,
         'suggestionText',
+      ],
+      'reply with a PHID that is not a string' => [
+        'differential.inline.create',
+        ['replyToInlinePHID' => 12, 'content' => 'Reply.'],
+        'replyToInlinePHID',
       ],
       'setdone without isDone' => [
         'differential.inline.setdone',
@@ -793,6 +823,16 @@ EODIFF;
       $bot,
       'differential.inline.delete',
       ['inlineID' => $inline['id']]);
+    $this->assertConduitError(
+      'ERR-BAD-REPLY',
+      $bot,
+      'differential.inline.create',
+      ['replyToInlineID' => $inline['id'], 'content' => 'Should not land.']);
+    $this->assertConduitError(
+      'ERR-BAD-REPLY',
+      $bot,
+      'differential.inline.create',
+      ['replyToInlinePHID' => $inline['phid'], 'content' => 'Nor this.']);
     $this->assertConduitError(
       'ERR-BAD-REVISION',
       $bot,
@@ -1135,6 +1175,257 @@ EODIFF;
     }
   }
 
+  public function testReplyGoesWhereItsParentIs(): void {
+    list($author, $bot, $other) = $this->newUsers(3);
+    $revision = $this->newRevision($author, self::FULL_DIFF, [$bot, $other]);
+
+    // Old side, two lines, with a character range.
+    $parent = $this->call($other, 'differential.inline.create', [
+      'revisionID' => (int)$revision->getID(),
+      'filePath' => 'src/Example.php',
+      'isNewFile' => false,
+      'lineNumber' => 3,
+      'lineLength' => 1,
+      'startOffset' => 2,
+      'endOffset' => 5,
+      'content' => 'Why the loose comparison?',
+    ]);
+    $this->publish($other, $revision, [$parent['id']]);
+
+    // Only the parent and the text are needed.
+    $reply = $this->call($bot, 'differential.inline.create', [
+      'replyToInlineID' => $parent['id'],
+      'content' => 'It was strict before.',
+    ]);
+
+    $fields = $reply['fields'];
+    $parent_fields = $parent['fields'];
+    $copied = [
+      'revisionID',
+      'revisionPHID',
+      'diffID',
+      'changesetID',
+      'filePath',
+      'isNewFile',
+      'lineNumber',
+      'lineLength',
+    ];
+    foreach ($copied as $key) {
+      $this->assertEqual($parent_fields[$key], $fields[$key], $key);
+    }
+    $this->assertEqual(false, $fields['isNewFile']);
+    $this->assertEqual(3, $fields['lineNumber']);
+    $this->assertEqual(1, $fields['lineLength']);
+    $this->assertEqual(null, $fields['startOffset']);
+    $this->assertEqual(null, $fields['endOffset']);
+    $this->assertEqual(null, $fields['suggestionText']);
+    $this->assertEqual($parent['phid'], $fields['replyToCommentPHID']);
+    $this->assertEqual($bot->getPHID(), $fields['authorPHID']);
+    $this->assertEqual(true, $fields['isDraft']);
+    $this->assertEqual(false, $fields['isDone']);
+    $this->assertTrue($this->hasDraft($bot, $revision));
+
+    // What the web UI stores for a reply: no suggestion, no range.
+    $stored = $this->loadInline($reply['id']);
+    $this->assertEqual($parent['phid'], $stored->getReplyToCommentPHID());
+    $this->assertFalse($stored->getContentState()->getContentHasSuggestion());
+    $this->assertEqual(null, $stored->getStartOffset());
+
+    // Like any new inline, the commented lines are kept as the default text
+    // for "Suggest Edit", although the web UI does not offer it on a reply.
+    $commented_lines =
+      "  public function isSame(\$x, \$y) {\n".
+      "    if (\$x === \$y) {\n";
+    $this->assertEqual(
+      $commented_lines,
+      $stored->getContentState()->getContentSuggestionText());
+    if (method_exists($stored, 'getInitialContentState')) {
+      $this->assertEqual(
+        $commented_lines,
+        $stored->getInitialContentState()->getContentSuggestionText());
+    }
+
+    // A draft reply is private, like any draft, until it is published.
+    $this->assertEqual([$parent['id']], $this->searchIDs($other, $revision));
+    $this->publish($bot, $revision, [$reply['id']]);
+    $this->assertFalse($this->hasDraft($bot, $revision));
+
+    $seen = ipull($this->search($author, $revision), null, 'id');
+    $this->assertEqual(
+      $this->sorted([$parent['id'], $reply['id']]),
+      $this->sorted(array_keys($seen)));
+    $this->assertEqual(false, $seen[$reply['id']]['fields']['isDraft']);
+    $this->assertEqual(
+      $parent['phid'],
+      $seen[$reply['id']]['fields']['replyToCommentPHID']);
+
+    // A reply to the reply, named by PHID, echoing the place search gives:
+    // matching placement parameters are accepted.
+    $echo = array_select_keys(
+      $seen[$reply['id']]['fields'],
+      [
+        'revisionID',
+        'diffID',
+        'filePath',
+        'isNewFile',
+        'lineNumber',
+        'lineLength',
+      ]);
+    $nested = $this->call($other, 'differential.inline.create', [
+      'replyToInlinePHID' => $reply['phid'],
+      'content' => 'Thanks.',
+    ] + $echo);
+    $this->assertEqual(
+      $reply['phid'],
+      $nested['fields']['replyToCommentPHID']);
+    $this->assertEqual(3, $nested['fields']['lineNumber']);
+
+    // A plain HTTP call, where every value is a string.
+    $plain = $this->call(
+      $author,
+      'differential.inline.create',
+      [
+        'replyToInlineID' => (string)$parent['id'],
+        'revisionID' => (string)$revision->getID(),
+        'isNewFile' => 'false',
+        'content' => 'Fixed.',
+      ],
+      false);
+    $this->assertEqual(
+      $parent['phid'],
+      $plain['fields']['replyToCommentPHID']);
+  }
+
+  public function testReplyStaysOnItsParentsDiff(): void {
+    list($author, $bot) = $this->newUsers(2);
+    $revision = $this->newRevision($author, self::FULL_DIFF, [$bot]);
+    $first_diff_id = (int)$revision->getActiveDiff()->getID();
+
+    $parent = $this->newInline($bot, $revision, 'On the first diff.');
+    $this->publish($bot, $revision, [$parent['id']]);
+
+    $revision = $this->updateRevision($author, $revision, self::FULL_DIFF);
+    $active_diff_id = (int)$revision->getActiveDiff()->getID();
+    $this->assertTrue($active_diff_id !== $first_diff_id);
+
+    // As the web UI does when you reply to a comment carried forward from
+    // an older diff (upstream T10562): the reply binds to the parent's
+    // changeset, so the two never drift apart.
+    $reply = $this->call($author, 'differential.inline.create', [
+      'replyToInlineID' => $parent['id'],
+      'revisionID' => (int)$revision->getID(),
+      'content' => 'Fixed in the new diff.',
+    ]);
+    $this->assertEqual($first_diff_id, $reply['fields']['diffID']);
+    $this->assertEqual(
+      $parent['fields']['changesetID'],
+      $reply['fields']['changesetID']);
+
+    // The revision author's reply starts checked Done, as any inline of
+    // theirs does in the web UI.
+    $this->assertEqual(true, $reply['fields']['isDone']);
+    $this->assertEqual(true, $reply['fields']['isDonePending']);
+
+    $this->assertConduitError(
+      'ERR-BAD-REPLY',
+      $author,
+      'differential.inline.create',
+      [
+        'replyToInlineID' => $parent['id'],
+        'diffID' => $active_diff_id,
+        'content' => 'On the new diff instead?',
+      ]);
+  }
+
+  public function testReplyRejectsWhatTheWebUIDoesNotOffer(): void {
+    list($author, $bot, $other) = $this->newUsers(3);
+    $revision = $this->newRevision($author, self::FULL_DIFF, [$bot, $other]);
+    $other_revision = $this->newRevision($author, self::FULL_DIFF, [$bot]);
+
+    $parent = $this->newInline($other, $revision, 'Published.');
+    $this->publish($other, $revision, [$parent['id']]);
+    $own_draft = $this->newInline($bot, $revision, 'My draft.');
+    $their_draft = $this->newInline($other, $revision, 'Their draft.');
+    $deleted = $this->newInline($bot, $revision, 'Deleted draft.');
+    $this->call($bot, 'differential.inline.delete', [
+      'inlineID' => $deleted['id'],
+    ]);
+
+    $reply = [
+      'replyToInlineID' => $parent['id'],
+      'content' => 'Reply.',
+    ];
+
+    $cases = [
+      // The web UI shows "Edit", not "Reply", on your own draft.
+      'own draft' => [
+        'ERR-BAD-REPLY',
+        ['replyToInlineID' => $own_draft['id']] + $reply,
+      ],
+      // Someone else's draft fails exactly like one that does not exist.
+      'their draft' => [
+        'ERR-BAD-REPLY',
+        ['replyToInlineID' => $their_draft['id']] + $reply,
+      ],
+      'their draft by PHID' => [
+        'ERR-BAD-REPLY',
+        ['replyToInlinePHID' => $their_draft['phid']] +
+          array_diff_key($reply, ['replyToInlineID' => true]),
+      ],
+      'deleted draft' => [
+        'ERR-BAD-REPLY',
+        ['replyToInlineID' => $deleted['id']] + $reply,
+      ],
+      'no such inline' => [
+        'ERR-BAD-REPLY',
+        ['replyToInlineID' => 999999999] + $reply,
+      ],
+      'both ID and PHID' => [
+        'ERR-BAD-REPLY',
+        ['replyToInlinePHID' => $parent['phid']] + $reply,
+      ],
+      'another revision' => [
+        'ERR-BAD-REPLY',
+        ['revisionID' => (int)$other_revision->getID()] + $reply,
+      ],
+      'another diff' => [
+        'ERR-BAD-REPLY',
+        ['diffID' => (int)$other_revision->getActiveDiff()->getID()] + $reply,
+      ],
+      'another file' => [
+        'ERR-BAD-REPLY',
+        ['filePath' => 'src/Other.php'] + $reply,
+      ],
+      'another side' => ['ERR-BAD-REPLY', ['isNewFile' => false] + $reply],
+      'another line' => ['ERR-BAD-REPLY', ['lineNumber' => 5] + $reply],
+      'more lines' => ['ERR-BAD-REPLY', ['lineLength' => 1] + $reply],
+      'a range' => [
+        'ERR-BAD-REPLY',
+        ['startOffset' => 0, 'endOffset' => 4] + $reply,
+      ],
+      'a suggestion' => [
+        'ERR-BAD-SUGGESTION',
+        ['suggestionText' => "    if (\$x === \$y) {\n"] + $reply,
+      ],
+      'empty text' => ['ERR-EMPTY-COMMENT', ['content' => ' '] + $reply],
+    ];
+
+    foreach ($cases as $label => $case) {
+      list($code, $params) = $case;
+      $this->assertConduitError(
+        $code,
+        $bot,
+        'differential.inline.create',
+        $params,
+        $label);
+    }
+
+    // Nothing was written by the rejected calls.
+    $this->assertEqual(
+      $this->sorted([$own_draft['id'], $parent['id']]),
+      $this->sorted($this->searchIDs($bot, $revision)));
+  }
+
   private function loadInline(int $id): DifferentialInlineComment {
     return id(new DifferentialTransactionComment())
       ->load($id)
@@ -1242,6 +1533,22 @@ EODIFF;
       'isNewFile' => true,
       'lineNumber' => 4,
       'content' => $content,
+    ]);
+  }
+
+  private function sorted(array $values): array {
+    sort($values);
+    return $values;
+  }
+
+  private function publish(
+    PhabricatorUser $user,
+    DifferentialRevision $revision,
+    array $inline_ids): array {
+
+    return $this->call($user, 'differential.inline.publish', [
+      'revisionID' => (int)$revision->getID(),
+      'inlineIDs' => $inline_ids,
     ]);
   }
 

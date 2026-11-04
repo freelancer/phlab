@@ -148,17 +148,33 @@ abstract class DifferentialInlineConduitAPIMethod
     PhabricatorUser $viewer,
     $inline_id) {
 
-    $bad_inline = id(new ConduitException('ERR-BAD-INLINE'))
-      ->setErrorDescription(
-        pht(
-          'Inline comment %d does not exist, or you cannot see it.',
-          $inline_id));
-
-    $comment = self::loadVisibleObject(
+    $found = self::findVisibleInline(
+      $viewer,
       self::newVisibleInlineQuery($viewer)
         ->withIDs(array($inline_id)));
+    if (!$found) {
+      throw id(new ConduitException('ERR-BAD-INLINE'))
+        ->setErrorDescription(
+          pht(
+            'Inline comment %d does not exist, or you cannot see it.',
+            $inline_id));
+    }
+
+    return $found;
+  }
+
+  /**
+   * Like `loadVisibleInline()`, for any query built on
+   * `newVisibleInlineQuery()`. Returns null when the viewer cannot see the
+   * comment, so the caller chooses the error.
+   */
+  final protected static function findVisibleInline(
+    PhabricatorUser $viewer,
+    DifferentialDiffInlineCommentQuery $query) {
+
+    $comment = self::loadVisibleObject($query);
     if (!$comment) {
-      throw $bad_inline;
+      return null;
     }
 
     // Comment storage is world-readable, so the revision must be visible
@@ -171,7 +187,7 @@ abstract class DifferentialInlineConduitAPIMethod
         ->withIDs(array($comment->getChangesetID())));
     $revision = $changeset ? $changeset->getDiff()->getRevision() : null;
     if (!$revision || $revision->getPHID() !== $comment->getRevisionPHID()) {
-      throw $bad_inline;
+      return null;
     }
 
     return array($revision, $changeset, $comment->newInlineCommentObject());
@@ -197,6 +213,16 @@ abstract class DifferentialInlineConduitAPIMethod
           'Only the author of inline comment %d can change it, and only '.
           'while it is a draft.',
           $inline->getID()));
+  }
+
+  /**
+   * The web UI never offers a suggested edit on a reply
+   * (`PhabricatorInlineCommentController::newInlineResponse()`).
+   */
+  final protected static function newSuggestionOnReplyException() {
+    return id(new ConduitException('ERR-BAD-SUGGESTION'))
+      ->setErrorDescription(
+        pht('Suggested edits cannot be made on a reply.'));
   }
 
   /**
