@@ -13,6 +13,11 @@ final class ManiphestDeadlineCustomField extends ManiphestCustomField {
     return pht('Deadline');
   }
 
+  public function getFieldDescription(): string {
+    return pht(
+      'Date the task is due. A reminder is posted on the task a day before.');
+  }
+
   public function shouldUseStorage(): bool {
     return true;
   }
@@ -26,6 +31,21 @@ final class ManiphestDeadlineCustomField extends ManiphestCustomField {
       'epoch'       => $this->epoch,
       'triggerPHID' => $this->triggerPHID,
     ]);
+  }
+
+  /**
+   * Conduit's `maniphest.edit` gives an epoch (see
+   * @{class:ManiphestDeadlineConduitParameterType}); everything else gives the
+   * stored JSON. An epoch only moves the deadline and keeps the reminder
+   * trigger, as @{method:readValueFromRequest} does for the web edit form.
+   */
+  public function setValueFromApplicationTransactions($value): void {
+    if (is_int($value)) {
+      $this->epoch = $value;
+      return;
+    }
+
+    $this->setValueFromStorage($value);
   }
 
   public function setValueFromStorage($value): void {
@@ -117,6 +137,35 @@ final class ManiphestDeadlineCustomField extends ManiphestCustomField {
 
   public function shouldAppearInApplicationTransactions(): bool {
     return true;
+  }
+
+  /**
+   * One deadline change per edit, as the web form makes. Two on a task with
+   * no deadline would each mint a reminder trigger, and the first would be
+   * left behind to fire.
+   */
+  public function validateApplicationTransactions(
+    PhabricatorApplicationTransactionEditor $editor,
+    $type,
+    array $xactions): array {
+
+    $errors = parent::validateApplicationTransactions(
+      $editor,
+      $type,
+      $xactions);
+
+    if (count($xactions) > 1) {
+      $errors[] = new PhabricatorApplicationTransactionValidationError(
+        $type,
+        pht('Invalid'),
+        pht(
+          'Set the deadline at most once per edit; this edit sets it %d '.
+          'times.',
+          count($xactions)),
+        last($xactions));
+    }
+
+    return $errors;
   }
 
   public function applyApplicationTransactionInternalEffects(PhabricatorApplicationTransaction $xaction): void {
@@ -363,6 +412,14 @@ final class ManiphestDeadlineCustomField extends ManiphestCustomField {
 
   public function shouldAppearInConduitDictionary(): bool {
     return true;
+  }
+
+  public function shouldAppearInConduitTransactions(): bool {
+    return true;
+  }
+
+  protected function newConduitEditParameterType(): ConduitParameterType {
+    return new ManiphestDeadlineConduitParameterType();
   }
 
   public function getConduitDictionaryValue(): array {
