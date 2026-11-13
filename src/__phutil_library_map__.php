@@ -10,6 +10,9 @@ phutil_register_library_map(array(
   '__library_version__' => 2,
   'class' => array(
     'AphrontFormDateRangeControl' => 'view/form/control/AphrontFormDateRangeControl.php',
+    'DifferentialAcceptAsEditEngineExtension' => 'applications/differential/engineextension/DifferentialAcceptAsEditEngineExtension.php',
+    'DifferentialAcceptAsEditorExtension' => 'applications/differential/engineextension/DifferentialAcceptAsEditorExtension.php',
+    'DifferentialAcceptAsTestCase' => 'applications/differential/engineextension/__tests__/DifferentialAcceptAsTestCase.php',
     'DifferentialHideLintInlinesUIEventListener' => 'infrastructure/events/DifferentialHideLintInlinesUIEventListener.php',
     'DifferentialHideLintInlinesUIEventListenerTestCase' => 'infrastructure/events/__tests__/DifferentialHideLintInlinesUIEventListenerTestCase.php',
     'DifferentialInlineCommentRules' => 'applications/differential/conduit/DifferentialInlineCommentRules.php',
@@ -104,6 +107,9 @@ phutil_register_library_map(array(
   ),
   'xmap' => array(
     'AphrontFormDateRangeControl' => 'AphrontFormControl',
+    'DifferentialAcceptAsEditEngineExtension' => 'PhabricatorEditEngineExtension',
+    'DifferentialAcceptAsEditorExtension' => 'PhabricatorEditorExtension',
+    'DifferentialAcceptAsTestCase' => 'PhabricatorTestCase',
     'DifferentialHideLintInlinesUIEventListener' => 'PhabricatorAutoEventListener',
     'DifferentialHideLintInlinesUIEventListenerTestCase' => 'PhabricatorTestCase',
     'DifferentialInlineCommentRules' => 'Phobject',
